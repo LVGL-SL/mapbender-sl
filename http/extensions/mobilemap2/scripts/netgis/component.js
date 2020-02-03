@@ -133,16 +133,6 @@ netgis.component.KML = function( url )
 
 netgis.component.KML.prototype.name = "kml";
 
-/** GeoRSS */
-netgis.component.GeoRSS = function( data )
-{
-	this.data = data;
-	
-	return this;
-}
-
-netgis.component.GeoRSS.prototype.name = "georss";
-
 /** Extent */
 netgis.component.Extent = function( minx, miny, maxx, maxy )
 {

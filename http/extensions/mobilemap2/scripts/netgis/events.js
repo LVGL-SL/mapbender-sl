@@ -133,9 +133,7 @@ netgis.events =
 			
 			POSITION_TOGGLE:	"position-toggle",
 			POSITION_CENTER:	"position-center",
-			POSITION_ERROR:		"position-error",
-			
-			DIGITIZE_CLICK:		"digitize-click"
+			POSITION_ERROR:		"position-error"
 		};
 		
 		return iface;

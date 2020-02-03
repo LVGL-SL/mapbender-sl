@@ -373,7 +373,7 @@ netgis.menu =
 		   
 			var maxResults = 5;
 			
-			var url = netgis.config.URL_SEARCH_REQUEST + "?outputFormat=json&resultTarget=web&searchEPSG=25832&maxResults=" + maxResults + "&maxRows=" + maxResults + "&searchText=" + query + "&featureClass=P&style=full&name_startsWith=" + query;
+			var url = netgis.config.URL_SEARCH_REQUEST + "?outputFormat=json&resultTarget=web&searchEPSG=31466&maxResults=" + maxResults + "&maxRows=" + maxResults + "&searchText=" + query + "&featureClass=P&style=full&name_startsWith=" + query;
 			
 			if ( netgis.config.URL_SEARCH_PROXY && netgis.config.URL_SEARCH_PROXY.length > 0 )
 			{
@@ -822,7 +822,7 @@ netgis.menu =
 			
 			if ( result )
 			{
-				if ( result.category === "str" || result.category === "haus" )
+				if ( result.category === "str" || result.category === "haus" || result.category === "Haus" || result.category === "Strasse" )
 					netgis.map.showPopup( ( parseFloat( result.minx ) + parseFloat( result.maxx ) ) / 2, ( parseFloat( result.miny ) + parseFloat( result.maxy ) ) / 2, result.title );
 				else
 					netgis.map.hidePopup();

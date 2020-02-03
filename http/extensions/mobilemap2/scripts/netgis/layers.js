@@ -44,33 +44,24 @@ netgis.layers =
 				else			
 					netgis.events.call( netgis.events.LAYERS_LOADING, { loading: false } );
 			}
-			
-			// GeoRSS
-			if ( netgis.params.get( "georss" ) )
-			{
-				createGeoRSS( decodeURIComponent( netgis.params.get( "georss" ) ) );
-			}
 		};
 		
 		var requestWmc = function( id )
 		{
 			//TODO: clear all layers from memory
-			
 			netgis.events.call( netgis.events.LAYERS_LOADING, { loading: true } );
 			
 			var url = netgis.config.URL_WMC_REQUEST;
 			var lastChar = url.charAt( url.length - 1 );
 			if ( lastChar !== "?" && lastChar !== "&" ) url += "?";
-			url += "confFileName=" + netgis.config.CONF_FILE_NAME + "&wmc_id=" + id + "&epsg=" + netgis.config.MAP_PROJECTION.split( ":" )[ 1 ] + "&withHierarchy=1";
+			url += "wmc_id=" + id + "&confFileName=" + netgis.config.CONF_FILE_NAME + "&epsg=" + netgis.config.MAP_PROJECTION.split( ":" )[ 1 ] + "&withHierarchy=1";
 			
 			if ( netgis.config.URL_WMC_PROXY && netgis.config.URL_WMC_PROXY.length > 0 )
 			{
 				$.getJSON
 				(
-					//"./scripts/proxy.php",
 					netgis.config.URL_WMC_PROXY,
 					{
-						//q: encodeURI( "http://www.geoportal.rlp.de/mapbender/php/mod_exportWmc2Json.php?wmc_id=" + id + "&epsg=" + netgis.config.MAP_PROJECTION.split( ":" )[ 1 ] + "&withHierarchy=1" )
 						q: encodeURIComponent( url )
 					},
 					onWmcResponse
@@ -176,24 +167,6 @@ netgis.layers =
 			);
 	
 			return serviceEntity;
-		};
-
-		var createGeoRSS = function( xml )
-		{
-			var data = $( $.parseXML( xml ) );
-			
-			var entity = netgis.entities.create
-			(
-				[
-					new netgis.component.Layer( -10 ),
-					new netgis.component.Title( "GeoRSS" ),
-					new netgis.component.GeoRSS( data ),
-					new netgis.component.Active()
-				],
-				true
-			);
-	
-			netgis.events.call( netgis.events.LAYERS_LOADING, { loading: false } );
 		};
 		
 		// Event Handlers
@@ -391,8 +364,7 @@ netgis.layers =
 		var iface =
 		{
 			createService:	createService,
-			createLayer:	createLayer,
-			createGeoRSS:	createGeoRSS
+			createLayer:	createLayer
 		};
 		
 		return iface;

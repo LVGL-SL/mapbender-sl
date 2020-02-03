@@ -126,7 +126,7 @@ netgis.map =
 						{
 							extent: extent,
 							origin: [ extent[ 0 ], extent[ 1 ] ],
-							resolutions: resolutions,
+							resolutions: netgis.config.HYBRID_RESOLUTIONS,
 						}
 					),
 					tileUrlFunction: function( zxy )
@@ -154,7 +154,7 @@ netgis.map =
 					url: netgis.config.URL_BACKGROUND_AERIAL + "?",
 					params:
 					{
-						"LAYERS":		"rp_dop",
+						"LAYERS":		"sl_dop2016",
 						"FORMAT":		"image/jpeg",
 						"TRANSPARENT":	"false",
 						"VERSION":		"1.1.1"
@@ -266,8 +266,6 @@ netgis.map =
 			interactions.featureInfo = new ol.interaction.Pointer
 			(
 				{
-					//handleDownEvent:	function( event ) { /*this.dispatchEvent( event ); return true;*/ },
-					//handleUpEvent:		function( event ) { onMapClick( event ); return false; }
 					handleEvent: function( event ) { if ( event.type === "singleclick" ) { onMapClick( event ); } return true; }
 				}
 			);
@@ -328,7 +326,7 @@ netgis.map =
 			
 			map.on( "moveend", onMapMoveEnd );
 			if ( netgis.params.getInt( "withDigitize" ) === 1 ) map.on( "click", onDigitizeClick );
-
+			
 			// History
 			history = [];
 			historyIndex = -1;
@@ -470,7 +468,7 @@ netgis.map =
 		
 		var viewFull = function()
 		{
-			viewExtent( 174681, 5417732, 585042, 5654678 );
+			viewExtent( 2525800, 5442186, 2602200, 5501000 );
 		};
 		
 		var viewExtent = function( minx, miny, maxx, maxy )
@@ -653,40 +651,7 @@ netgis.map =
 			
 			if ( url.search( /wmts/i ) > -1 && false )
 			{
-				/*
-				var projection = view.getProjection(); //ol.proj.get('EPSG:25832'); //3857 //4326 //900913 EPSG:25832
-				var projectionExtent = projection.getExtent();
-				var size = ol.extent.getWidth(projectionExtent) / 256;
-				var resolutions = new Array(14);
-				var matrixIds = new Array(14);
-				for (var z = 0; z < 14; ++z) {
-				  // generate resolutions and matrixIds arrays for this WMTS
-				  resolutions[z] = size / Math.pow(2, z);
-				  matrixIds[z] = z;
-				}
-	  
-				source = new ol.source.WMTS
-				(
-					{
-						url: url,
-						params:
-						{
-							"LAYER":		layerName,
-							"FORMAT":		"image/png",
-							"TRANSPARENT":	"true",
-							"VERSION":		"1.1.1"
-						},
-						layer: layerName,
-						format: 'image/png',
-						matrixSet: "UTM32", //'g',
-						tileGrid: new ol.tilegrid.WMTS({
-							origin: ol.extent.getTopLeft(projectionExtent),
-							resolutions: resolutions,
-							matrixIds: matrixIds
-						  })
-					}
-				);
-				*/
+
 			}
 			else
 			{
@@ -707,7 +672,6 @@ netgis.map =
 				);
 			}
 	
-			//var layer = new ol.layer.Tile
 			var layer = new ol.layer.Image
 			(
 				{
@@ -722,10 +686,6 @@ netgis.map =
 		
 		var setBackgroundLayer = function( url, layerName )
 		{
-			//TODO: remove old background layer if exists
-			
-			//console.info( "BG:", url, layerName );
-			
 			map.addLayer( createLayerWms( url, layerName, 0, netgis.config.MAP_DEFAULT_OPACITY ) );
 		};
 		
@@ -1106,7 +1066,7 @@ netgis.map =
 			// Go back to pan mode
 			//if ( ! netgis.sidebar.isVisible() ) pan();
 		};
-
+		
 		var onDigitizeClick = function( evt )
 		{
 			var coords = evt.coordinate;
@@ -1161,7 +1121,7 @@ netgis.map =
 			{
 				// Background Layers
 				createBackgroundLayers();
-
+				
 				// GeoRSS Layers
 				var georssEntities = netgis.entities.get( [ netgis.component.Layer, netgis.component.GeoRSS ] );
 				
