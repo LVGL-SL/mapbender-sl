@@ -1,7 +1,7 @@
 <?php
 require_once(dirname(__FILE__)."/../../core/globalSettings.php");
 require_once(dirname(__FILE__)."/../classes/class_connector.php");
-require_once(dirname(__FILE__)."/../../conf/bkgGeocoding.conf");
+
 if ($_REQUEST['resultTarget'] != 'web') {
 	(isset($_SERVER["argv"][1]))? ($user_id = $_SERVER["argv"][1]) : ($e = new mb_exception("geom: user lacks!"));
 	(isset($_SERVER["argv"][2]))? ($sstr = $_SERVER["argv"][2]) : ($e = new mb_exception("geom: string lacks!"));
@@ -42,36 +42,18 @@ if ($_REQUEST['resultTarget'] != 'web') {
 		$searchEPSG = $testMatch;
 		$testMatch = NULL;
 	}
-	/*if (isset($_REQUEST["callback"]) & $_REQUEST["callback"] != "") {
-		$testMatch = $_REQUEST["callback"];	
-		$pattern = '/^jQuery\d+_\d+$/';
-		if (!preg_match($pattern,$testMatch)){ 
- 		//if (!($testMatch == '31467' or $testMatch == '31468' or $testMatch == '25832' or $testMatch == '4326')){ 
-			echo 'callback: <b>'.$testMatch.'</b> is not valid.<br/>'; 
-			die(); 		
- 		}
-		$callback = $testMatch;
-		$testMatch = NULL;
-	}*/
 	//for debugging
 	$callback = $_REQUEST["callback"];
-	//get searchText as a parameter
 	$searchText = $_REQUEST['searchText']; //TODO: filter for insecure texts
 	$sstr = $searchText;
 	$epsg = $searchEPSG;
 	$searchThruWeb = true;
 }
-//$searchText = "fall 10, mend";
-$key = BKG_GEOCODING_KEY;
-$basUrl1 = "https://sg.geodatenzentrum.de/gdz_geokodierung__";
+$basUrl1 = "https://sg.geodatenzentrum.de/gdz_geokodierung";
 $basUrl2 = "/geosearch?query=";
 $maxFeatures = 15;
-//exchange some letters
-//$e = new mb_exception("searchText1: ".$searchText);
 $searchText= str_replace('ß', 'SS', str_replace('Ü', 'UE', str_replace('Ä', 'AE', str_replace('Ö', 'OE', mb_strtoupper($searchText)))));
-//$e = new mb_exception("searchText2: ".$searchText);
-
-$invokeUrl = $basUrl1.$key.$basUrl2.$searchText."&srsName=EPSG%3A".$searchEPSG."&count=".$maxResults;
+$invokeUrl = $basUrl1.$basUrl2.$searchText."&srsName=EPSG%3A".$searchEPSG."&count=".$maxResults;
 $searchConnector = new connector($invokeUrl);
 $searchResult = $searchConnector->file;
 $gazetteerObject = json_decode($searchResult);
