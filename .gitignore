@@ -1,1 +1,4 @@
 conf/*.conf
+tools/tmp/
+http/tmp/wmc/
+http/geoportal/preview/*.jpg
