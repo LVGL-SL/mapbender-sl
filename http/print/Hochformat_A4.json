@@ -9,7 +9,6 @@
             "label" : "Titel",
             "type" : "text",
             "size" : 18,
-	    "maxCharacter" : 20,
             "pageElementsLink" : {
                 "titel" : "value"
             }
@@ -17,9 +16,9 @@
         
         {
             "id" : "dpi",
-            "label" : "Auflösung",
+            "label" : "DPI",
             "type" : "select",
-            "size" : 23,
+            "size" : 20,
             "pageElementsLink" : {
                 "karte" : "res_dpi"
             },
@@ -37,9 +36,8 @@
         {
             "id" : "comment1",
             "label" : "Notiz",
-	    "type" : "textarea",
-             "maxCharacter" : 250,
-	     "size" : 10,
+            "type" : "textarea",
+            "size" : 5,
             "pageElementsLink" : {
                 "kommentar1" : "value"
             }
@@ -116,8 +114,8 @@
                     "type" : "image",
                     "x_ul" : 184,
                     "y_ul" : 254,
-                    "width" : 25,
-                    "height" : 25,
+                    "width" : 20,
+                    "height" : 20,
                     "angle" : 0,
                     "filename" : "./img/northarrow.png"
                 },
@@ -128,7 +126,7 @@
                     "font_family" : "Arial",
                     "font_size" : 16
                 },
-		"messung" : {
+        "messung" : {
                  "type" : "measure",
                  "do_fill" : 0,
                  "fill_color" : {
@@ -153,14 +151,30 @@
                     "y_ul" : 255.2,
                     "font_family" : "Arial",
                     "font_size" : 11,
-                    "width" : 145,
+                    "width" : 80,
                     "height" : 5,
                     "align" : "L",
-                    "border" : 0,
-                    "fill" : 0,
+                    "border" : 1,
+                    "fill" : 1,
                     "border_width" : 0.3
                 }
             }
+        },
+        {
+            "tpl" : "Hochformat_A4.pdf",
+            "useTplPage" : 2,
+            "elements" : {
+                "legende" : {
+                    "type" : "legend",
+                    "x_ul" : 7,
+                    "y_ul" : 36,
+                    "width" : 90,
+                    "height" : 180,
+                    "font_family" : "Arial",
+                    "font_size" : 10.5,
+                    "scale" : 0.9
+                }
+			}
         }
         
     ]

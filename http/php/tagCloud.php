@@ -3,7 +3,7 @@ require_once(dirname(__FILE__)."/../../core/globalSettings.php");
 require_once(dirname(__FILE__)."/../classes/class_json.php");
 $con = db_connect(DBSERVER,OWNER,PW);
 db_select_db(DB,$con);
-$pathToSearchScript = '/portal/servicebereich/suche.html?cat=dienste&searchfilter=';
+$pathToSearchScript = '/php/mod_callMetadata.php?';
 $languageCode = 'de';
 $maxFontSize = 40;
 $minFontSize = 10;
@@ -109,7 +109,7 @@ if ($outputFormat == 'json'){
 }
 
 if ($languageCode == 'en'){
-	$pathToSearchScript = '/portal/en/service/search.html?cat=dienste&searchfilter=';
+	$pathToSearchScript = '/php/mod_callMetadata.php?languageCode=en&';
 }
 
 
@@ -130,24 +130,25 @@ if ($type == 'topicCategories' || $type == 'inspireCategories') {
 	} else {
 		$categoryFilter = "inspire_category";
 	}
-	$sql = "select a.".$categoryFilter."_code_".$languageCode.", a.".$categoryFilter."_description_".$languageCode.", a.".$categoryFilter."_uri, a.".$categoryFilter."_id,sum(a.count) from (";
-	$sql .= "(select ".$categoryFilter."_code_".$languageCode.",".$categoryFilter."_description_".$languageCode.",".$categoryFilter."_uri,".$categoryFilter."_id,  count(*) from ".$categoryFilter." INNER JOIN  layer_".$categoryFilter."  ON (layer_".$categoryFilter.".fkey_".$categoryFilter."_id = ".$categoryFilter.".".$categoryFilter."_id) ";
+	$sql = "select a.".$categoryFilter."_code_".$languageCode.", a.".$categoryFilter."_description_".$languageCode.", a.".$categoryFilter."_uri, a.".$categoryFilter."_id, a.".$categoryFilter."_symbol, sum(a.count) from (";
+	$sql .= "(select ".$categoryFilter."_code_".$languageCode.",".$categoryFilter."_description_".$languageCode.",".$categoryFilter."_uri,".$categoryFilter."_id,".$categoryFilter."_symbol, count(*) from ".$categoryFilter." INNER JOIN  layer_".$categoryFilter."  ON (layer_".$categoryFilter.".fkey_".$categoryFilter."_id = ".$categoryFilter.".".$categoryFilter."_id) ";
 	$sql .= " WHERE layer_".$categoryFilter.".fkey_layer_id IN (select layer_id from layer where layer_searchable = 1)";
 	$sql .= " GROUP BY ".$categoryFilter.".".$categoryFilter."_code_".$languageCode.",".$categoryFilter.".".$categoryFilter."_id)";
 	$sql .= " union ";
-	$sql .= "(select ".$categoryFilter."_code_".$languageCode.",".$categoryFilter."_description_".$languageCode.",".$categoryFilter."_uri,".$categoryFilter."_id, count(*) from  ".$categoryFilter." INNER JOIN  wfs_featuretype_".$categoryFilter."  ON (wfs_featuretype_".$categoryFilter.".fkey_".$categoryFilter."_id = ".$categoryFilter.".".$categoryFilter."_id)";
+	$sql .= "(select ".$categoryFilter."_code_".$languageCode.",".$categoryFilter."_description_".$languageCode.",".$categoryFilter."_uri,".$categoryFilter."_id,".$categoryFilter."_symbol, count(*) from  ".$categoryFilter." INNER JOIN  wfs_featuretype_".$categoryFilter."  ON (wfs_featuretype_".$categoryFilter.".fkey_".$categoryFilter."_id = ".$categoryFilter.".".$categoryFilter."_id)";
 	$sql .= " WHERE wfs_featuretype_".$categoryFilter.".fkey_featuretype_id IN (select featuretype_id from wfs_featuretype where featuretype_searchable = 1)";
 	$sql .= " GROUP BY ".$categoryFilter.".".$categoryFilter."_code_".$languageCode.",".$categoryFilter.".".$categoryFilter."_id)";
 	$sql .= " union ";
-	$sql .= "(select ".$categoryFilter."_code_".$languageCode.",".$categoryFilter."_description_".$languageCode.",".$categoryFilter."_uri,".$categoryFilter."_id, count(*) from ".$categoryFilter." INNER JOIN  wmc_".$categoryFilter."  ON (wmc_".$categoryFilter.".fkey_".$categoryFilter."_id = ".$categoryFilter.".".$categoryFilter."_id)";
+	$sql .= "(select ".$categoryFilter."_code_".$languageCode.",".$categoryFilter."_description_".$languageCode.",".$categoryFilter."_uri,".$categoryFilter."_id,".$categoryFilter."_symbol, count(*) from ".$categoryFilter." INNER JOIN  wmc_".$categoryFilter."  ON (wmc_".$categoryFilter.".fkey_".$categoryFilter."_id = ".$categoryFilter.".".$categoryFilter."_id)";
 	$sql .= " WHERE wmc_".$categoryFilter.".fkey_wmc_serial_id IN (select wmc_serial_id from mb_user_wmc where wmc_public = 1)";		
 	$sql .= " GROUP BY ".$categoryFilter.".".$categoryFilter."_code_".$languageCode.",".$categoryFilter.".".$categoryFilter."_id)";
 	$sql .= " union ";
-	$sql .= "(select ".$categoryFilter."_code_".$languageCode.",".$categoryFilter."_description_".$languageCode.",".$categoryFilter."_uri,".$categoryFilter."_id, count(*) from ".$categoryFilter." INNER JOIN  mb_metadata_".$categoryFilter."  ON (mb_metadata_".$categoryFilter.".fkey_".$categoryFilter."_id = ".$categoryFilter.".".$categoryFilter."_id)";
+	$sql .= "(select ".$categoryFilter."_code_".$languageCode.",".$categoryFilter."_description_".$languageCode.",".$categoryFilter."_uri,".$categoryFilter."_id,".$categoryFilter."_symbol, count(*) from ".$categoryFilter." INNER JOIN  mb_metadata_".$categoryFilter."  ON (mb_metadata_".$categoryFilter.".fkey_".$categoryFilter."_id = ".$categoryFilter.".".$categoryFilter."_id)";
 	$sql .= " WHERE mb_metadata_".$categoryFilter.".fkey_metadata_id IN (select metadata_id from mb_metadata where searchable = true) ";
 	$sql .= " GROUP BY ".$categoryFilter.".".$categoryFilter."_code_".$languageCode.",".$categoryFilter.".".$categoryFilter."_id)";
 	$sql .= ") as a";
-	$sql .= " WHERE a.".$categoryFilter."_code_".$languageCode." <> '' GROUP BY a.".$categoryFilter."_code_".$languageCode.", a.".$categoryFilter."_description_".$languageCode.", a.".$categoryFilter."_uri, a.".$categoryFilter."_id "; 		$sql .= "ORDER BY ";
+	$sql .= " WHERE a.".$categoryFilter."_code_".$languageCode." <> '' GROUP BY a.".$categoryFilter."_code_".$languageCode.", a.".$categoryFilter."_description_".$languageCode.", a.".$categoryFilter."_uri, a.".$categoryFilter."_id, a.".$categoryFilter."_symbol ";
+ 		$sql .= "ORDER BY ";
 	switch ($orderBy) {
 		case "rank":
 			$sql .= "sum";
@@ -179,14 +180,14 @@ while($row = db_fetch_array($res)){
 		$maxWeight = (integer)$row['sum'];
 	} 
 	if ($type == 'topicCategories') {
-		$tags[$i] = array('weight'  =>$row['sum'], 'tagname' =>$row[$showName], 'url'=>'http://'.$hostName.$pathToSearchScript.urlencode('searchText=*&resultTarget=file&outputFormat=json&isoCategories='.$row['md_topic_category_id'].'&languageCode='.$languageCode));
+		$tags[$i] = array('weight'  =>$row['sum'], 'tagname' =>$row[$showName], 'url'=>MAPBENDER_PATH.$pathToSearchScript.'searchText=*&resultTarget=webclient&searchResources=dataset&resolveCoupledResources=true&outputFormat=json&isoCategories='.$row['md_topic_category_id'].'&languageCode='.$languageCode,'description'=>$row[$categoryFilter.'_description_'.$languageCode], 'info'=>$row[$categoryFilter.'_uri'], 'mbId'=>$row[$categoryFilter.'_id'], 'symbol'=>$row[$categoryFilter.'_symbol']);
 	}
 	if ($type == 'inspireCategories') {
-		$tags[$i] = array('weight'  =>$row['sum'], 'tagname' =>$row[$showName], 'url'=>'http://'.$hostName.$pathToSearchScript.urlencode('searchText=*&resultTarget=file&outputFormat=json&inspireCategories='.$row[$categoryFilter.'_id'].'&languageCode='.$languageCode), 'description'=>$row[$categoryFilter.'_description_'.$languageCode], 'info'=>$row[$categoryFilter.'_uri'], 'mbId'=>$row[$categoryFilter.'_id']);
+		$tags[$i] = array('weight'  =>$row['sum'], 'tagname' =>$row[$showName], 'url'=>MAPBENDER_PATH.$pathToSearchScript.'searchText=*&resultTarget=webclient&searchResources=dataset&resolveCoupledResources=true&outputFormat=json&inspireCategories='.$row[$categoryFilter.'_id'].'&languageCode='.$languageCode, 'description'=>$row[$categoryFilter.'_description_'.$languageCode], 'info'=>$row[$categoryFilter.'_uri'], 'mbId'=>$row[$categoryFilter.'_id']);
 	}
 
 	if ($type == 'keywords') {
-		$tags[$i] = array('weight'  =>$row['sum'], 'tagname' =>$row[$showName], 'url'=>'http://'.$hostName.$pathToSearchScript.urlencode('searchText='.$row[$showName].'&resultTarget=file&outputFormat=json&languageCode='.$languageCode));
+		$tags[$i] = array('weight'  =>$row['sum'], 'tagname' =>$row[$showName], 'url'=>MAPBENDER_PATH.$pathToSearchScript.'searchText='.$row[$showName].'&resultTarget=webclient&searchResources=dataset&resolveCoupledResources=true&outputFormat=json&languageCode='.$languageCode);
 	}
 
 	$i++;
@@ -249,13 +250,30 @@ if ($outputFormat == 'json'){
 		$tagCloudJSON->tagCloud->tags[$i]->url = $tags[$i]['url'];
 		$tagCloudJSON->tagCloud->tags[$i]->weight = $tags[$i]['weight'];
 		$tagCloudJSON->tagCloud->tags[$i]->id = $tags[$i]['mbId'];
+		//$tagCloudJSON->tagCloud->tags[$i]->symbol = $tags[$i]['symbol'];
 
-		if ($type == 'inspireCategories') {
+		//if ($type == 'inspireCategories') {
+                switch ($type) {
+                    case "inspireCategories":
 			$tagCloudJSON->tagCloud->tags[$i]->info = $tags[$i]['info'];		
 			$tagCloudJSON->tagCloud->tags[$i]->inspireThemeId = end(explode('/', $tagCloudJSON->tagCloud->tags[$i]->info));
 			$tagCloudJSON->tagCloud->tags[$i]->description = $tags[$i]['description'];
 			//symbol
-			$tagCloudJSON->tagCloud->tags[$i]->symbolUrl = MAPBENDER_PATH."/img/INSPIRE-themes-icons-master/svg/".$tagCloudJSON->tagCloud->tags[$i]->inspireThemeId.".svg";
+			//$tagCloudJSON->tagCloud->tags[$i]->symbolUrl = MAPBENDER_PATH."/img/INSPIRE-themes-icons-master/svg/".$tagCloudJSON->tagCloud->tags[$i]->inspireThemeId.".svg";
+			$symbolFilePath = dirname(__FILE__)."/../img/INSPIRE-themes-icons-master/svg/".$tagCloudJSON->tagCloud->tags[$i]->inspireThemeId.".svg";
+			$tagCloudJSON->tagCloud->tags[$i]->inlineSvg = file_get_contents($symbolFilePath);
+			$tagCloudJSON->tagCloud->tags[$i]->keepColor = true;
+			break;
+	 	    case "topicCategories":
+			$tagCloudJSON->tagCloud->tags[$i]->info = $tags[$i]['info'];		
+			//$tagCloudJSON->tagCloud->tags[$i]->inspireThemeId = end(explode('/', $tagCloudJSON->tagCloud->tags[$i]->info));
+			$tagCloudJSON->tagCloud->tags[$i]->description = $tags[$i]['description'];
+			//symbol
+			//$tagCloudJSON->tagCloud->tags[$i]->symbolUrl = MAPBENDER_PATH."/img/ISOTopicThemes/". $tags[$i]['symbol'].".svg";
+			$symbolFilePath = dirname(__FILE__)."/../img/ISOTopicThemes/". $tags[$i]['symbol'].".svg";
+			$tagCloudJSON->tagCloud->tags[$i]->inlineSvg = file_get_contents($symbolFilePath);
+			$tagCloudJSON->tagCloud->tags[$i]->keepColor = false;
+			break;
 		}
    	 }
 #echo "json";
