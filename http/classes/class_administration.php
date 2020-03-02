@@ -23,8 +23,6 @@ require_once dirname(__FILE__) . "/../../tools/wms_extent/extent_service.conf";
 # changed to Version 6.0.2 due to dprecated/removed functionality (php7+) TODO - check invokation of new class !!!!
 $phpversion = phpversion();
 if (strpos($phpversion, "7.") === 0) {
-    //use new mailer
-$e = new mb_exception($phpversion);
     require(dirname(__FILE__) . "/phpmailer-6.0.2/src/PHPMailer.php");
     require(dirname(__FILE__) . "/phpmailer-6.0.2/src/SMTP.php");
     require(dirname(__FILE__) . "/phpmailer-6.0.2/src/Exception.php");
