@@ -12,6 +12,7 @@ require_once(dirname(__FILE__)."/../classes/class_administration.php");
 require_once(dirname(__FILE__)."/../classes/class_json.php");
 include(dirname(__FILE__)."/../geoportal/class_gml3.php");
 include(dirname(__FILE__) . "/../../conf/gazetteerFlst.conf");
+include_once dirname(__FILE__) . "/geoJSONadditions.php";
 
 //db connection
 $con = db_connect($DBSERVER,$OWNER,$PW) or die ("Error while connecting database $dbname");
@@ -279,8 +280,10 @@ if($command == "getGeomForFlst") {
             '.$flnFilter.'
         </And></Filter>';
 		
-    $resultObj = getGeoJSON($searchFeaturetype, $filter,$srs);
+    $resultObjJSON = json_encode($resultObj);
+    $resultObjJSON = geoJSONcheckProjection($resultObjJSON);
+    
     header("Content-type:application/json; charset=utf-8");
-    echo json_encode($resultObj);
+    echo $resultObjJSON;
 }
 ?>
