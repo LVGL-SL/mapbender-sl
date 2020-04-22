@@ -10,7 +10,7 @@ $(document).ready(function(){
 	} else {
 		/* outside iFrame */
 		$('#fullscreenbtn').click(function(){
-                        window.open('../../map?gui_id=Geoportal-RLP_2019','_parent','');
+                        window.open('../../map?gui_id=Geoportal-SL-2020','_parent','');
                 });
 		$('.insideIframe').css("display", "none");
 		$('#fullscreenbtn').attr('title', 'Vollbild verlassen');
