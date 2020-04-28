@@ -8,8 +8,8 @@
             "id" : "title",
             "label" : "Titel",
             "type" : "text",
+	    "maxCharacter" : 20 ,
             "size" : 18,
-	    "maxCharacter" : 20,
             "pageElementsLink" : {
                 "titel" : "value"
             }
@@ -18,7 +18,7 @@
         {
             "id" : "dpi",
             "label" : "Auflösung",
-            "type" : "select",
+            "type" : "hidden",
             "size" : 20,
             "pageElementsLink" : {
                 "karte" : "res_dpi"
@@ -37,8 +37,8 @@
         {
             "id" : "comment1",
             "label" : "Notiz",
+	    "maxCharacter" : 20 ,
             "type" : "textarea",
-	  "maxCharacter" : 250,
             "size" : 5,
             "pageElementsLink" : {
                 "kommentar1" : "value"
@@ -48,7 +48,7 @@
         {
             "id" : "angle",
             "label" : "Drehwinkel",
-            "type" : "text",
+            "type" : "hidden",
             "pageElementsLink" : {
                 "nordpfeil" : "angle",
                 "karte" : "angle",
@@ -121,9 +121,16 @@
                     "angle" : 0,
                     "filename" : "./img/northarrow.png"
                 },
+		"titel" : {
+                    "type" : "text",
+                    "x_ul" : 110,
+                    "y_ul" : 15,
+                    "font_family" : "Arial",
+                    "font_size" : 16
+                },
 		"messung" : {
                  "type" : "measure",
-                 "do_fill" : 0,
+                 "do_fill" : 1,
                  "fill_color" : {
                      "r" : 255,
                      "g" : 0,
@@ -139,14 +146,6 @@
                      "width" : 2.0
                      }
                     },
-
-		"titel" : {
-                    "type" : "text",
-                    "x_ul" : 110,
-                    "y_ul" : 15,
-                    "font_family" : "Arial",
-                    "font_size" : 16
-                },
                 "kommentar1" : {
                     "type" : "para",
                     "x_ul" : 233.8,

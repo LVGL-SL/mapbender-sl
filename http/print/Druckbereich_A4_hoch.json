@@ -1,15 +1,15 @@
 {
     "type" : "templatePDF",
-    "orientation" : "L",
+    "orientation" : "P",
     "units" : "mm",
     "format" : "a4",
     "controls" : [
 	{
             "id" : "title",
             "label" : "Titel",
+	    "maxCharacter" : 20 ,
             "type" : "text",
             "size" : 18,
-	    "maxCharacter" : 20,
             "pageElementsLink" : {
                 "titel" : "value"
             }
@@ -18,7 +18,7 @@
         {
             "id" : "dpi",
             "label" : "Auflösung",
-            "type" : "select",
+            "type" : "hidden",
             "size" : 20,
             "pageElementsLink" : {
                 "karte" : "res_dpi"
@@ -38,7 +38,7 @@
             "id" : "comment1",
             "label" : "Notiz",
             "type" : "textarea",
-	  "maxCharacter" : 250,
+	    "maxCharacter" : 20 ,
             "size" : 5,
             "pageElementsLink" : {
                 "kommentar1" : "value"
@@ -48,7 +48,7 @@
         {
             "id" : "angle",
             "label" : "Drehwinkel",
-            "type" : "text",
+            "type" : "hidden",
             "pageElementsLink" : {
                 "nordpfeil" : "angle",
                 "karte" : "angle",
@@ -71,16 +71,16 @@
     ],
     "pages" : [
         {
-            "tpl" : "Querformat_A4.pdf",
+            "tpl" : "Hochformat_A4.pdf",
             "useTplPage" : 1,
             "elements" : {
                 "karte" : {
                     "type" : "map",
                     "res_dpi" : 72,
-                    "x_ul" : 15.5,
+                    "x_ul" : 16.2,
                     "y_ul" : 22.5,
-                    "width" : 212,
-                    "height" : 174,
+                    "width" : 180,
+                    "height" : 212,
                     "coords" : 1,
                     "coords_font_family" : "Arial",
                     "coords_font_size" : 8
@@ -89,24 +89,24 @@
                 "minikarte" : {
                     "type" : "overview",
                     "res_dpi" : 72,
-                    "x_ul" : 15.0,
-                    "y_ul" : 22.0,
+                    "x_ul" : 15.6,
+                    "y_ul" : 21.8,
                     "width" : 40,
                     "height" : 40
                 },
             
                 "scale" : {
                     "type" : "text",
-                    "x_ul" : 257.0,
-                    "y_ul" : 52.5,
+                    "x_ul" : 106.0,
+                    "y_ul" : 246.0,
                     "font_family" : "Arial",
                     "font_size" : 11,
                     "value" : "scale"
                 },
                 "date" : {
                     "type" : "text",
-                    "x_ul" : 257.0,
-                    "y_ul" : 41.5,
+                    "x_ul" : 35.5,
+                    "y_ul" : 246.0,
                     "font_family" : "Arial",
                     "font_size" : 11,
                     "value" : "date"
@@ -114,16 +114,23 @@
               
                 "nordpfeil" : {
                     "type" : "image",
-                    "x_ul" : 254,
-                    "y_ul" : 72,
+                    "x_ul" : 184,
+                    "y_ul" : 254,
                     "width" : 25,
                     "height" : 25,
                     "angle" : 0,
                     "filename" : "./img/northarrow.png"
                 },
-		"messung" : {
+		"titel" : {
+                    "type" : "text",
+                    "x_ul" : 110,
+                    "y_ul" : 17,
+                    "font_family" : "Arial",
+                    "font_size" : 16
+                },
+"messung" : {
                  "type" : "measure",
-                 "do_fill" : 0,
+                 "do_fill" : 1,
                  "fill_color" : {
                      "r" : 255,
                      "g" : 0,
@@ -140,24 +147,17 @@
                      }
                     },
 
-		"titel" : {
-                    "type" : "text",
-                    "x_ul" : 110,
-                    "y_ul" : 15,
-                    "font_family" : "Arial",
-                    "font_size" : 16
-                },
                 "kommentar1" : {
                     "type" : "para",
-                    "x_ul" : 233.8,
-                    "y_ul" : 95.4,
+                    "x_ul" : 16.1,
+                    "y_ul" : 255.2,
                     "font_family" : "Arial",
                     "font_size" : 11,
-                    "width" : 60,
+                    "width" : 145,
                     "height" : 5,
                     "align" : "L",
-                    "border" : 0,
-                    "fill" : 0,
+                    "border" : 1,
+                    "fill" : 1,
                     "border_width" : 0.3
                 }
             }
