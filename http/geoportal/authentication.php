@@ -44,7 +44,7 @@ if($isAuthenticated != false) {
 	Mapbender::session()->set("mb_user_city",$isAuthenticated["mb_user_city"]);
 	Mapbender::session()->set("mb_user_postal_code",$isAuthenticated["mb_user_postal_code"]);
 	Mapbender::session()->set("epsg","EPSG:31466");
-	Mapbender::session()->set("HTTP_HOST",$_SERVER["HTTP_HOST"]);
+	Mapbender::session()->set("HTTP_HOST",FULLY_QUALIFIED_DOMAIN_NAME);
 	Mapbender::session()->set("preferred_gui",$isAuthenticated["fkey_prefered_gui_id"]);
 //INSERT LAST LOGIN DATE AND TIME
 //NEW Filed required "ALTER TABLE mapbender.mb_user ADD COLUMN mb_user_last_login_date date;"
@@ -58,10 +58,10 @@ if($isAuthenticated != false) {
 	require_once(dirname(__FILE__)."/../php/mb_getGUIs.php");
 	$arrayGUIs = mb_getGUIs($isAuthenticated["mb_user_id"]);
 	Mapbender::session()->set("mb_user_guis",$arrayGUIs);
-	header ("Location: http://".$_SERVER['HTTP_HOST']."/portal/success.html".$URLAdd);
+	header ("Location: http://". FULLY_QUALIFIED_DOMAIN_NAME ."/portal/success.html".$URLAdd);
 	session_write_close();
 } else {
-	header ("Location: http://".$_SERVER['HTTP_HOST']."/portal/failed.html".$URLAdd);
+	header ("Location: http://". FULLY_QUALIFIED_DOMAIN_NAME ."/portal/failed.html".$URLAdd);
 }
 
 function authenticate ($name, $pw){
@@ -80,4 +80,3 @@ function setSession(){
 function killSession(){
 	Mapbender::session()->kill();
 }
-?>

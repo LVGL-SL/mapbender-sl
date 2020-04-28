@@ -2461,7 +2461,7 @@ SQL;
 	{"protocol":"http","server_port":"$_SERVER['HTTP_PORT']","server_name":"$_SERVER['HTTP_NAME']","server_path":"mapbender\/frames","server_script":"index.php","gui_param":"gui_id","wmc_param":"WMC"}
 	*/
 	if ($api->server_name == "\$_SERVER['HTTP_HOST']"){
-		$api->server_name = $_SERVER['HTTP_HOST'];
+		$api->server_name = FULLY_QUALIFIED_DOMAIN_NAME;
 	}
         if (isset($api->server_port) && $api->server_port != '' && $api->server_port != '80')  {
 	    if ($api->server_port != "\$_SERVER['HTTP_PORT']") {
@@ -2497,9 +2497,9 @@ SQL;
 	$previewUrl = $row["preview_image"];
 	if ($row["preview_image"] == '{localstorage}') {
             if (defined('MAPBENDER_PATH') && MAPBENDER_PATH != '') {
-	        return MAPBENDER_PATH."/geoportal/mod_showPreview.php?resource=metadata&id=".$metadataId;
+	        return MAPBENDER_PATH . "/geoportal/mod_showPreview.php?resource=metadata&id=".$metadataId;
 	    } else {
-	        return "http://".$_SERVER["HTTP_HOST"]."/mapbender/geoportal/mod_showPreview.php?resource=metadata&id=".$metadataId;
+	        return "http://" . FULLY_QUALIFIED_DOMAIN_NAME . "/mapbender/geoportal/mod_showPreview.php?resource=metadata&id=".$metadataId;
 	    }
 	} else {
 	    return $row["preview_image"];
