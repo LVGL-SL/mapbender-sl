@@ -74,7 +74,7 @@ $resultObj['success'] = false;
 $resultObj['message'] = 'no message';
 $starttime = microtime_float();
 
-$hostName = $_SERVER['HTTP_HOST'];
+$hostName = FULLY_QUALIFIED_DOMAIN_NAME;
 $headers = apache_request_headers();
 $originFromHeader = false;
 foreach ($headers as $header => $value) {

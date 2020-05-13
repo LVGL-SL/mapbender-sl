@@ -84,7 +84,7 @@ if (!empty($_SERVER['HTTPS'])) {
     $schema = "http";
 }
 
-$linkedDataProxyUrl = $schema."://".$_SERVER['HTTP_HOST']."/".$rewritePath;
+$linkedDataProxyUrl = $schema."://".FULLY_QUALIFIED_DOMAIN_NAME."/".$rewritePath;
 
 if ($behindRewrite == true) {
     $cssFile = MAPBENDER_PATH."/php/".$cssFile;  

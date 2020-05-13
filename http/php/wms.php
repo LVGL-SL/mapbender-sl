@@ -65,9 +65,9 @@ if (DEFINED("MAPBENDER_PATH") && MAPBENDER_PATH !== "") {
 	$inspireServiceMetadataUrl =  MAPBENDER_PATH."/php/mod_layerISOMetadata.php?SERVICE=WMS&outputFormat=iso19139&Id=";
 	$mapbenderMetadataUrlUrl = MAPBENDER_PATH."/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=";
 } else {
-	$mapbenderMetadaUrl = $_SERVER['HTTP_HOST']."/mapbender/php/mod_showMetadata.php?resource=layer&id=";
-	$inspireServiceMetadataUrl =  $_SERVER['HTTP_HOST']."/mapbender/php/mod_layerISOMetadata.php?SERVICE=WMS&outputFormat=iso19139&Id=";
-	$mapbenderMetadataUrlUrl = $_SERVER['HTTP_HOST']."/mapbender/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=";
+	$mapbenderMetadaUrl = FULLY_QUALIFIED_DOMAIN_NAME."/mapbender/php/mod_showMetadata.php?resource=layer&id=";
+	$inspireServiceMetadataUrl =  FULLY_QUALIFIED_DOMAIN_NAME."/mapbender/php/mod_layerISOMetadata.php?SERVICE=WMS&outputFormat=iso19139&Id=";
+	$mapbenderMetadataUrlUrl = FULLY_QUALIFIED_DOMAIN_NAME."/mapbender/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=";
 	$mapbenderMetadataUrl = $urlPrefix.$mapbenderMetadataUrl;
 	$inspireServiceMetadataUrl = $urlPrefix.$inspireServiceMetadataUrl;
 	$mapbenderMetadataUrlUrl = $urlPrefix.$mapbenderMetadataUrlUrl;

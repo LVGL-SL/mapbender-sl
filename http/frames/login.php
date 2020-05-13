@@ -33,10 +33,10 @@ function auth_user($name,$pw){
 
 function redirectToLogin ($name = "") {
 	if (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") {
-		header ("Location: https://".$_SERVER['HTTP_HOST'].dirname($_SERVER['SCRIPT_NAME'])."/login.php?name=".$name);
+		header ("Location: https://".FULLY_QUALIFIED_DOMAIN_NAME.dirname($_SERVER['SCRIPT_NAME'])."/login.php?name=".$name);
 	}
 	else {
-		header ("Location: http://".$_SERVER['HTTP_HOST'].dirname($_SERVER['SCRIPT_NAME'])."/login.php?name=".$name);
+		header ("Location: http://".FULLY_QUALIFIED_DOMAIN_NAME.dirname($_SERVER['SCRIPT_NAME'])."/login.php?name=".$name);
 	}
 	die;
 }
@@ -183,10 +183,10 @@ if(isset($name) && $name != '' && isset($password) && $password != ''){
 			#only one gui is provided
 			if(count($arrayGUIs) == 1){
 				if (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") {
-					$myURL = "Location: https://".$_SERVER['HTTP_HOST'].dirname($_SERVER['SCRIPT_NAME'])."/index.php?".strip_tags (SID)."&gui_id=".$arrayGUIs[0];
+					$myURL = "Location: https://".FULLY_QUALIFIED_DOMAIN_NAME.dirname($_SERVER['SCRIPT_NAME'])."/index.php?".strip_tags (SID)."&gui_id=".$arrayGUIs[0];
 				}
 				else {
-					$myURL = "Location: http://".$_SERVER['HTTP_HOST'].dirname($_SERVER['SCRIPT_NAME'])."/index.php?".strip_tags (SID)."&gui_id=".$arrayGUIs[0];
+					$myURL = "Location: http://".FULLY_QUALIFIED_DOMAIN_NAME.dirname($_SERVER['SCRIPT_NAME'])."/index.php?".strip_tags (SID)."&gui_id=".$arrayGUIs[0];
 				}
 				# remove name and password from url, because url params are parsed later and written in javascript
 				$cleanUrl = preg_replace("/name=[^&]*&/","",$_SERVER["QUERY_STRING"]);

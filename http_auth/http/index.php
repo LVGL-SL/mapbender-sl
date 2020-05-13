@@ -369,7 +369,7 @@ switch (strtolower($reqParams['request'])) {
         		if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != '') {
             			$request = MAPBENDER_PATH . "/php/wms.php?layer_id=" . $layerId;
         		} else {
-            			$request = $urlPrefix . $_SERVER['HTTP_HOST'] . "/mapbender/php/wms.php?layer_id=" . $layerId;
+            			$request = $urlPrefix . FULLY_QUALIFIED_DOMAIN_NAME . "/mapbender/php/wms.php?layer_id=" . $layerId;
         		}
         		if ($withChilds) {
             			$requestFull .= $request . '&withChilds=1&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS';

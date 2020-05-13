@@ -612,13 +612,13 @@ class User implements RPCObject{
 		if (defined("DJANGO_PORTAL") && DJANGO_PORTAL == true) {
 			//TODO - get url from django!
 			if($_SERVER["HTTPS"] != "on") {
-				$loginRedirectUrl = "http://".$_SERVER['HTTP_HOST']."/login/";
-				$activateRedirectUrl = "http://".$_SERVER['HTTP_HOST']."/activate/";
-				$registerRedirectUrl = "http://".$_SERVER['HTTP_HOST']."/register/";
+				$loginRedirectUrl = "http://".FULLY_QUALIFIED_DOMAIN_NAME."/login/";
+				$activateRedirectUrl = "http://".FULLY_QUALIFIED_DOMAIN_NAME."/activate/";
+				$registerRedirectUrl = "http://".FULLY_QUALIFIED_DOMAIN_NAME."/register/";
 			} else {
-				$loginRedirectUrl = "https://".$_SERVER['HTTP_HOST']."/login/";
-				$activateRedirectUrl = "https://".$_SERVER['HTTP_HOST']."/activate/";
-				$registerRedirectUrl = "https://".$_SERVER['HTTP_HOST']."/register/";
+				$loginRedirectUrl = "https://".FULLY_QUALIFIED_DOMAIN_NAME."/login/";
+				$activateRedirectUrl = "https://".FULLY_QUALIFIED_DOMAIN_NAME."/activate/";
+				$registerRedirectUrl = "https://".FULLY_QUALIFIED_DOMAIN_NAME."/register/";
 			}
 		} else {
 			$loginRedirectUrl = LOGIN;

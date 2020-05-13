@@ -42,10 +42,10 @@ echo "Mapbender.sessionName = '".session_name()."';\n";
 echo "var mb_session_name = Mapbender.sessionName;\n";
 echo "Mapbender.loginUrl = '".Mapbender::session()->get("mb_login")."';\n";
 if (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") {
-		echo "Mapbender.baseUrl = 'https://".$_SERVER['HTTP_HOST']."';\n";
+		echo "Mapbender.baseUrl = 'https://".FULLY_QUALIFIED_DOMAIN_NAME."';\n";
 	}
 	else {
-		echo "Mapbender.baseUrl = 'http://".$_SERVER['HTTP_HOST']."';\n";
+		echo "Mapbender.baseUrl = 'http://".FULLY_QUALIFIED_DOMAIN_NAME."';\n";
 }
 echo "Mapbender.userId = '".Mapbender::session()->get("mb_user_id")."';\n";
 echo "var mb_myLogin = Mapbender.loginUrl;\n";

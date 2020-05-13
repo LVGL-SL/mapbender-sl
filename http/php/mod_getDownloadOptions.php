@@ -263,8 +263,8 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 							$downloadOptions->{$idList[$i]}->option[$j]->accessClient = $configObject->datasource_url.$configObject->rewrite_path."/".$row['service_id']."/collections/".$row['resource_name'];//."/items?&f=html";
 							$downloadOptions->{$idList[$i]}->option[$j]->accessUrl = $configObject->datasource_url.$configObject->rewrite_path."/".$row['service_id']."/api";//."/items?&f=html";
 						} else {
-							$downloadOptions->{$idList[$i]}->option[$j]->accessClient = "http://".$_SERVER['HTTP_HOST']."/".$configObject->rewrite_path."/".$row['service_id']."/collections/".$row['resource_name'];//."/items?&f=html";
-							$downloadOptions->{$idList[$i]}->option[$j]->accessUrl = "http://".$_SERVER['HTTP_HOST']."/".$configObject->rewrite_path."/".$row['service_id']."/api";//."/items?&f=html";
+							$downloadOptions->{$idList[$i]}->option[$j]->accessClient = "http://".FULLY_QUALIFIED_DOMAIN_NAME."/".$configObject->rewrite_path."/".$row['service_id']."/collections/".$row['resource_name'];//."/items?&f=html";
+							$downloadOptions->{$idList[$i]}->option[$j]->accessUrl = "http://".FULLY_QUALIFIED_DOMAIN_NAME."/".$configObject->rewrite_path."/".$row['service_id']."/api";//."/items?&f=html";
 						}
                                         } else {
 						$downloadOptions->{$idList[$i]}->option[$j]->accessClient = $webPath."php/mod_linkedDataProxy.php?wfsid=".$row['service_id']."&collection=".$row['resource_name'];

@@ -18,7 +18,7 @@ $languageCode = 'de';
 //$wmsServiceDisclaimerUrl = "";
 $admin = new administration();
 //initialize variables
-$hostName = $_SERVER['HTTP_HOST'];
+$hostName = FULLY_QUALIFIED_DOMAIN_NAME;
 //$userId = PUBLIC_USER;
 $id = 4373; //dummy id
 $withHeader = false;

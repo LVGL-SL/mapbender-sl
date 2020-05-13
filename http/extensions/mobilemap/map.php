@@ -15,7 +15,7 @@ else {
 //WMC Anfrage Mapbendermodul
 if (isset($_GET['wmcid'])) {
 	$wmcid = htmlspecialchars($_GET["wmcid"]);
-	if (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST']) === false) {
+	if (strpos($_SERVER['HTTP_REFERER'], FULLY_QUALIFIED_DOMAIN_NAME) === false) {
 		$admin->logClientUsage($_SERVER['HTTP_REFERER'], $wmcid, 2);
 	}
 }

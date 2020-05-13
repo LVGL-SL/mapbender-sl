@@ -9,7 +9,7 @@ $languageCode = 'de';
 $maxObjects = 10;
 $maxAge = 7;
 $outputFormat = 'json';
-$hostName = $_SERVER['HTTP_HOST'];
+$hostName = FULLY_QUALIFIED_DOMAIN_NAME;
 $pathToLoadScript = '/portal/karten.html?WMC=';
 $pathToMetadata = '/mapbender/php/mod_showMetadata.php?';
 $pathToPreview = '/mapbender/geoportal/mod_showPreview.php?';

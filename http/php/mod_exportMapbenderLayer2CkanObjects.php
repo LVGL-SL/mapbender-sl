@@ -109,12 +109,12 @@ function buildCkanPackage ($mbArray) {
 	if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != '') {
 		$mapbenderUrl = MAPBENDER_PATH;
 	} else {
-		$mapbenderUrl = "http://".$_SERVER['HTTP_HOST']."/mapbender";
+		$mapbenderUrl = "http://".FULLY_QUALIFIED_DOMAIN_NAME."/mapbender";
 	}
 	if (defined("WRAPPER_PATH") && WRAPPER_PATH != '') {
-		$wrapperUrl = "http://".$_SERVER['HTTP_HOST'].WRAPPER_PATH;
+		$wrapperUrl = "http://".FULLY_QUALIFIED_DOMAIN_NAME.WRAPPER_PATH;
 	} else {
-		$wrapperUrl = "http://".$_SERVER['HTTP_HOST']."/portal/karten.html";
+		$wrapperUrl = "http://".FULLY_QUALIFIED_DOMAIN_NAME."/portal/karten.html";
 	}
 	//example package and mapping
 	$package->maintainer = $mbArray['group_title']; //mb_group.mb_group_name

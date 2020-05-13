@@ -33,10 +33,10 @@ if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != '') {
 	$mapbenderUrl = MAPBENDER_PATH;
 } else {
 	if(!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS']!='off')  {
-		$mapbenderUrl = "https://".$_SERVER['HTTP_HOST']."/mapbender";
+		$mapbenderUrl = "https://".FULLY_QUALIFIED_DOMAIN_NAME."/mapbender";
 		$protocol = "https";
 	} else {
-		$mapbenderUrl = "http://".$_SERVER['HTTP_HOST']."/mapbender";
+		$mapbenderUrl = "http://".FULLY_QUALIFIED_DOMAIN_NAME."/mapbender";
 		$protocol = "http";
 	}
 }
@@ -720,13 +720,7 @@ SQL;
 	$gmd_URL=$iso19139->createElement("gmd:URL");
 
 	//Check if anonymous user has rights to access this layer - if not ? which resource should be advertised? TODO
-	//if ($hasPermission) {
-		$gmd_URLText=$iso19139->createTextNode($mapbenderUrl."/php/wms.php?inspire=1&layer_id=".$mapbenderMetadata['layer_id']."&withChilds=1&REQUEST=GetCapabilities&SERVICE=WMS");
-	//}
-	/*else {
-		$serverWithOutPort80 = str_replace(":80","",$_SERVER['HTTP_HOST']);//fix problem when metadata is generated thru curl invocations
-		$gmd_URLText=$iso19139->createTextNode("https://".$serverWithOutPort80."/http_auth/".$mapbenderMetadata['layer_id']."?REQUEST=GetCapabilities&SERVICE=WMS");
-	}*/
+	$gmd_URLText=$iso19139->createTextNode($mapbenderUrl."/php/wms.php?inspire=1&layer_id=".$mapbenderMetadata['layer_id']."&withChilds=1&REQUEST=GetCapabilities&SERVICE=WMS");
 	$gmd_URL->appendChild($gmd_URLText);
 	$gmd_linkage->appendChild($gmd_URL);
 	$CI_OnlineResource->appendChild($gmd_linkage);
@@ -803,7 +797,7 @@ SQL;
 		$gmd_URLText=$iso19139->createTextNode($mapbenderUrl."/php/wms.php?inspire=1&layer_id=".$mapbenderMetadata['layer_id']."&withChilds=1&REQUEST=GetCapabilities&SERVICE=WMS");
 	}
 	else {
-		$gmd_URLText=$iso19139->createTextNode("https://".$_SERVER['HTTP_HOST']."/http_auth/".$mapbenderMetadata['layer_id']."?withChilds=1&REQUEST=GetCapabilities&SERVICE=WMS");
+		$gmd_URLText=$iso19139->createTextNode("https://".FULLY_QUALIFIED_DOMAIN_NAME."/http_auth/".$mapbenderMetadata['layer_id']."?withChilds=1&REQUEST=GetCapabilities&SERVICE=WMS");
 	}
 	$gmd_URL->appendChild($gmd_URLText);
 	$gmd_linkage->appendChild($gmd_URL);
