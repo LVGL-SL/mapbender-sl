@@ -196,7 +196,6 @@ class Iso19139 {
 		$countInspireRegulations = 0;
 		$regulations = array();
 		if ($withAmendmentAndCorrigendum == true) {
-			//$legislationTypeArray = array("legislation","legislation_amendment","legislation_corrigendum");
 			$legislationTypeArray = array("legislation","legislation_amendment");
 		} else {
 			$legislationTypeArray = array("legislation");
@@ -223,12 +222,6 @@ class Iso19139 {
 				}
 			}
 		}
-		//debug output
-		/*foreach ($regulations as $reg) {
-			$e = new mb_exception("regulation date: ".$reg['date']->format('Y-m-d'));
-			$e = new mb_exception("regulation: ".$reg['name']);
-			$e = new mb_exception("regulation type: ".$reg['type']);
-		}*/
 		return $regulations;
 	}
 
@@ -241,9 +234,6 @@ class Iso19139 {
 	}
 	
 	public function createMapbenderMetadataFromXML($xml){
-		//$this->metadata = $xml;
-		//$this->metadata = $this->removeGetRecordTag($this->metadata);
-		//$e = new mb_exception($this->metadata);
 		libxml_use_internal_errors(true);
 		try {
 			$iso19139Xml = simplexml_load_string($xml);
@@ -275,24 +265,18 @@ XML;
 			$res = db_query($sql);
 			while ($row = db_fetch_array($res)){
 				$topicCatHash[$row['md_topic_category_code_en']] = (integer)$row['md_topic_category_id'];
-				//$e = new mb_exception("topicCatHash: ".$row['md_topic_category_code_en'] ." : ". $topicCatHash[$row['md_topic_category_code_en']] );	
 			}
-			//inspire
 			$inspireCatHash = array();
 			$sql = "SELECT inspire_category_id, inspire_category_code_en FROM inspire_category";
 			$res = db_query($sql);
 			while ($row = db_fetch_array($res)){
 				$inspireCatHash[$row['inspire_category_code_en']] = (integer)$row['inspire_category_id'];
-				//$e = new mb_exception("inspireCatHash: ".$row['inspire_category_code_en'] ." : ". $row['inspire_category_id'] );	
 			}
-			//custom
-			//keywords - as text i custom category - special keywords of geoportal instance defined as keys!
 			$customCatHash = array();
 			$sql = "SELECT custom_category_id, custom_category_key FROM custom_category";
 			$res = db_query($sql);
 			while ($row = db_fetch_array($res)){
 				$customCatHash[$row['custom_category_key']] = (integer)$row['custom_category_id'];
-				//$e = new mb_exception("customCatHash: ".$row['custom_category_key'] ." : ". $row['custom_category_id'] );	
 			}
 			//add namespaces to xml if not given - how? - it is to late now - maybe they were given in the csw tag!
 			//only parse the MD_Metadata part ;-)
@@ -300,7 +284,6 @@ XML;
 			$iso19139Xml->registerXPathNamespace("gco", "http://www.isotc211.org/2005/gco");
 			$iso19139Xml->registerXPathNamespace("gml", "http://www.opengis.net/gml");
 			$iso19139Xml->registerXPathNamespace("srv", "http://www.isotc211.org/2005/srv");
-			//$iso19139Xml->registerXPathNamespace("ogc", "http://www.opengis.net/ogc");
 			$iso19139Xml->registerXPathNamespace("xlink", "http://www.w3.org/1999/xlink");
 			$iso19139Xml->registerXPathNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
 			$iso19139Xml->registerXPathNamespace("default", "");
@@ -339,11 +322,8 @@ XML;
 					$explodedUrl = explode('/', $code[0]);
 					$this->datasetId = $explodedUrl[count($explodedUrl) - 1];
 					$this->datasetIdCodeSpace = rtrim($code[0], $this->datasetId);	
-
-//$e = new mb_exception("datasetId: ".$this->datasetId." - datasetIdCodeSpace: ".$this->datasetIdCodeSpace);
 				} else {
 					if (($parsedUrl['scheme'] == 'http' || $parsedUrl['scheme'] == 'https') && strpos($code[0],'#') !== false) {
-						//$e = new mb_exception($code[0]);
 						$explodedUrl = explode('#', $code[0]);
 						$this->datasetId = $explodedUrl[1];
 						$this->datasetIdCodeSpace = $explodedUrl[0];
@@ -363,30 +343,23 @@ XML;
 					$e = new mb_exception("class_iso19139.php: No datasetId found in metadata record!");
 				}
 			}
-			//try another approach - if datasetId == undefined
-			//swiss model
-			
-			//abstract
 			$this->abstract = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:abstract/gco:CharacterString');
 			$this->abstract = $this->abstract[0];
 			$this->keywords = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gco:CharacterString');
+
 			//get thesaurus name only for found keywords!
 			$iKeyword = 0;
 			foreach ($this->keywords as $keyword) {
 				$thesaurusName = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:descriptiveKeywords[gmd:MD_Keywords/gmd:keyword/gco:CharacterString="'.$keyword.'"]/gmd:MD_Keywords/gmd:thesaurusName/gmd:CI_Citation/gmd:title/gco:CharacterString');
 				$this->keywordsThesaurusName[$iKeyword] = $thesaurusName[0];
-				//$e = new mb_exception("Keyword: ".$keyword);
-				//$e = new mb_exception("Thesaurus: ".$thesaurusName[0]);
 				//check if keyword is inspire thematic key and add it into mapbenders inspire category
 				if (is_int($inspireCatHash[trim($keyword)])) {
 					$this->inspireCategories[] = $inspireCatHash[trim($keyword)];
 				}
 				//check if keyword is a key in mapbenders custom keywords and add it to mapbenders custom categories
 				if (is_int($customCatHash[trim($keyword)])) {
-					//$e = new mb_exception("class_iso19139.php: found entry ".$customCatHash[trim($keyword)]." for custom keyword: ".trim($keyword));
 					$this->customCategories[] = $customCatHash[trim($keyword)];
 				}
-				//default export2Csw to true!
 				$this->export2Csw = 't';
 				//extract special keywords for mapbenders proxy and inspire monitoring
 				switch ($this->keywordsThesaurusName[$iKeyword]) {
@@ -402,7 +375,6 @@ XML;
 						} else {
 							$this->export2Csw = 't';
 						}
-						//$e = new mb_exception("inspireDownload: ".$this->inspireDownload);
 						break;
 					case "mapbender.2.inspireWholeArea":
 						$this->inspireWholeArea = $keyword;
@@ -423,8 +395,6 @@ XML;
 			}
 			$iKeyword = 0;
 			$this->isoCategoryKeys = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:topicCategory/gmd:MD_TopicCategoryCode');
-			//create mapbenders internal category objects
-			//first for topic categories
 			foreach ($this->isoCategoryKeys as $isoKey) {
 				//$e = new mb_exception("class_iso19139.php: look for iso key: ".$isoKey);
 				//test if key is found in hash
@@ -434,47 +404,19 @@ XML;
 					$this->isoCategories[] = $topicCatHash[trim($isoKey)];
 				}
 			}
-			//debug output:
-			/*foreach ($this->isoCategories as $category) {
-				$e = new mb_exception("class_iso19139.php: isocat: ".$category);
-			}
-			foreach ($this->inspireCategories as $category) {
-				$e = new mb_exception("class_iso19139.php: inspirecat: ".$category);
-			}
-			foreach ($this->customCategories as $category) {
-				$e = new mb_exception("class_iso19139.php: customcat: ".$category);
-			}*/
 			$this->downloadLinks = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource[gmd:function/gmd:CI_OnLineFunctionCode/@codeListValue="download"]/gmd:linkage/gmd:URL');
-			//volume of dataset when transfered via online access - in megabyte (real) - see iso19139
-			/*
-			<gmd:transferSize>
-   				<gco:Real>1.0</gco:Real>
-			</gmd:transferSize>
-			*/
 			$this->transferSize = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:transferSize/gco:Real');
 			if (isset($this->transferSize[0]) && $this->transferSize[0] !=='') {
 				$this->transferSize = $this->transferSize[0];
 			} else {
 				$this->transferSize = null;
 			}	
-			//preview image
 			$this->previewImage = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:graphicOverview/gmd:MD_BrowseGraphic/gmd:fileName/gco:CharacterString');
 			if (is_array($this->previewImage) && $this->previewImage[0] !== '') {
 				$this->previewImage = $this->previewImage[0];
 			} else {
 				$this->previewImage = null;
 			}	
-			//$e = new mb_exception("class_iso19139.php: count of downloadlinks: ".count($this->downloadLinks));
-			//$this->downloadLinks = array_values($this->downloadLinks);
-			//$dump = var_export($this->downloadLinks, true);
-			//$e = new mb_exception("type of this->downloadLinks: ".gettype($this->downloadLinks)." - count: ".count($this->downloadLinks)."- obj: - ".$dump);
-			//$this->downloadLinks = (array)$this->downloadLinks[0];
-			//$e = new mb_exception("class_iso19139.php: count of downloadlinks: ".count($this->downloadLinks));
-			//$e = new mb_exception("class_iso19139.php: downloadlinks[0]: ".$this->downloadLinks[0]);
-			/*<gmd:extent><gmd:EX_Extent><gmd:geographicElement><gmd:EX_GeographicBoundingBox><gmd:westBoundLongitude><gco:Decimal>5</gco:Decimal></gmd:westBoundLongitude><gmd:eastBoundLongitude><gco:Decimal>10</gco:Decimal></gmd:eastBoundLongitude><gmd:southBoundLatitude><gco:Decimal>48</gco:Decimal></gmd:southBoundLatitude><gmd:northBoundLatitude><gco:Decimal>52</gco:Decimal></gmd:northBoundLatitude></gmd:EX_GeographicBoundingBox></gmd:geographicElement></gmd:EX_Extent></gmd:extent>*/
-			//esri
-			/*<gmd:extent><gmd:EX_Extent><gmd:geographicElement><gmd:EX_GeographicBoundingBox><gmd:westBoundLongitude><gco:Decimal>11.1414</gco:Decimal></gmd:westBoundLongitude><gmd:eastBoundLongitude><gco:Decimal>11.7284</gco:Decimal></gmd:eastBoundLongitude><gmd:southBoundLatitude><gco:Decimal>58.8838</gco:Decimal></gmd:southBoundLatitude><gmd:northBoundLatitude><gco:Decimal>59.2562</gco:Decimal></gmd:northBoundLatitude></gmd:EX_GeographicBoundingBox></gmd:geographicElement><gmd:temporalElement><gmd:EX_TemporalExtent><gmd:extent><gml:TimePeriod gml:id="idNummer1"><gml:beginPosition>1999-05-05</gml:beginPosition><gml:endPosition>2012-04-04</gml:endPosition></gml:TimePeriod></gmd:extent></gmd:EX_TemporalExtent></gmd:temporalElement></gmd:EX_Extent></gmd:extent>*/
-			//get bbox from xml:
 			$minx = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox/gmd:westBoundLongitude/gco:Decimal');
 			$minx = $minx[0];
 			$miny = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox/gmd:southBoundLatitude/gco:Decimal');
@@ -492,7 +434,6 @@ XML;
 				//count surfaceMembers
 				$this->polygonalExtentExterior = array();
 				$numberOfSurfaces = count($iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_BoundingPolygon/gmd:polygon/gml:MultiSurface/gml:surfaceMember'));
-				//$e = new mb_exception("class_iso19139.php: found multisurface element");
 				for ($k = 0; $k < $numberOfSurfaces; $k++) {
 					$this->polygonalExtentExterior[] = $this->parsePolygon($iso19139Xml, '//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_BoundingPolygon/gmd:polygon/gml:MultiSurface/gml:surfaceMember['. (string)($k + 1) .']/');
 				}
@@ -526,17 +467,6 @@ XML;
 					$this->spatialResType = "scaleDenominator";
 				}
 			}
-			/*
-			if (isset($equivalentScale) && $equivalentScale != "") {
-				$this->spatialResValue = $equivalentScale;
-				$this->spatialResType = "scaleDenominator";
-			} else {
-				if (isset($groundResolution) && $groundResolution != "") {
-					$this->spatialResValue = $groundResolution;
-					$this->spatialResType = "groundDistance";
-				}
-			}*/
-			//ref_system
 			$this->refSystem = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code/gco:CharacterString');
 			$this->refSystem = $this->refSystem[0];
 			//parse codes to get EPSG:XXXXX TODO use other function to support other codes
@@ -556,27 +486,8 @@ XML;
 			        $this->refSystem = "EPSG:".$epsgId;
 				} 
 			}
-			//debug output of keywords:
-			/*$iKeyword = 0;
-			foreach($this->keywords as $keyword) {  
-				$e = new mb_exception("Keyword: ".$keyword." - Thesaurus: ".$this->keywordsThesaurusName[$iKeyword]);
-				$iKeyword++;
-			}
-			$iKeyword = 0;*/
-			//format
-			//lineage
 			$this->lineage = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:statement/gco:CharacterString');
 			$this->lineage = $this->lineage[0];
-			//inspire_charset
-			//inspire_top_consistence
-			//inspire_interoperability
-			//$e = new mb_exception(json_encode($this->inspireLegislation));
-			//$e = new mb_exception($this->inspireLegislation[0]->label->de);
-			//if dataset and ir is defined in the conformance declaration!
-			
-			//responsible_party
-			//fees
-			//"constraints"
 			//extract standardized licenses from constraints (see http://www.geoportal.de/SharedDocs/Downloads/DE/GDI-DE/Architektur_GDI_DE-Konventionen_%20Metadaten.pdf?__blob=publicationFile)
 			$restrictionCodeAttributeValue = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo//gmd:resourceConstraints/gmd:MD_LegalConstraints/gmd:useConstraints/gmd:MD_RestrictionCode/@codeListValue');
 			$first = $restrictionCodeAttributeValue[0];
@@ -593,17 +504,16 @@ XML;
 						//Look for source
 						$this->licenseSourceNote = $standardizedLicense->quelle;
 						$this->licenseJson = stripslashes($otherConstraint);
-						//$e = new mb_exception("class_iso19139.php: licenseSourceNote: ".$this->licenseSourceNote);
 					} else {
 						$otherConstraintsFreeText .= $otherConstraint.";";
 					}
 				} 
 				$this->fees = rtrim($otherConstraintsFreeText, ';');
 			}
-			$e = new mb_notice("class_iso19139.php: licenseSourceNote: ".$this->licenseSourceNote." - fees: ".$this->fees);		
+			$e = new mb_notice("class_iso19139.php: licenseSourceNote: ".$this->licenseSourceNote." - fees: ".$this->fees);	
+
 			$accessConstraints = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo//gmd:resourceConstraints/gmd:MD_LegalConstraints[gmd:accessConstraints/gmd:MD_RestrictionCode/@codeListValue="otherRestrictions"]/gmd:otherConstraints/gco:CharacterString');
 			$this->accessConstraints = $accessConstraints[0];
-			//$e = new mb_exception("accessConstraints: ".$accessConstraints[0]);
 			$this->resourceResponsibleParty = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:pointOfContact/gmd:CI_ResponsibleParty/gmd:organisationName/gco:CharacterString');
 			$this->resourceResponsibleParty = $this->resourceResponsibleParty[0];
 			$this->resourceContactEmail = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:pointOfContact/gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:CI_Contact/gmd:address/gmd:CI_Address/gmd:electronicMailAddress/gco:CharacterString');
@@ -682,12 +592,7 @@ XML;
 				break;
 			}
 		}
-		//qualify keywords 
 		$this->keywords = array_unique($this->keywords);
-		/*if (count($this->{$objectPrefix."Categories"}) && $this->{$objectPrefix."Categories"}[0] == 0) {
-			$this->{$objectPrefix."Categories"} = array();
-		}*/
-		//qualify date date/time fields
 		$dateFields = array("createDate", "changeDate", "tmpExtentBegin", "tmpExtentEnd");
 		foreach ($dateFields as $dateField) {
 			$valueToCheck = $this->{$dateField};
@@ -704,10 +609,8 @@ XML;
 
 	public function parsePolygon($iso19139Xml, $pathToPolygon) {
 		$polygonalExtentExterior = array();		
-		// //gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_BoundingPolygon/gmd:polygon/
-		// or //gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_BoundingPolygon/gmd:polygon/gml:MultiSurface/surfaceMember[1]/
 		if ($iso19139Xml->xpath($pathToPolygon.'gml:Polygon/gml:exterior/gml:LinearRing/gml:posList')) {
-		//read posList
+			//read posList
 			$exteriorRingPoints = $iso19139Xml->xpath($pathToPolygon.'gml:Polygon/gml:exterior/gml:LinearRing/gml:posList');
 			if (count($exteriorRingPoints) > 0) {
 				//poslist is only space separated
@@ -838,16 +741,11 @@ XML;
 					}
 					$iso19139Hash[$a]['value'] = ltrim($iso19139Hash[$a]['value'],',');
 				} else {
-					/*if (is_array($resultOfXpath)) {
-						$iso19139Hash[$a]['value'] = $resultOfXpath[0];
-					} else {*/
 						$iso19139Hash[$a]['value'] = $resultOfXpath;
-					//}
 				}
 			}
 			//generate html
 			$html = '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml" xmlns:dcat="http://www.w3.org/ns/dcat#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dctype="http://purl.org/dc/dcmitype/" xmlns:foaf="http://xmlns.com/foaf/0.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:vcard="http://www.w3.org/2006/vcard/ns#" xml:lang="'.$languageCode.'">';
-
 			$metadataStr .= '<head>' . 
 				'<title>'._mb("Metadata").'</title>' . 
 				'<meta name="description" content="'._mb("Metadata").'" xml:lang="'.$languageCode.'" />'.
@@ -863,7 +761,6 @@ XML;
 				'</head>';
 			$html .= $metadataStr;
 			$html .= '<body>';
-			//define the javascripts to include
 			$html .= '<link type="text/css" href="../css/metadata_responsiv.css" rel="Stylesheet" />';
 			//define main vocabulary
 			switch ($iso19139Hash[3]['value']) {
@@ -878,7 +775,6 @@ XML;
 			$publisherOrganizationCategory = 'property="publisher" typeof="Organization"';
 			$producerOrganizationCategory = 'property="producer" typeof="Organization"';
 
-
 			switch ($layout) {
 				case "tabs":
 					$html .= '<link type="text/css" href="../extensions/jquery-ui-1.8.1.custom/css/custom-theme/jquery-ui-1.8.5.custom.css" rel="Stylesheet" />';	
@@ -892,7 +788,7 @@ XML;
 					$html .= '</script>';
 					//independently define the headers of the parts
 					//window close button top
-                                	$html .= '<div style="padding:10px;display:block;text-align:center;"><a href="javascript:window.close()">'._mb("Close window").'</a></div>';
+                    $html .= '<div style="padding:10px;display:block;text-align:center;"><a href="javascript:window.close()">'._mb("Close window").'</a></div>';
 					$html .= '<div class="demo">';
 					$html .= '<div '.$mainVocabReference.' id="tabs">';
 					$html .= '<ul>';
@@ -912,18 +808,16 @@ XML;
 					$html .= '<script type="text/javascript">';
 					$html .= '	$(function() {';
 					$html .= '		$("#accordion").accordion();';
-					//$html .= '		$("#accordion").accordion({ autoHeight: false});';
-					//$html .= '		$("#accordion").accordion({ autoHeight: false , clearStyle: true });';
 					$html .= '	});';
 					$html .= '	</script>';
 					//window close button top
-                               	 	$html .= '<div style="padding:10px;display:block;text-align:center;"><a href="javascript:window.close()">'._mb("Close window").'</a></div>';
+                    $html .= '<div style="padding:10px;display:block;text-align:center;"><a href="javascript:window.close()">'._mb("Close window").'</a></div>';
 					$html .= '<div class="demo">';
 					$html .= '<div '.$mainVocabReference.' id="accordion">';
 					break;
 				case "plain":
 					//window close button top
-                                	$html .= '<div style="padding:10px;display:block;text-align:center;"><a href="javascript:window.close()">'._mb("Close window").'</a></div>';
+                    $html .= '<div style="padding:10px;display:block;text-align:center;"><a href="javascript:window.close()">'._mb("Close window").'</a></div>';
 					$html .= '<div class="demo">';
 					$html .= '<div '.$mainVocabReference.' id="plain">';
 					break;
@@ -955,10 +849,8 @@ XML;
 					$html .= '<div>';
 					break;
 			}
-			//$html .= '<p>';
 			$html .= '<fieldset><legend>'._mb("Metadata").'</legend>';
 			$html .= $tableBegin;
-			#$html .= $t_a."<b>".$iso19139Hash[0]['html']."</b>: ".$t_b.'<p property="'.$iso19139Hash[0]['property'].'" datatype="'.$iso19139Hash[0]['datatype'].'" content="'.$iso19139Hash[0]['value'].'">'.$iso19139Hash[0]['value']."</p>".$t_c;
 			$hashIndices = array(0, 31 ,32);
 			foreach ($hashIndices as $index) {
 				$html .= $this->getHtmlRow($t_a, $t_b, $t_c, $iso19139Hash, $index);
@@ -990,15 +882,10 @@ XML;
 					$html .= $this->getHtmlRow($t_a, $t_b, $t_c, $iso19139Hash, $index);
 				}
 			}
-			/*$hashIndices = array(26, 27); //orga name, email
-			foreach ($hashIndices as $index) {
-				$html .= $this->getHtmlRow($t_a, $t_b, $t_c, $iso19139Hash, $index);
-			}*/
 			$html .= $tableEnd;
 			$html .= '</fieldset>';
 		
 			$bbox = explode(',',$iso19139Hash[12]['value']);
-
 			if (count($bbox) == 4) {
 				$wgs84Bbox = $bbox[0].",".$bbox[2].",".$bbox[1].",".$bbox[3];
 				$getMapUrl = $this->getExtentGraphic(explode(",", $wgs84Bbox));
@@ -1010,6 +897,7 @@ XML;
 				}
 				$html .= '</fieldset>';	
 			}
+
 			$html .= '<fieldset '.$producerOrganizationCategory.'><legend>'._mb("Contact").'</legend>';
 			$html .= $tableBegin;
 			$hashIndices = array(26, 27); //orga name, email
@@ -1018,8 +906,8 @@ XML;
 			}
 			$html .= $tableEnd;
 			$html .= '</fieldset>';
-			//$html .= '</p>';
-			$html .= '</div>';//element
+			$html .= '</div>';
+
 			//***************************************************************************
 			//**************************properties part begin******************************
 			//generate div tags for the content - the divs are defined in the array
@@ -1039,7 +927,6 @@ XML;
 					$html .= '<div>';
 					break;
 			}
-			//$html .= '<p>';
 			$html .= '<fieldset><legend>'._mb("Common").'</legend>';
 			$html .= $tableBegin;
 			$hashIndices = array(8, 9, 11);
@@ -1084,8 +971,8 @@ XML;
 				$html .= $tableEnd;
 				$html .= '</fieldset>';
 			}
-			//$html .= '</p>';
-			$html .= '</div>';//element
+			$html .= '</div>';
+
 			//***************************************************************************
 			//**************************contact part begin******************************
 			//generate div tags for the content - the divs are defined in the array
@@ -1105,7 +992,6 @@ XML;
 					$html .= '<div '.$offersOfferCategory.'>';
 					break;
 			}
-			//$html .= '<p>';
 			$html .= '<fieldset '.$providerOrganizationCategory.'><legend>'._mb("Data/Service provider").'</legend>';
 			$html .= $tableBegin;
 			$hashIndices = array(26, 28, 27);
@@ -1122,8 +1008,8 @@ XML;
 			}
 			$html .= $tableEnd;
 			$html .= '</fieldset>';
-			//$html .= '</p>';
-			$html .= '</div>';//element
+			$html .= '</div>';
+
 			//***************************************************************************
 			//**************************terms of use part begin******************************
 			//generate div tags for the content - the divs are defined in the array
@@ -1143,7 +1029,6 @@ XML;
 					$html .= '<div>';
 					break;
 			}
-			//$html .= '<p>';
 			$html .= '<fieldset><legend>'._mb("Conditions").'</legend>';
 			$html .= $tableBegin;
 			$html .= $this->getHtmlRow($t_a, $t_b, $t_c, $iso19139Hash, 23);
@@ -1157,8 +1042,8 @@ XML;
 			}
 			$html .= $tableEnd;
 			$html .= '</fieldset>';
-			//$html .= '</p>';
-			$html .= '</div>';//element
+			$html .= '</div>';
+
 			//***************************************************************************
 			//**************************quality part begin******************************
 			//generate div tags for the content - the divs are defined in the array
@@ -1178,7 +1063,6 @@ XML;
 					$html .= '<div>';
 					break;
 			}
-			//$html .= '<p>';
 			if ($iso19139Hash[3]['value'] == 'dataset' || $iso19139Hash[3]['value'] == 'series') {
 				$html .= '<fieldset><legend>'._mb("Lineage").'</legend>';
 				$html .= $tableBegin;
@@ -1202,8 +1086,8 @@ XML;
 			}
 			$html .= $tableEnd;
 			$html .= '</fieldset>';
-			//$html .= '</p>';
-			$html .= '</div>';//element
+			$html .= '</div>';
+
 			//***************************************************************************
 			//**************************Interfaces part begin******************************
 			//generate div tags for the content - the divs are defined in the array
@@ -1223,17 +1107,13 @@ XML;
 					$html .= '<div>';
 					break;
 			}
-			//$html .= '<p>';
 			$html .= '<fieldset><legend>'._mb("Online access").'</legend>';
 			$html .= $tableBegin;
 			$html .= $t_a."<b>".$iso19139Hash[4]['html']."</b>: ".$t_b."<a property=\"url\" href='".$iso19139Hash[4]['value']."' target='_blank'>".$iso19139Hash[4]['value']."</a>".$t_c;
 			if ($iso19139Hash[3]['value'] == 'service' && $iso19139Hash[10]['value'] == 'download') {
-					//show link to own atom feed download client
-					//push ATOM Service feed url to client	
 					if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != '' && parse_url($iso19139Hash[4]['value'])) {	
 						$html .= $t_a."<b>"._mb("ATOM Feed client")."</b>: ".$t_b."<a href='".MAPBENDER_PATH."/plugins/mb_downloadFeedClient.php?url=".urlencode($iso19139Hash[4]['value'])."' target='_blank'>"._mb("Download")."</a>".$t_c;
 					}
-					
 			}
 			$html .= $tableEnd;
 			$html .= '</fieldset>';
@@ -1243,8 +1123,6 @@ XML;
 			//$queryNew = str_replace("mdtype=html","mdtype=iso19139",$_SERVER['QUERY_STRING']);
 			$html .= $t_a."<b>"._mb("ISO19139")."</b>: ".$t_b."<a href='".$_SERVER['PHP_SELF']."/../../php/mod_exportIso19139.php?".$_SERVER['QUERY_STRING']."&outputFormat=iso19139"."' target='_blank'>"._mb("Metadata")."</a>".$t_c;
 			$html .= $t_a."<b>"._mb("RDF")."</b>: ".$t_b."<a href='".$_SERVER['PHP_SELF']."/../../php/mod_exportIso19139.php?".$_SERVER['QUERY_STRING']."&outputFormat=rdf"."' target='_blank'>"._mb("Geo-DCAT Metadata")."</a>".$t_c;
-			//<a href='".$_SERVER['PHP_SELF']."?".$queryNew."&validate=true' target='_blank'><img style='border: none;' src = '../img/misc/icn_inspire_validate.png' title='"._mb("INSPIRE Validator")."'></a>
-			//push xml instead of html? But there is no real url
 			$html .= $tableEnd;
 			$html .= '</fieldset>';
 			if (count($serviceInformation->service) > 0) {
@@ -1257,7 +1135,6 @@ XML;
 				$html .= $tableEnd;
 				$html .= '</fieldset>';
 			}
-			//$html .= '</p>';
 			$html .= '</div>';//foreach upper category element
 			//***************************************************************************
 			switch ($layout) {
@@ -1299,12 +1176,8 @@ XML;
 						if ($licenseFound == false) {
 							if (json_decode(stripslashes($otherConstraint)) != NULL) {
 								$licenseFound = true;
-								//parse json
 								$standardizedLicense = json_decode(stripslashes($otherConstraint));
-								//Look for source
 								$URL = $standardizedLicense->url;
-								//$this->licenseJson = stripslashes($otherConstraint);
-								//$e = new mb_exception("class_iso19139.php: licenseSourceNote: ".$this->licenseSourceNote);
 							} else {
 								$URL = "No license url found or json not valid!";
 							}
@@ -1330,12 +1203,6 @@ XML;
 				$stringToReturn .= ' href="'.$iso19139Hash[$isoHashIndex]['value'].'"';
 			}
 		}
-		/*if (isset($iso19139Hash[$isoHashIndex]['content'])) {
-			$stringToReturn .= ' content="'.$iso19139Hash[$isoHashIndex]['content'].'"';
-		}
-		if (isset($iso19139Hash[$isoHashIndex]['datatype'])) {
-			$stringToReturn .= ' datatype="'.$iso19139Hash[$isoHashIndex]['datatype'].'"';
-		}*/
 		$stringToReturn .= ">".$iso19139Hash[$isoHashIndex]['value']."</span>".$t_c;
 		return $stringToReturn;
 	}
@@ -1402,21 +1269,13 @@ XML;
 			$this->createDate =  $row['createdate'];//"1900-01-01";
 			$this->changeDate = $row['changedate'];//"1900-01-01";
 			$this->metadata = $row['data'];
-			//some possibilities:
 			$this->datasetId = $row['datasetid'];
 			$this->datasetIdCodeSpace = $row['datasetid_codespace'];
 			if (isset($row['bbox2d']) && $row['bbox2d'] != '') {
 				$bbox = $row['bbox2d'];
-				//$e = new mb_exception("class_iso19139.php: got bbox for metadata: ".$bbox);
 				$this->wgs84Bbox = explode(',',$bbox);
 			}
 			if (isset($row['bounding_polygon']) && $row['bounding_polygon'] != '') {
-				//extract coordinates from gml
-				//push them into array
-				//store them in object
-				//$bbox = str_replace(' ',',',str_replace(')','',str_replace('BOX(','',$row['bbox2d'])));
-				//$e = new mb_exception("class_iso19139.php: got bbox for metadata: ".$bbox);
-				
 				$gml3FromPostgis = "<?xml version=\"1.0\" encoding=\"utf-8\" ?>".$row['bounding_polygon'];
 				libxml_use_internal_errors(true);
 				try {
@@ -1458,22 +1317,13 @@ XML;
 					}
 				}
 			}
-			//fill keywords and categories later cause they are stored in relations!
-			/*$this->keywords = array();
-			$this->keywordsThesaurusName = array();
-			$this->isoCategoryKeys = array();
-			//following information is specific to mapbender information model - they are identified by id!
-			$this->isoCategories = array();
-			$this->inspireCategories = array();
-			$this->customCategories = array();
-			//*/
 
 			$this->hierarchyLevel = $row['type'];
 			$this->tmpExtentBegin = $row['tmp_reference_1'];//"1900-01-01";
 			$this->tmpExtentEnd = $row['tmp_reference_2'];//"1900-01-01";
 			$this->randomId =  $row['randomid'];
 			$this->owner = $row['fkey_mb_user_id']; //dummy entry for metadata owner - in case of metadataURL entries the owner of the corresponding service
-                        $this->fkey_mb_group_id = $row['fkey_mb_group_id']; //entry for organization for which this metadata should be published - overwrites metadata point of contact - in case of inheritance by metadata proxy!
+            $this->fkey_mb_group_id = $row['fkey_mb_group_id']; //entry for organization for which this metadata should be published - overwrites metadata point of contact - in case of inheritance by metadata proxy!
 			$this->href = $row['link'];// "";
 			$this->format = $row['md_format'];//"";
 			$this->type = $row['linktype'];//"";
@@ -1496,12 +1346,7 @@ XML;
 			$this->inspireDownload = $row['inspire_download'];//"";
 			$this->fees = $row['fees'];
 			$this->accessConstraints = $row['constraints'];
-			//$test = print_r($row['datalinks'],true);
-			//$e = new mb_exception((string)$test);
 			$this->downloadLinks  = $this->jsonDecodeDownloadLinks($row['datalinks']);
-			//$e = new mb_exception($this->downloadLinks[0]);
-			//$this->linkAlreadyInDB = false;
-			//$this->fileIdentifierAlreadyInDB = false;
 			$this->licenseSourceNote = $row['md_license_source_note'];
 			$this->resourceResponsibleParty = $row['responsible_party_name'];
 			$this->resourceContactEmail = $row['responsible_party_email'];
@@ -1509,6 +1354,7 @@ XML;
 			$this->fkeyGuiId = $row['fkey_gui_id'];
 			$this->fkeyWmcSerialId = $row['fkey_wmc_serial_id'];
 			$this->fkeyMapviewerId = $row['fkey_mapviewer_id'];
+			
 			//get relations from other tables:
 			//get categories and keywords
 			//get isoCategories
@@ -1572,7 +1418,6 @@ SQL;
 			$v = array($metadataId);
 			$t = array('i');
 			$res = db_prep_query($sql,$v,$t);
-			//pull first entry
 			$row = db_fetch_assoc($res);
 			$this->termsOfUseRef = $row['fkey_termsofuse_id'];
 			if ($this->termsOfUseRef == null) {
@@ -1584,7 +1429,6 @@ SQL;
 			$e = new mb_exception("Could not get metadata with id ".$metadataId." from DB!");
 		return false;
 		}
-		//$this->qualifyMetadata();
 		return true;
 	}
 
@@ -1612,21 +1456,6 @@ SQL;
 			return true;
 		}
 	}
-
-	/*public function insertMetadataRelation($resourceType, $resourceId, $relationType){
-		//delete all relations which are defined from capabilities - this don't delete the metadata entries themself!
-		//all other relations stay alive
-		$sql = "DELETE FROM ows_relation_metadata WHERE fkey_".$resourceType."_id = $1 AND relation_type = '".$relationType."'";
-		$v = array($resourceId);
-		$t = array('i');
-		$res = db_prep_query($sql,$v,$t);
-		if(!$res){
-			$e = new mb_exception("class_Iso19139:"."Cannot delete metadata relations for resource ".$resourceType." with id: ".$resourceId);
-			return false;
-		} else {
-			return true;
-		}
-	}*/
 
 	public function checkMetadataRelation($resourceType, $resourceId, $metadataId, $origin){
 		if ($resourceType !== 'metadata') {
@@ -1668,9 +1497,7 @@ SQL;
 			$returnObject['message'] = _mb("Could not insert internal metadatalink into database!");
 			return $returnObject;	
 		}
-		//bequeath categories from coupled resources
 		$this->bequeathCategoriesToCoupledResource($metadataId,$resourceType,$resourceId);
-		//$e = new mb_exception("iso19139.php: bequeathed categories to ".$resourceType." : ".$resourceId);
 		$returnObject['success'] = true;
 		$returnObject['message'] = _mb("Internal metadata linkage inserted!");
 		return $returnObject;	
@@ -1690,7 +1517,6 @@ SQL;
 			$returnObject['message'] = _mb("Could not delete internal metadata linkage from database!");
 			return $returnObject;	
 		}
-		//delete categories from coupled resources
 		$this->deleteCategoriesFromCoupledResource($metadataId,$resourceType,$resourceId);
 		$returnObject['success'] = true;
 		$returnObject['message'] = _mb("Internal metadata linkage deleted!");
@@ -1713,11 +1539,10 @@ SQL;
 			return $returnObject;	
 		}
 		while ($row = db_fetch_assoc($res)) {
-			$countMetadataLinkage = (integer)$row['count']; //integer
+			$countMetadataLinkage = (integer)$row['count'];
 		}
 		if ($countMetadataLinkage == 1) {
 			$e = new mb_exception("Metadata has only one reference and will be deleted from database if it was created by upload or link!");
-			//delete the metadata itself cause it has no other reference - really - not right for metador files !!! 
 			$sql = <<<SQL
 
 DELETE FROM mb_metadata WHERE metadata_id = $1 and origin NOT IN ('metador')
@@ -1745,7 +1570,6 @@ SQL;
 				$returnObject['message'] = _mb("Could not delete internal metadata linkage from database!");
 				return $returnObject;	
 			}
-			//delete categories from coupled resources
 			$this->deleteCategoriesFromCoupledResource($metadataId,$resourceType,$resourceId);
 			$returnObject['success'] = true;
 			$returnObject['message'] = _mb("Metadata and/or linkage was deleted from database!");
@@ -1763,7 +1587,6 @@ SQL;
 				$returnObject['message'] = _mb("Could not delete metadata linkage from database!");
 				return $returnObject;
 			}
-			//delete categories from coupled resources
 			$this->deleteCategoriesFromCoupledResource($metadataId,$resourceType,$resourceId);
 			$returnObject['success'] = true;
 			$returnObject['message'] = _mb("Metadata linkage deleted!");
@@ -1854,12 +1677,10 @@ SQL;
 				$postGisPolygon .= "))";
 			}
 		}
-		//$e = new mb_exception("class_Iso19139.php: wkt: ".$postGisPolygon);
 		return $postGisPolygon;
 	}
 
 	public function inheritContactAndLicenceInformation($metadataId,$resourceType,$resourceId,$inheritContactInfo,$inheritLicenceInfo){
-		//$e = new mb_exception("class_iso19139.php: inherit function invoked!");
 		if ($inheritContactInfo == true || $inheritLicenceInfo == true) {
 			//get info from coupled service
 			switch ($resourceType) {
@@ -1877,13 +1698,11 @@ SQL;
 				$fkey_termsofuse_id = $row['fkey_termsofuse_id'];
 				$service_source_note = $row['service_source_note'];
 			}
-			//regexpr for strings which represents integer
 			$regExprInt = "/^[0-9]+$/";
 		}
 		if ($inheritContactInfo == true && preg_match($regExprInt,$fkey_mb_group_id)) {
 			$sqlInheritContact = "UPDATE mb_metadata SET fkey_mb_group_id = $fkey_mb_group_id WHERE metadata_id = $metadataId";
 			$res = db_query($sqlInheritContact);
-			//$e = new mb_exception("Metadata with id ".$metadataId." inherits contact information from ".$resourceType." with resourceId ".$resourceId);
 		}
 		if ($inheritLicenceInfo == true && preg_match($regExprInt,$fkey_termsofuse_id)) {
 			try {
@@ -1898,7 +1717,6 @@ SQL;
 				$t = array('s', 'i');
 				$v = array($service_source_note, $metadataId);
 				$res = db_prep_query($sqlUpdateSourceNote,$v,$t);
-				//$e = new mb_exception("Metadata with id ".$metadataId." inherits licence information from ".$resourceType." with resourceId ".$resourceId);
 			}
 			catch (Exception $e) {
 				$exception = new mb_exception($e->getMessage());
@@ -1908,17 +1726,8 @@ SQL;
 
 	public function insertKeywordsAndCategoriesIntoDB($metadataId,$resourceType,$resourceId){
 		//first delete old classifications - after that create new ones
-		//$e = new mb_exception($metadataId." - ".$resourceType." - ".$resourceId);	
 		$this->deleteKeywordsAndCategoriesFromDB($metadataId,$resourceType,$resourceId);
-		//insert keywords and categories into tables!
-		//parse keywords and isoCategories
-		//INSERT INTO films (code, title, did, date_prod, kind) VALUES
-    		//('B6717', 'Tampopo', 110, '1985-02-10', 'Comedy'),
-    		//('HG120', 'The Dinner Game', 140, DEFAULT, 'Comedy');
-		//use category name instead of id's!
-		//map category name to id before insert them into db!
-		//read maptable from db
-		//iso - code in xml
+		
 		if ($resourceType == "wms" || $resourceType == "wfs" || $resourceType == "inspire_dls_atom" || $resourceType == "inspire_dls_atom_dataset") {
 			return false;
 		}
@@ -1957,7 +1766,6 @@ SQL;
 				}
 			}
 			$sqlInsert = rtrim($sqlInsert,",");
-			//$e = new mb_exception("class_Iso19139: insert topic categories: ".$sqlInsert);
 			$sql = "INSERT INTO mb_metadata_md_topic_category (fkey_metadata_id, fkey_md_topic_category_id) VALUES ".$sqlInsert;
 			$res = db_query($sql);
 			if (!$res) {
@@ -1975,7 +1783,6 @@ SQL;
 			}
 			$sqlInsert = rtrim($sqlInsert,",");
 			$sql = "INSERT INTO mb_metadata_inspire_category (fkey_metadata_id, fkey_inspire_category_id) VALUES ".$sqlInsert;
-			//$e = new mb_exception("class_Iso19139: insert inspire categories: ".$sqlInsert);
 			$res = db_query($sql);
 			if (!$res) {
 				$e = new mb_exception("class_Iso19139:"._mb("Cannot insert inspire categories for this metadata!"));
@@ -1992,7 +1799,6 @@ SQL;
 			}	
 			$sqlInsert = rtrim($sqlInsert,",");
 			$sql = "INSERT INTO mb_metadata_custom_category (fkey_metadata_id, fkey_custom_category_id) VALUES ".$sqlInsert;
-			//$e = new mb_exception("class_Iso19139: insert custom categories: ".$sqlInsert);
 			$res = db_query($sql);
 			if (!$res) {
 				$e = new mb_exception("class_Iso19139:"._mb("Cannot insert custom categories for this metadata!"));
@@ -2022,10 +1828,7 @@ SQL;
 				$countExistingKeywords++;
 			}
 		}
-		/*foreach ($existingKeywords as $test) {
-			$e = new mb_exception("exists: ".$test['keyword']);
-		}*/
-		//for each existing keyword add a new relation into relation table
+
 		if ($countExistingKeywords > 0) {
 			if ($countexistingKeywords == 1) {
 				$sqlInsert .= "(".(integer)$metadataId.",".(integer)$existingKeywords[0]['id'].")";
@@ -2036,7 +1839,6 @@ SQL;
 			}	
 			$sqlInsert = rtrim($sqlInsert,",");
 			$sql = "INSERT INTO mb_metadata_keyword (fkey_metadata_id, fkey_keyword_id) VALUES ".$sqlInsert;
-			//$e = new mb_exception("class_Iso19139.php: sql for keywords: ".$sql);
 			$res = db_query($sql);
 			if (!$res) {
 				$e = new mb_exception("class_Iso19139:"._mb("Cannot insert keyword relations for this metadata!"));
@@ -2044,28 +1846,12 @@ SQL;
 				$e = new mb_notice("class_Iso19139:"._mb("Inserted keyword relations for existing keywords!"));
 			}
 		}
-		//insert those keywords, that are not already in the keyword table
-		//$this->keywords
-		/*$array1 = array("a" => "grün", "rot", "blau", "rot");
-		$array2 = array("b" => "grün", "gelb", "rot");
-		$result = array_diff($array1, $array2);
-		Array
-			(
-			    [1] => blau
-			)
-		*/
 		$sqlInsert = "";
-		//test if $existingKeywordsArray is array!
 		if (is_array($existingKeywordsArray)) {
 			$otherKeywords = array_values(array_diff($this->keywords,$existingKeywordsArray));
 		} else {
 			$otherKeywords = $this->keywords;
 		} 
-		//debug
-		/*foreach ($otherKeywords as $test) {
-			$e = new mb_exception("otherKeywords: ".$test);
-		}
-		$e = new mb_exception("otherKeywords: ".$otherKeywords);*/
 		if (count($otherKeywords) > 0) {
 			if (count($otherKeywords) == 1) {
 				//$e = new mb_exception("Only one new keyword found: ".$otherKeywords[0]);
@@ -2078,7 +1864,6 @@ SQL;
 			}	
 			$sqlInsert = rtrim($sqlInsert,",");
 			$sql = "INSERT INTO keyword (keyword) VALUES ".$sqlInsert." RETURNING keyword_id" ;
-			//$e = new mb_exception("class_Iso19139.php: sql for keywords: ".$sql);
 			$res = db_query($sql);
 			if (!$res) {
 				$e = new mb_notice("class_Iso19139:"._mb("Cannot insert new keywords into keyword table - will insert only new relations!"));
@@ -2099,13 +1884,13 @@ SQL;
 				}	
 				$sqlInsert = rtrim($sqlInsert,",");
 				$sql = "INSERT INTO mb_metadata_keyword (fkey_metadata_id, fkey_keyword_id) VALUES ".$sqlInsert;
-				//$e = new mb_notice("class_Iso19139.php: sql for keyword relation: ".$sql);
 				$res = db_query($sql);
 				if (!$res) {
 					$e = new mb_exception("class_Iso19139:"._mb("Cannot insert metadata keyword relations into db!"));
 				}
 			}
 		}
+
 		//handle licenses as relations
 		//delete relations from database
 		//recreate relation to license
@@ -2158,7 +1943,6 @@ SQL;
 				}
 			}	
 		}
-		//$e = new mb_exception("iso19139 license id: ".$this->termsOfUseRef);
 		if ($licenseId !== null) {
 			$sql = <<<SQL
 			INSERT INTO md_termsofuse (fkey_termsofuse_id, fkey_metadata_id) VALUES ($1, $2);
@@ -2172,7 +1956,6 @@ SQL;
 		} else {
 			$e = new mb_notice("classes/class_Iso19139.php: license id is null!");
 		}
-		
 	}
 
 	public function deleteCategoriesFromCoupledResource($metadataId,$resourceType,$resourceId) {
@@ -2229,12 +2012,10 @@ SQL;
 				} else {
 					foreach ($this->{$objectPrefix."Categories"} as ${$objectPrefix."Category"}) {
 						$sqlInsertCoupledResource .= "(".(integer)$metadataId.",".(integer)${$objectPrefix."Category"}.",".$resourceId."),";
-					
 					}
 				}	
 				$sqlInsertCoupledResource = rtrim($sqlInsertCoupledResource,",");
 				$sqlCoupledResource = "INSERT INTO ".$tablePrefix."_{$cat}_category (fkey_metadata_id, fkey_{$cat}_category_id, fkey_".$resourceType."_id) VALUES ".$sqlInsertCoupledResource;
-				//$e = new mb_exception("class_Iso19139: sql to bequeath categories: ".$sqlCoupledResource);
 				$res = db_query($sqlCoupledResource);
 				if (!$res) {
 					$e = new mb_exception("class_Iso19139:"._mb("Cannot insert $cat categories to coupled resource!"));
@@ -2351,10 +2132,6 @@ SQL;
 			$this->fkeyWmcSerialId,
 			$this->fkeyMapviewerId
 		);
-			//$e = new mb_exception($this->tmpExtentBegin);
-			//$e = new mb_exception($this->tmpExtentEnd);
-			//$e = new mb_exception($this->createDate);
-			//$e = new mb_exception($this->changeDate);
 			$t = array('s','s','s','s','s','s','s','s','s','s','s','s','s','b','s','s','s','s','i','i','s','s','b','s','s','s','s','s','s','POLYGON','s','s','s','i','POLYGON','d','s','s','s','s','s','s','i','b','b','b','i','i','i');
 			$res = db_prep_query($sql,$v,$t);
 			return $res;
@@ -2363,8 +2140,6 @@ SQL;
 	private function jsonEncodeDownloadLinks($dlArray) {
 		$dummy = new stdClass();
 		//TODO - check array conversion of json_encode under php > 5.4
-		//$dummy->downloadLinks = (string)$dlArray[0];
-		//return json_encode($dummy, JSON_FORCE_OBJECT);
 		$json = '{"downloadLinks":[';
 		$i = 0;
 		//TODO solve the php 5.4 json_encode array problem
@@ -2394,14 +2169,12 @@ SQL;
 	//TODO - maybe we will encode more things than only the url ;-)
 	private function jsonDecodeDownloadLinks($dlJson) {
 		$downloadLinks = json_decode($dlJson);
-		//new for php 5.4
 		$dlArray = array();
 		$i = 0;
 		foreach ($downloadLinks->downloadLinks as $downloadLink) {
 			$dlArray[] = urldecode($downloadLink->{$i});
 			$i++;
 		}
-		//$dummy = $dummy->downloadLinks;
 		return $dlArray;
 	}
 
@@ -2416,8 +2189,6 @@ SQL;
 		    $sql .= "abstract = $9, searchtext = $10, type = $11, tmp_reference_1 = $12, tmp_reference_2 = $13, export2csw = $14, datasetid = $15, ";
 		    $sql .= "datasetid_codespace = $16, randomid = $17, harvestresult = $20, harvestexception = $21, lineage = $22, inspire_top_consistence = $23, ";
 		    $sql .= "spatial_res_type = $24, spatial_res_value = $25, update_frequency = $26, format = $27, inspire_charset = $28, ref_system = $29, the_geom = $30, datalinks = $31, inspire_whole_area = $32, inspire_actual_coverage = $33, inspire_download = $34, bounding_geom = $35, transfer_size = $36, fees = $37, md_license_source_note = $38, constraints = $39, responsible_party_name = $40, responsible_party_email = $41, preview_image = $42, fkey_mb_group_id = $43, md_proxy = $44, inspire_interoperability = $45, searchable = $46, fkey_gui_id = $47, fkey_wmc_serial_id = $48, fkey_mapviewer_id = $49 WHERE metadata_id = $19";
-		    //$e= new mb_exception("class_iso19139.php: downloadLinks json".$this->jsonEncodeDownloadLinks($this->downloadLinks));
-		    //$e= new mb_exception("class_iso19139.php: downloadLinks[0]".$this->downloadLinks[0]);
 		    $v = array(
 			$this->href,
 			$this->format,
@@ -2437,7 +2208,6 @@ SQL;
 			$this->datasetIdCodeSpace,
 			$this->randomId,
 			$this->origin,
-			//$this->owner, //owner is the old one - maybe here we have something TODO!
 			$metadataId, //The first metadataId which was found will be selected!
 			$this->harvestResult,
 			$this->harvestException,
@@ -2470,7 +2240,6 @@ SQL;
 			$this->fkeyWmcSerialId,
 			$this->fkeyMapviewerId
 		    );
-		    //$e = new mb_exception("class_iso19139: ".$this->createWktBboxFromArray($this->wgs84Bbox));
 		    $t = array('s','s','s','s','s','s','s','s','s','s','s','s','s','b','s','s','s','s','i','i','s','s','b','s','s','s','s','s','s','POLYGON','s','s','s','i','POLYGON','d','s','s','s','s','s','s','i','b','b','b','i','i','i');
 		    $res = db_prep_query($sql,$v,$t);
 		} else { //do the update without changing owner and fkey_mb_group_id!
@@ -2479,8 +2248,6 @@ SQL;
 		    $sql .= "abstract = $9, searchtext = $10, type = $11, tmp_reference_1 = $12, tmp_reference_2 = $13, export2csw = $14, datasetid = $15, ";
 		    $sql .= "datasetid_codespace = $16, randomid = $17, harvestresult = $20, harvestexception = $21, lineage = $22, inspire_top_consistence = $23, ";
 		    $sql .= "spatial_res_type = $24, spatial_res_value = $25, update_frequency = $26, format = $27, inspire_charset = $28, ref_system = $29, the_geom = $30, datalinks = $31, inspire_whole_area = $32, inspire_actual_coverage = $33, inspire_download = $34, bounding_geom = $35, transfer_size = $36, fees = $37, md_license_source_note = $38, constraints = $39, responsible_party_name = $40, responsible_party_email = $41, preview_image = $42, md_proxy = $43, inspire_interoperability = $44, searchable = $45, fkey_gui_id = $46, fkey_wmc_serial_id = $47, fkey_mapviewer_id = $48 WHERE metadata_id = $19";
-		    //$e= new mb_exception("class_iso19139.php: downloadLinks json".$this->jsonEncodeDownloadLinks($this->downloadLinks));
-		    //$e= new mb_exception("class_iso19139.php: downloadLinks[0]".$this->downloadLinks[0]);
 		    $v = array(
 			$this->href,
 			$this->format,
@@ -2500,7 +2267,6 @@ SQL;
 			$this->datasetIdCodeSpace,
 			$this->randomId,
 			$this->origin,
-			//$this->owner, //owner is the old one - maybe here we have something TODO!
 			$metadataId, //The first metadataId which was found will be selected!
 			$this->harvestResult,
 			$this->harvestException,
@@ -2532,7 +2298,6 @@ SQL;
 			$this->fkeyWmcSerialId,
 			$this->fkeyMapviewerId
 		    );
-		    //$e = new mb_exception("class_iso19139: ".$this->createWktBboxFromArray($this->wgs84Bbox));
 		    $t = array('s','s','s','s','s','s','s','s','s','s','s','s','s','b','s','s','s','s','i','i','s','s','b','s','s','s','s','s','s','POLYGON','s','s','s','i','POLYGON','d','s','s','s','s','s','s','b','b','b','i','i','i');
 		    $res = db_prep_query($sql,$v,$t);
 		}
@@ -2680,7 +2445,6 @@ SQL;
 				if ($resourceType == 'featuretype') {
 					if ($this->getWfsVersionForFeaturetype($resourceId) == '2.0.0') {
 						$wfs20 = true;
-						//$e = new mb_exception("wfs 2.0.0 found!");
 					}
 				}
 				
@@ -2701,7 +2465,6 @@ SQL;
 							$result['message'] = "Problem while storing MetadataURL entry from wms capabilities to mb_metadata table!";
 							return $result;
 						} else {
-							
 							$e = new mb_exception("class_Iso19139:"."Storing only MetadataURL ".$metadata->href." from capabilities to mb database cause the target could not be accessed or parsed!");
 							$result['value'] = true;
 							$result['message'] = "Storing only MetadataURL ".$metadata->href." from capabilities to mb database cause the target could not be accessed or parsed!";
@@ -2739,11 +2502,8 @@ SQL;
 				//nothing to do at all?
 				break;
 			case "upload":
-				//nothing to do at all?
 				$e = new mb_notice("class_Iso19139:"."upload found");
-				//$e = new mb_exception($this->metadata);
 				$metadata = $this->createMapbenderMetadataFromXML($this->metadata);
-				
 				if ($metadata == false) {
 					//xml could not be parsed
 					$result['value'] = false;
@@ -2758,15 +2518,13 @@ SQL;
 				//is actually handled thru plugins/mb_metadata_server* 
 				break;
 			default:
-       				$e = new mb_exception("class_Iso19139:"."Metadata origin is not known - please set it before storing values to DB!");
+       			$e = new mb_exception("class_Iso19139:"."Metadata origin is not known - please set it before storing values to DB!");
 				$result['value'] = false;
 				$result['message'] = "Metadata origin is not known - please set it before storing values to DB!";
 				return $result;
 		}
 
-		//check if metadata record already exists, if not create a new one, else insert relation only and update the metadata itself!
 		$metadataId = $this->isFileIdentifierAlreadyInDB();
-		//$e = new mb_exception("found metadata_id: ".$metadataId);
 		//check if some things should be inherited from service metadata
 		if ($inheritContactInfo == true || $inheritLicenceInfo == true) {
 			$this->mdProxy = "t";
@@ -2777,16 +2535,11 @@ SQL;
 			//TODO: Check if the timestamp of an existing metadata element is not newer than the timestamp of the current metadata object!!!!
 			//for uploaded metadata the harvesting was ok otherwise the function returned before
 			$res = $this->updateMetadataById($metadataId);
-
 			$this->insertKeywordsAndCategoriesIntoDB($metadataId,$resourceType,$resourceId);
 			$this->inheritContactAndLicenceInformation($metadataId,$resourceType,$resourceId,$inheritContactInfo,$inheritLicenceInfo);
 		} else {
-			//check if href already exists
 			$metadataId = $this->isLinkAlreadyInDB();
-			//$e = new mb_exception("found metadata_id by link : ".$metadataId);
-			//if so, the metadataset will be the same - (same url same metadataset) - update this as before
 			if ($metadataId != false) {
-				//the link to an existing metadataset already exists - don't store it again or insert anything
 				$e = new mb_notice("existing metadata linkage found at metadata with id: ".$metadataId." - update will be performed");
 				//check if the timestamp of an existing metadata element is not newer than the timestamp of the current metadata object!!!!
 				$res = $this->updateMetadataById($metadataId);
@@ -2867,7 +2620,6 @@ SQL;
 					$v = array($metadataId);
 					$t = array('i');
 					$res = db_prep_query($sql,$v,$t);
-					
 					//
 					$sql = "UPDATE mb_metadata SET harvestresult = 1 where metadata_id = $1";
 					$v = array($metadataId);
@@ -2892,6 +2644,4 @@ SQL;
 			return $result;
 		}	
 	}
-
 }
-?>
