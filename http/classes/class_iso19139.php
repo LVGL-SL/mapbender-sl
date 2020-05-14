@@ -360,7 +360,6 @@ XML;
 				if (is_int($customCatHash[trim($keyword)])) {
 					$this->customCategories[] = $customCatHash[trim($keyword)];
 				}
-				$this->export2Csw = 't';
 				//extract special keywords for mapbenders proxy and inspire monitoring
 				switch ($this->keywordsThesaurusName[$iKeyword]) {
 					case "mapbender.2.inspireDownload":
