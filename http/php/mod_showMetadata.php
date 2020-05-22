@@ -121,7 +121,7 @@ if (isset($_REQUEST["subscribe"]) & $_REQUEST["subscribe"] != "") {
 
 $subscribe = intval($subscribe);
 
-$hostName = $_SERVER['HTTP_HOST'];
+$hostName = FULLY_QUALIFIED_DOMAIN_NAME;
 
 if (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") {
 			$mapbenderBaseUrl = "https://".$hostName;

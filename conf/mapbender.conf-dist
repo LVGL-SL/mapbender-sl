@@ -3,6 +3,8 @@
 # http://www.mapbender.org/Mapbender.conf
 # Copyright (C) 2010 OSGeo
 
+define("FULLY_QUALIFIED_DOMAIN_NAME", "%%FULLY_QUALIFIED_DOMAIN_NAME%%");
+
 # --------------------------------------------
 # type of mapbender database
 # --------------------------------------------
@@ -52,7 +54,7 @@ $login = LOGIN;
 # --------------------------------------------
 # URL to mapbender installation - maybe different from LOGIN path!
 # --------------------------------------------
-define("MAPBENDER_PATH", "http://".$_SERVER['HTTP_HOST']."/mapbender");
+define("MAPBENDER_PATH", "http://".FULLY_QUALIFIED_DOMAIN_NAME."/mapbender");
 
 # --------------------------------------------
 # MAXLOGIN - this parameter is not in use anymore, but still needed for compatibility
@@ -85,7 +87,7 @@ define("OWS_LOG_EXPORT_LIMIT", 1000);
 define('REALM', 'mapbender_registry');
 define('NONCEKEY', 'mapbender');
 $nonceLife = 300;
-define('HTTP_AUTH_PROXY',"https://".$_SERVER['HTTP_HOST']."/http_auth"); //Problem - behind a rewrite rule - define it hardcoded?
+define('HTTP_AUTH_PROXY',"https://".FULLY_QUALIFIED_DOMAIN_NAME."/http_auth"); //Problem - behind a rewrite rule - define it hardcoded?
 
 # --------------------------------------------
 # type of server-connection
@@ -358,7 +360,7 @@ define("CACHE_CSW_CAPS", false);
 
 #---------------------------------------------
 # HOSTNAME WHITELIST
-# The whitelist is used for some modules who generate urls from a given hostName GET parameter. In such a case it is usefull to give a whitelist for security reasons! If no hostName is given, the parameter $_SERVER['HTTP_HOST'] is used for the urls!
+# The whitelist is used for some modules who generate urls from a given hostName GET parameter. In such a case it is usefull to give a whitelist for security reasons! If no hostName is given, the parameter FULLY_QUALIFIED_DOMAIN_NAME is used for the urls!
 #---------------------------------------------
 define("HOSTNAME_WHITELIST", "");
 

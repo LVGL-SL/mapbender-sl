@@ -60,7 +60,7 @@ if (!empty($_SERVER['HTTPS'])) {
 if (DEFINED("MAPBENDER_PATH") && MAPBENDER_PATH !== "") {
 	$mapbenderServiceUrl = MAPBENDER_PATH."/php/wfs.php?INSPIRE=1&FEATURETYPE_ID=";
 } else {
-	$mapbenderServiceUrl = $schema."://".$_SERVER['HTTP_HOST']."/mapbender/php/wfs.php?INSPIRE=1&FEATURETYPE_ID=";
+	$mapbenderServiceUrl = $schema."://".FULLY_QUALIFIED_DOMAIN_NAME."/mapbender/php/wfs.php?INSPIRE=1&FEATURETYPE_ID=";
 }
 
 $admin = new administration();
@@ -140,7 +140,7 @@ if (isset($_REQUEST['VALIDATE']) and $_REQUEST['VALIDATE'] != "true") {
 
 if ($serviceType == "ogcapifeatures") {
     if ($behindRewrite) {
-	$ogcApiFeaturesUrl = $schema."://".$_SERVER['HTTP_HOST']."/".$rewritePath;
+	$ogcApiFeaturesUrl = $schema."://".FULLY_QUALIFIED_DOMAIN_NAME."/".$rewritePath;
     } else {
 	$ogcApiFeaturesUrl = MAPBENDER_PATH."/php/mod_linkedDataProxy.php?";
     }
@@ -468,7 +468,7 @@ SQL;
                	$pos++;
                 $xmlBuilder->addValue($MD_Metadata,
                         	'./gmd:identificationInfo/srv:SV_ServiceIdentification/srv:operatesOn['.$pos.']/@xlink:href',
-                        	"http://" . $_SERVER['HTTP_HOST'] . "/mapbender/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=" . $row_metadata['uuid']);
+                        	"http://" . FULLY_QUALIFIED_DOMAIN_NAME . "/mapbender/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=" . $row_metadata['uuid']);
                 $xmlBuilder->addValue($MD_Metadata,
                         	'./gmd:identificationInfo/srv:SV_ServiceIdentification/srv:operatesOn['.$pos.']/@uuidref',
                         	$uniqueResourceIdentifierCodespace.$row_metadata['datasetid']);
@@ -477,7 +477,7 @@ SQL;
                 $pos++;
                 $xmlBuilder->addValue($MD_Metadata,
                         	'./gmd:identificationInfo/srv:SV_ServiceIdentification/srv:operatesOn['.$pos.']/@xlink:href',
-                        	"http://" . $_SERVER['HTTP_HOST'] . "/mapbender/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=" . $row_metadata['uuid'].'#spatial_dataset_'.md5($row_metadata['uuid']));
+                        	"http://" . FULLY_QUALIFIED_DOMAIN_NAME . "/mapbender/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=" . $row_metadata['uuid'].'#spatial_dataset_'.md5($row_metadata['uuid']));
                 $xmlBuilder->addValue($MD_Metadata,
                         	'./gmd:identificationInfo/srv:SV_ServiceIdentification/srv:operatesOn['.$pos.']/@uuidref',
                        		$uniqueResourceIdentifierCodespace.$row_metadata['uuid']);
@@ -486,7 +486,7 @@ SQL;
                 $pos++;
                 $xmlBuilder->addValue($MD_Metadata,
                         	'./gmd:identificationInfo/srv:SV_ServiceIdentification/srv:operatesOn['.$pos.']/@xlink:href',
-                        	"http://" . $_SERVER['HTTP_HOST'] . "/mapbender/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=" . $row_metadata['uuid']);
+                        	"http://" . FULLY_QUALIFIED_DOMAIN_NAME . "/mapbender/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=" . $row_metadata['uuid']);
                 $xmlBuilder->addValue($MD_Metadata,
                         	'./gmd:identificationInfo/srv:SV_ServiceIdentification/srv:operatesOn['.$pos.']/@uuidref',
                 $uniqueResourceIdentifierCodespace.$row_metadata['datasetid']);
@@ -515,12 +515,7 @@ SQL;
 	    $protocol = "OGC:API:Features";
             break;
     }   
-	//GetCapabilities is always available
-	//if ($hasPermission) {
-		//$url = $mapbenderServiceUrl.$mbMeta['featuretype_id']."&REQUEST=GetCapabilities&SERVICE=WFS&VERSION=".$mbMeta['wfs_version'];
-	/*} else {
-		$url = "https://".$_SERVER['HTTP_HOST']."/registry/wfs/".$mbMeta['featuretype_id']."?REQUEST=GetCapabilities&SERVICE=WFS&VERSION=".$version;
-	}*/
+
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage/gmd:URL',
             $url);

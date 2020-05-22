@@ -1,7 +1,7 @@
 <?php
 require_once(dirname(__FILE__) . "/../../core/globalSettings.php");
 require_once(dirname(__FILE__) . "/../classes/class_user.php");
-$hostName = $_SERVER['HTTP_HOST'];
+$hostName = FULLY_QUALIFIED_DOMAIN_NAME;
 $operation = "get";
 $key = "mb_user_id";
 $value = null;

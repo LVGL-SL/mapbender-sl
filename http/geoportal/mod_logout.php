@@ -46,18 +46,18 @@ if (isset($logout_location) && $logout_location != ''){
 else {
 	if (is_file(dirname($_SERVER['SCRIPT_NAME'])."/login.php")) {
 		if (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") {
-			header("Location: https://".$_SERVER['HTTP_HOST'].$dir."/login.php");      
+			header("Location: https://".FULLY_QUALIFIED_DOMAIN_NAME.$dir."/login.php");      
 		}
 		else {
-			header("Location: http://".$_SERVER['HTTP_HOST'].$dir."/login.php");      
+			header("Location: http://".FULLY_QUALIFIED_DOMAIN_NAME.$dir."/login.php");      
 		}
 	}
 	else {
 		if (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") {
-			header("Location: https://".$_SERVER['HTTP_HOST'].preg_replace("/\/php/","/frames",$dir)."/login.php");
+			header("Location: https://".FULLY_QUALIFIED_DOMAIN_NAME.preg_replace("/\/php/","/frames",$dir)."/login.php");
 		}
 		else {
-			header("Location: http://".$_SERVER['HTTP_HOST'].preg_replace("/\/php/","/frames",$dir)."/login.php");
+			header("Location: http://".FULLY_QUALIFIED_DOMAIN_NAME.preg_replace("/\/php/","/frames",$dir)."/login.php");
 		}
 	}
 }

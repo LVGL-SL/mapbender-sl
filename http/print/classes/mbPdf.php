@@ -43,7 +43,7 @@ abstract class mbPdf {
 			if ($secureProtocol) {
 				$prot = "https://";
 			}
-			$absoluteUrlToPdf = $prot.$_SERVER['HTTP_HOST'].dirname($_SERVER['SCRIPT_NAME'])."/printPDF_download.php?f=".$this->outputFileName."&".SID;
+			$absoluteUrlToPdf = $prot. FULLY_QUALIFIED_DOMAIN_NAME .dirname($_SERVER['SCRIPT_NAME'])."/printPDF_download.php?f=".$this->outputFileName."&".SID;
 			return $mbjson->encode(array("outputFileName"=>$absoluteUrlToPdf));
 		}
 		else

@@ -81,7 +81,7 @@ class connector {
  		if($posPROXY !== false && OWSPROXY_USE_LOCALHOST == true){
 
 			$e = new mb_notice('class_connector: old url: '.$url);
-			$url = str_replace($_SERVER['HTTP_HOST'], "127.0.0.1", $url);
+			$url = str_replace(FULLY_QUALIFIED_DOMAIN_NAME, "127.0.0.1", $url);
 			$url = str_replace("https", "http", $url);//localhost no https should needed - it will be faster without
 			$e = new mb_notice('class_connector: new url: '.$url);
 		}
