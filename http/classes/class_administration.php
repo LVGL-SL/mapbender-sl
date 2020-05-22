@@ -2026,6 +2026,53 @@ SQL;
 		}
 	}
 
+	function delFromStorage($filename, $cacheType) {
+		switch ($cacheType) {
+			case "memcache":
+				$filename = md5($filename);
+				$memcache_obj = new Memcache;
+				if (defined("MEMCACHED_IP") && MEMCACHED_IP != "" && defined("MEMCACHED_PORT") && MEMCACHED_PORT != "") {
+					$memcache_obj->connect(MEMCACHED_IP, MEMCACHED_PORT);
+				} else {
+					//use standard options
+					$memcache_obj->connect('localhost', 11211);
+				}
+				$result = $memcache_obj->delete($filename);
+				$memcache_obj->close();
+				return $result;
+				break;
+			case "memcached":
+				$filename = md5($filename);
+				$memcached_obj = new Memcached;
+				if (defined("MEMCACHED_IP") && MEMCACHED_IP != "" && defined("MEMCACHED_PORT") && MEMCACHED_PORT != "") {
+					$memcached_obj->addServer(MEMCACHED_IP, MEMCACHED_PORT);
+				} else {
+					//use standard options
+					$memcached_obj->addServer('localhost', 11211);
+				}
+				new mb_notice("delete content from memcacheD storage");
+				$result = $memcached_obj->delete($filename);
+				//$memcached_obj->quit();
+				return $result;
+				break;
+			case "cache":
+				$filename = md5($filename);
+				$cache = new Cache();
+				if ($cache->isActive && $cache->cachedVariableExists($filename)) {
+					$result = $cache->cachedVariableDelete($filename);
+					return $result;
+				} else {
+					return false;
+				}
+				break;
+			case "file":
+				return unlink($filename);
+				break;
+			default:
+				return unlink($filename);
+				break;
+		}
+	}
 	function putToStorage($filename, $content, $cacheType, $maxAge) {
 		switch ($cacheType) {
 			case "memcache":
@@ -2414,7 +2461,7 @@ SQL;
 	{"protocol":"http","server_port":"$_SERVER['HTTP_PORT']","server_name":"$_SERVER['HTTP_NAME']","server_path":"mapbender\/frames","server_script":"index.php","gui_param":"gui_id","wmc_param":"WMC"}
 	*/
 	if ($api->server_name == "\$_SERVER['HTTP_HOST']"){
-		$api->server_name = $_SERVER['HTTP_HOST'];
+		$api->server_name = FULLY_QUALIFIED_DOMAIN_NAME;
 	}
         if (isset($api->server_port) && $api->server_port != '' && $api->server_port != '80')  {
 	    if ($api->server_port != "\$_SERVER['HTTP_PORT']") {
@@ -2450,9 +2497,9 @@ SQL;
 	$previewUrl = $row["preview_image"];
 	if ($row["preview_image"] == '{localstorage}') {
             if (defined('MAPBENDER_PATH') && MAPBENDER_PATH != '') {
-	        return MAPBENDER_PATH."/geoportal/mod_showPreview.php?resource=metadata&id=".$metadataId;
+	        return MAPBENDER_PATH . "/geoportal/mod_showPreview.php?resource=metadata&id=".$metadataId;
 	    } else {
-	        return "http://".$_SERVER["HTTP_HOST"]."/mapbender/geoportal/mod_showPreview.php?resource=metadata&id=".$metadataId;
+	        return "http://" . FULLY_QUALIFIED_DOMAIN_NAME . "/mapbender/geoportal/mod_showPreview.php?resource=metadata&id=".$metadataId;
 	    }
 	} else {
 	    return $row["preview_image"];

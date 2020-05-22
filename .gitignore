@@ -1,4 +1,8 @@
 conf/*.conf
 tools/tmp/
-http/tmp/wmc/
+http/tmp/
 http/geoportal/preview/*.jpg
+log/
+metadata/
+*.mo
+http/extensions/mobilemap2/

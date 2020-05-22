@@ -83,12 +83,14 @@ class Iso19139 {
 	var $fileIdentifierAlreadyInDB; //bool
 	var $resourceResponsibleParty; //char
 	var $resourceContactEmail; //char
-        var $codeListUpdateFrequencyArray;
+    var $codeListUpdateFrequencyArray;
 	var $searchable;
 	//Following attributes are only for application metadata editor and they are used for managing/publishing metadata for internal applications !
 	var $fkeyGuiId;
 	var $fkeyWmcSerialId;
 	var $fkeyMapviewerId;
+	//Following attribute classifies if a minimum of given attributes are set to identify it as metadata
+	var $xmlHasMinimalAttributes; //title, description, bbox are good values to be checked
 
 	function __construct() {
 		//initialize empty iso19139 object
@@ -159,6 +161,7 @@ class Iso19139 {
 		$this->fkeyGuiId = null;
 		$this->fkeyWmcSerialId = null;
 		$this->fkeyMapviewerId = null;
+		$this->xmlHasMinimalAttributes = false;
 	}
 	
    //TODO: Following function is only needed til php 5.5 - after upgrade to debian 8 it is obsolet - see also class_syncCkan.php!
@@ -238,17 +241,25 @@ class Iso19139 {
 	}
 	
 	public function createMapbenderMetadataFromXML($xml){
-		$this->metadata = $xml;
+		//$this->metadata = $xml;
 		//$this->metadata = $this->removeGetRecordTag($this->metadata);
 		//$e = new mb_exception($this->metadata);
 		libxml_use_internal_errors(true);
 		try {
-			$iso19139Xml = simplexml_load_string($this->metadata);
+			$iso19139Xml = simplexml_load_string($xml);
 			if ($iso19139Xml === false) {
 				foreach(libxml_get_errors() as $error) {
         				$err = new mb_exception("class_Iso19139:".$error->message);
     				}
 				throw new Exception("class_Iso19139:".'Cannot parse Metadata XML!');
+				$this->metadata = <<<XML
+				<mb:ExceptionReport xmlns:mb="http://www.mapbender.org/metadata/exceptionreport">
+					<mb:Exception exceptionCode="NoApplicableCode">
+						<mb:ExceptionText>ISO Metadata XML could not be parsed!</mb:ExceptionText>
+				    </mb:Exception>
+				</mb:ExceptionReport>
+XML;
+				$this->harvestResult = 0;
 				return false;
 			}
 		}
@@ -531,9 +542,19 @@ class Iso19139 {
 			//parse codes to get EPSG:XXXXX TODO use other function to support other codes
 			//get last part of string separated by the colon symbol
 			if ($this->hierarchyLevel != 'service' && $this->hierarchyLevel != '') {
-			    $crsObject = new Crs($this->refSystem);
-			    $epsgId = $crsObject->identifierCode;
-			    $this->refSystem = "EPSG:".$epsgId;
+				$e = new mb_exception("classes/class_iso19139.php: epsg to lookup:".$this->refSystem);
+				try {
+			        $crsObject = new Crs($this->refSystem);
+				} catch (Exception $e) {
+    			    $err = new mb_exception("classes/class_Iso19139.php: - tried to resolve crs via class_crs: ".$e->getMessage());
+			        //return "error";
+			        $crsObject = false;
+				}
+				if ($crsObject != false) {
+					$e = new mb_exception("classes/class_iso19139.php: resolved epsg id:".$crsObject->identifierCode);
+			        $epsgId = $crsObject->identifierCode;
+			        $this->refSystem = "EPSG:".$epsgId;
+				} 
 			}
 			//debug output of keywords:
 			/*$iKeyword = 0;
@@ -626,9 +647,19 @@ class Iso19139 {
 			//for debugging purposes
 			foreach ($interoperabilityArray as $declaredSpec) {
 				$e = new mb_notice("classes/class_iso19139.php: check conformance declaration: name: ".$declaredSpec['name']. " - date: ".$declaredSpec['date']." - pass: ".$declaredSpec['pass']);
-				
 			}
 			$e = new mb_notice("classes/class_iso19139.php: sufficient declared inspire conformity: ".$this->inspireInteroperability);
+            if (isset($this->fileIdentifier) && $this->fileIdentifier != "" && isset($this->title) && $this->title != "" && isset($this->abstract) && $this->abstract != "") {
+            	$this->metadata = $xml;
+            } else {
+            	$this->metadata = <<<XML
+				<mb:ExceptionReport xmlns:mb="http://www.mapbender.org/metadata/exceptionreport">
+					<mb:Exception exceptionCode="NoApplicableCode">
+						<mb:ExceptionText>ISO Metadata XML has neither a fileIdentifier nor title or abstract</mb:ExceptionText>
+				    </mb:Exception>
+				</mb:ExceptionReport>
+XML;
+            }
 			$this->qualifyMetadata();
 			$this->harvestResult = 1;
 			return $this;
@@ -777,7 +808,7 @@ class Iso19139 {
 				foreach(libxml_get_errors() as $error) {
         				$err = new mb_exception("class_Iso19139:".$error->message);
     				}
-				throw new Exception("class_Iso19139:".'Cannot parse Metadata XML!');
+				throw new Exception("class_Iso19139:".'Cannot parse Metadata XML (transformToHtml)!');
 				return "error";
 			}
 		}
@@ -2634,7 +2665,7 @@ SQL;
 		return $getMapUrl;
 	}
 
-	public function insertToDB($resourceType, $resourceId, $inheritContactInfo = false, $inheritLicenceInfo = false){
+	public function insertToDB($resourceType, $resourceId, $inheritContactInfo = false, $inheritLicenceInfo = false, $resolveRemote = true){
 		$result = array(); //value/message
 		
 		switch ($this->origin) {
@@ -2655,7 +2686,12 @@ SQL;
 				
 				if ((($this->type == 'ISO19115:2003' || $this->type == 'ISO 19115:2003') && $this->format =='text/xml') || ($this->type == 'TC211' && $this->format =='text/xml') || (($this->type == 'ISO19115:2003' || $this->type == 'ISO 19115:2003') && ($this->format =='application/vnd.iso.19139+xml' || $this->format =='application/xml')) || $wfs20 == true) {
 					$e = new mb_notice("class_Iso19139:"."try to parse: ".$this->href);
-					$metadata = $this->createFromUrl($this->href); //will alter object itself
+					if ($resolveRemote == true) {
+						$metadata = $this->createFromUrl($this->href); //will alter object itself
+					} else {
+						$metadata == false;
+						$e = new mb_exception("MetadataURL harvesting is excluded by conf!");
+					}
 					$e = new mb_notice("class_Iso19139:"."Metadata found: ".$this->metadata);
 					if ($metadata == false) {
 						//try to insert only MetadataURL elements
