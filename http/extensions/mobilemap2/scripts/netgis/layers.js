@@ -15,7 +15,6 @@ netgis.layers =
 		"use strict";
 		
 		// Private Variables
-		//var layerList;
 		var singleLayerRequest = null;
 		
 		// Private Methods
@@ -87,10 +86,8 @@ netgis.layers =
 			{
 				$.getJSON
 				(
-					//"./scripts/proxy.php",
 					netgis.config.URL_LAYERS_PROXY,
 					{
-						//q: encodeURI( "http://www.geoportal.rlp.de/mapbender/extensions/mobilemap/mod_mapbender/search_proxy.php?languageCode=de&resultTarget=web&maxResults=40&resourceIds=" + ids.join( "," ) )
 						q: encodeURIComponent( url )
 					},
 					onLayersResponse
@@ -128,9 +125,6 @@ netgis.layers =
 			entity.set( new netgis.component.Title( layerData.title ) );
 			entity.set( new netgis.component.Name( layerData.name ) );
 			entity.set( new netgis.component.Parent( parentEntity ) );
-			//entity.set( new netgis.component.Position( layerData.layerPos ) );
-			
-			//entity.print();
 			
 			if ( layerData.getLegendGraphicUrl && layerData.getLegendGraphicUrlFormat )
 				entity.set( new netgis.component.Legend( layerData.getLegendGraphicUrl, layerData.getLegendGraphicUrlFormat ) );
@@ -224,8 +218,6 @@ netgis.layers =
 				
 				if ( layer.opacity )
 					entity.set( new netgis.component.Opacity( parseFloat( layer.opacity ) * 0.01 ) );
-				
-				//console.info( "WMC Layer:", layer );
 			}
 			
 			requestLayers( ids );
@@ -285,8 +277,6 @@ netgis.layers =
 					
 				}
 			}
-			
-			//console.info( "ENTITIES:", netgis.entities.getAll() );
 			
 			// Set order
 			var layers = netgis.entities.get( [ netgis.component.Layer, netgis.component.Active ] );
