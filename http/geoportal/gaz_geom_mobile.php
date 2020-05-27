@@ -103,7 +103,6 @@ $invokeUrl = $basUrl1.$basUrl2.$searchText."&srsName=EPSG%3A".$searchEPSG."&coun
 $searchConnector = new connector($invokeUrl);
 $searchResult = $searchConnector->file;
 $gazetteerObject = json_decode($searchResult);
-//parse json
 $returnObject = new stdClass();
 $countGeonames = 0;
 $returnObject->totalResultsCount = 0;
@@ -130,9 +129,9 @@ foreach ($gazetteerObject->features as $feature) {
 	}
 	$returnObject->geonames[$countGeonames]->category = "haus";
 	$returnObject->geonames[$countGeonames]->minx = str_replace(',', '.', $feature->bbox[0]);
-	$returnObject->geonames[$countGeonames]->miny = str_replace(',', '.',$feature->bbox[1]);
-	$returnObject->geonames[$countGeonames]->maxx = str_replace(',', '.',$feature->bbox[2]);
-	$returnObject->geonames[$countGeonames]->maxy = str_replace(',', '.',$feature->bbox[3]);
+	$returnObject->geonames[$countGeonames]->miny = str_replace(',', '.', $feature->bbox[1]);
+	$returnObject->geonames[$countGeonames]->maxx = str_replace(',', '.', $feature->bbox[2]);
+	$returnObject->geonames[$countGeonames]->maxy = str_replace(',', '.', $feature->bbox[3]);
     if ($forcePoint){
 	    $returnObject->geonames[$countGeonames]->centerPoint = "POINT(".(double)(($feature->bbox[2] + $feature->bbox[0])/2).",".(double)(($feature->bbox[3] + $feature->bbox[1])/2).")";
     }
@@ -143,10 +142,10 @@ foreach ($gazetteerObject->features as $feature) {
 	    $returnObject->geonames[$countGeonames]->maxx = (string)($returnObject->geonames[$countGeonames]->maxx + 0.0004);
 	    $returnObject->geonames[$countGeonames]->maxy = (string)($returnObject->geonames[$countGeonames]->maxy + 0.0004);
 	} else {
-        $returnObject->geonames[$countGeonames]->minx = (string)($returnObject->geonames[$countGeonames]->minx - 30);
-	    $returnObject->geonames[$countGeonames]->miny = (string)($returnObject->geonames[$countGeonames]->miny - 30);
-	    $returnObject->geonames[$countGeonames]->maxx = (string)($returnObject->geonames[$countGeonames]->maxx + 30);
-	    $returnObject->geonames[$countGeonames]->maxy = (string)($returnObject->geonames[$countGeonames]->maxy + 30);
+        $returnObject->geonames[$countGeonames]->minx = (string)($returnObject->geonames[$countGeonames]->minx - 300);
+	    $returnObject->geonames[$countGeonames]->miny = (string)($returnObject->geonames[$countGeonames]->miny - 300);
+	    $returnObject->geonames[$countGeonames]->maxx = (string)($returnObject->geonames[$countGeonames]->maxx + 300);
+	    $returnObject->geonames[$countGeonames]->maxy = (string)($returnObject->geonames[$countGeonames]->maxy + 300);
 	}
 	if ($forceGeonames) {
 		//map to actual geonames objects
