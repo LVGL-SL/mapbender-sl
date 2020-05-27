@@ -1407,13 +1407,6 @@ if ($layout == 'plain') {
 	$html .= '<h3>'.$translation["interfaces"].'</h3>';
 	$html .= '<div>';
 }
-//$html .= '<p>';
-
-/*$translation['mapbenderCapabilities'] = 'Geoportal Capabilities';
-$translation['originalCapabilities'] = 'Original Capabilities';
-$translation['kml'] = 'KML';
-$translation['inspireMetadata'] = 'INSPIRE Service Metadaten';
-$translation['securedCapabilities'] = 'Secured Capabilities URL';*/
 $html .= $tableBegin;
 
 if ($resource == 'wmc') {
@@ -1425,8 +1418,7 @@ if ($resource == 'wmc') {
 	//generate qr on the fly in tmp folder
 	//link to invoke wmc per get api if wrapper path isset
 	if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != "") {
-		$invokeLink = MAPBENDER_PATH."/extensions/mobilemap/map.php?wmcid=".$resourceMetadata['contentid'];
-		//$invokeLink = "http://www.geoportal.rlp.de/mapbender/extensions/mobilemap/map.php";
+		$invokeLink = MAPBENDER_PATH."/extensions/mobilemap2/index.html?wmc_id=".$resourceMetadata['contentid'];
 		QRcode::png($invokeLink,TMPDIR."/".$filename);
 		$html .= $t_a.$translation['loadWmc'].$t_b."<a href = '".$invokeLink."'><img src='".TMPDIR."/".$filename."'></a>".$t_c;
 	}
