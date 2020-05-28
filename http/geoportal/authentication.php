@@ -76,42 +76,42 @@ if (is_array($isAuthenticated) != false) {
 		}
 
 		if($_SERVER["HTTPS"] != "on") {
-			header ("Location: http://".$_SERVER['HTTP_HOST'].$URLAdd);
+			header ("Location: http://".FULLY_QUALIFIED_DOMAIN_NAME.$URLAdd);
 		} else  {
-			header ("Location: https://".$_SERVER['HTTP_HOST'].$URLAdd);
+			header ("Location: https://".FULLY_QUALIFIED_DOMAIN_NAME.$URLAdd);
 		}
 	}else{
-		header ("Location: http://".$_SERVER['HTTP_HOST']."/portal/success.html".$URLAdd);
+		header ("Location: http://".FULLY_QUALIFIED_DOMAIN_NAME."/portal/success.html".$URLAdd);
 	}
 	session_write_close();
 } else if (strpos($isAuthenticated,'Account for user with name') !== false && (defined("DJANGO_PORTAL") && DJANGO_PORTAL === true)){
 
 	$URLAdd="?status=notactive";
 	if($_SERVER["HTTPS"] != "on") {
-		header ("Location: http://".$_SERVER['HTTP_HOST'].$URLAdd);
+		header ("Location: http://".FULLY_QUALIFIED_DOMAIN_NAME.$URLAdd);
 	} else {
-		header ("Location: https://".$_SERVER['HTTP_HOST'].$URLAdd);
+		header ("Location: https://".FULLY_QUALIFIED_DOMAIN_NAME.$URLAdd);
 	}
 
 } else if (strpos($isAuthenticated,'Password failed third time for') !== false && (defined("DJANGO_PORTAL") && DJANGO_PORTAL === true)){
 
 	$URLAdd="?status=fail3&name=".$name;
 	if($_SERVER["HTTPS"] != "on") {
-		header ("Location: http://".$_SERVER['HTTP_HOST'].$URLAdd);
+		header ("Location: http://".FULLY_QUALIFIED_DOMAIN_NAME.$URLAdd);
 	} else {
-		header ("Location: https://".$_SERVER['HTTP_HOST'].$URLAdd);
+		header ("Location: https://".FULLY_QUALIFIED_DOMAIN_NAME.$URLAdd);
 	}
 
 } else {
 	if (defined("DJANGO_PORTAL") && DJANGO_PORTAL === true){
 		$URLAdd="?status=fail";
 		if($_SERVER["HTTPS"] != "on") {
-			header ("Location: http://".$_SERVER['HTTP_HOST'].$URLAdd);
+			header ("Location: http://".FULLY_QUALIFIED_DOMAIN_NAME.$URLAdd);
 		} else  {
-			header ("Location: https://".$_SERVER['HTTP_HOST'].$URLAdd);
+			header ("Location: https://".FULLY_QUALIFIED_DOMAIN_NAME.$URLAdd);
 		}
 	}else {
-		header ("Location: http://".$_SERVER['HTTP_HOST']."/portal/failed.html".$URLAdd);
+		header ("Location: http://".FULLY_QUALIFIED_DOMAIN_NAME."/portal/failed.html".$URLAdd);
 	}
 }
 
