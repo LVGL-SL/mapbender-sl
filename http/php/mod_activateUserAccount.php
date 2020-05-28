@@ -20,11 +20,11 @@ require_once(dirname(__FILE__)."/../../core/globalSettings.php");
 $returnObject = new stdClass();
 if (defined("DJANGO_PORTAL") && DJANGO_PORTAL == true) {
 	if($_SERVER["HTTPS"] != "on") {
-		$loginRedirectUrl = "http://".$_SERVER['HTTP_HOST']."/login/";
-		$registerRedirectUrl = "http://".$_SERVER['HTTP_HOST']."/register/";
+		$loginRedirectUrl = "http://".FULLY_QUALIFIED_DOMAIN_NAME."/login/";
+		$registerRedirectUrl = "http://".FULLY_QUALIFIED_DOMAIN_NAME."/register/";
 	} else {
-		$loginRedirectUrl = "https://".$_SERVER['HTTP_HOST']."/login/";
-		$registerRedirectUrl = "https://".$_SERVER['HTTP_HOST']."/register/";
+		$loginRedirectUrl = "https://".FULLY_QUALIFIED_DOMAIN_NAME."/login/";
+		$registerRedirectUrl = "https://".FULLY_QUALIFIED_DOMAIN_NAME."/register/";
 	}
 } else {
 	$loginRedirectUrl = LOGIN;

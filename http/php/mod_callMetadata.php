@@ -60,7 +60,7 @@ if (defined('ABSOLUTE_TMPDIR')){
 	$tempFolder = TMPDIR;
 }
 $orderBy = "rank"; //rank or title or id or date
-$hostName = $_SERVER['HTTP_HOST'];
+$hostName = FULLY_QUALIFIED_DOMAIN_NAME;
 //https
 $https = false;
 if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') {
@@ -442,7 +442,6 @@ if (isset($_REQUEST["userId"]) & $_REQUEST["userId"] != "") {
         }
         $userId = $testMatch;
         $testMatch = NULL;
-	//$e = new mb_exception('php/mod_callMetadata.php: script invoked from HOST: '.$_SERVER['HTTP_HOST']);
 
 	//look for whitelist in mapbender.conf
 	$HOSTNAME_WHITELIST_array = explode(",",HOSTNAME_WHITELIST);

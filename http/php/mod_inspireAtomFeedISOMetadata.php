@@ -1170,14 +1170,6 @@ SQL;
 		break;
 	}
 
-	//Check if anonymous user has rights to access this layer - if not ? which resource should be advertised? TODO
-	/*if ($hasPermission) {
-		$gmd_URLText=$iso19139->createTextNode("http://".$_SERVER['HTTP_HOST']."/mapbender/php/wms.php?inspire=1&layer_id=".$mapbenderMetadata['layer_id']."&REQUEST=GetCapabilities&SERVICE=WMS");
-	}
-	else {
-		$serverWithOutPort80 = str_replace(":80","",$_SERVER['HTTP_HOST']);//fix problem when metadata is generated thru curl invocations
-		$gmd_URLText=$iso19139->createTextNode("https://".$serverWithOutPort80."/http_auth/".$mapbenderMetadata['layer_id']."?REQUEST=GetCapabilities&SERVICE=WMS");
-	}*/
 	$gmd_URL->appendChild($gmd_URLText);
 	$gmd_linkage->appendChild($gmd_URL);
 	$CI_OnlineResource->appendChild($gmd_linkage);
@@ -1256,14 +1248,6 @@ SQL;
 
 	$gmd_linkage=$iso19139->createElement("gmd:linkage");
 	$gmd_URL=$iso19139->createElement("gmd:URL");
-
-	//Check if anonymous user has rights to access this layer - if not ? which resource should be advertised? TODO
-	/*if ($hasPermission) {
-		$gmd_URLText=$iso19139->createTextNode($mapbenderMetadata['datalink_url']);
-	}
-	else {
-		$gmd_URLText=$iso19139->createTextNode("https://".$_SERVER['HTTP_HOST']."/http_auth/".$mapbenderMetadata['layer_id']."?REQUEST=GetCapabilities&SERVICE=WMS");
-	}*/
 	$gmd_URL->appendChild($gmd_URLText);//same as before
 	$gmd_linkage->appendChild($gmd_URL);
 	$CI_OnlineResource->appendChild($gmd_linkage);

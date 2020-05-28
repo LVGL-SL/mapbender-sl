@@ -373,7 +373,7 @@ function getSourceCode($path, $fileType = 'css') {
     } else {
 	$scheme = "http";
     }
-    $pathPrefix = $scheme.'://'.$_SERVER['HTTP_HOST'].parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
+    $pathPrefix = $scheme.'://'.FULLY_QUALIFIED_DOMAIN_NAME.parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
     $pathPrefix = pathinfo($pathPrefix);
     $pathPrefix = $pathPrefix['dirname']."/";
     if (substr($path, 0, 4) == 'http' || $fileType == 'js') {

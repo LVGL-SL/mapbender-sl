@@ -45,7 +45,7 @@ if (defined('ABSOLUTE_TMPDIR')){
 	$tempFolder = TMPDIR;
 }
 //	$orderBy = "rank"; //rank or title or id or date
-$hostName = $_SERVER['HTTP_HOST'];
+$hostName = FULLY_QUALIFIED_DOMAIN_NAME;
 $headers = apache_request_headers();
 $originFromHeader = false;
 foreach ($headers as $header => $value) {

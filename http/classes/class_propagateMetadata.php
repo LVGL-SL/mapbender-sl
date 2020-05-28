@@ -49,7 +49,7 @@ class propagateMetadata {
 				if (defined("MAPBENDER_PATH") && MAPBENDER_PATH !== "") {
 					$this->absolutePath = MAPBENDER_PATH;
 				} else {
-					$this->absolutePath = "http://".$_SERVER['HTTP_HOST']."/mapbender";
+					$this->absolutePath = "http://".FULLY_QUALIFIED_DOMAIN_NAME."/mapbender";
 				}
 	}
 	

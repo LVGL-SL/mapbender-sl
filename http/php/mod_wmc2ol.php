@@ -194,9 +194,6 @@ function createOlFromWMC_id($wmc_id, $pointRadius, $fillColor){
   	#$html.="	position: relative;\n";
 	$html.="}\n";
 
-
-
-
 	$html.="</style>\n";
 	//don't show any html, title and/or body tag when integrate it into external website
 	if ($_REQUEST['withoutBody'] == '1') { 	
@@ -209,12 +206,10 @@ function createOlFromWMC_id($wmc_id, $pointRadius, $fillColor){
 	$e = new mb_notice('georss request : '.$_REQUEST['GEORSS']);
 	if(isset($_REQUEST["withDigitize"]) or isset($_REQUEST["GEORSS"])){
 		if(($_REQUEST["withDigitize"]=='1') or ($_REQUEST["GEORSS"]!='')){
-			#$html.="<script src='http://".$_SERVER['HTTP_HOST']."/mapbender/extensions/OpenLayers-2.8/OpenLayers.js'></script>\n";
 			$html.="<script src='../extensions/OpenLayers-2.9.1/OpenLayers.js'></script>\n";
 		}
 	} else {
 		//use the minimized version
-		//$html.="<script src='../../openlayers/build/geoportal_ol_geoportal.js'></script>\n";
 		$html.="<script src='../extensions/OpenLayers-2.9.1/OpenLayers.js'></script>\n"; //TODO minimize this or use other lib
 	}
 	//begin part for javascript code
@@ -826,7 +821,6 @@ function createOlFromWMC_id($wmc_id, $pointRadius, $fillColor){
 		$html.="<div id='tags'></div>\n";
 		$html.="<div id='map' class='smallmap'></div>\n";//class dont exists
 
-
 	//show textareas with coordinates which are digitized
 	if(isset($_REQUEST["withDebug"])){
 		if($_REQUEST["withDebug"]=='1'){
@@ -836,13 +830,11 @@ function createOlFromWMC_id($wmc_id, $pointRadius, $fillColor){
 	}
 	//*******************************
         //placeholder for use constraints
-	//echo "<a href = 'http://www.mapbender.de' target='_blank'> <img src = '".$_SERVER['HTTP_HOST']."/mapbender/http/img/logo_geoportal_neu.png' title=\"Mapbender Logo\" border=0></a>";
 		$html.="<div id='docs'>\n";
 		$html.="\n";
 		$html.="</div>\n";
 	//Show coords if wished
 	if($_REQUEST["mb_showCoords"]=='1'){
-		//$html.="<div id='srs' class='csrs'>Koordinaten in <a href = '../../../mediawiki/index.php/".$xml->General->BoundingBox['SRS']."' target='_blank'>".$xml->General->BoundingBox['SRS']."</a>:</div>\n"; //only for geoportal.rlp
 		$html.="<div id='srs' class='csrs'>Koordinaten in ".$xml->General->BoundingBox['SRS'].":</div>\n";	
 	}
 	$html.="<div id='showpos'></div>\n";
@@ -860,7 +852,7 @@ function createOlFromWMC_id($wmc_id, $pointRadius, $fillColor){
 
 createOlfromWMC_id($_GET["wmc_id"], $pointRadius, $fillColor);
 
-if (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST']) === false) {
+if (strpos($_SERVER['HTTP_REFERER'], FULLY_QUALIFIED_DOMAIN_NAME) === false) {
 	$admin->logClientUsage($_SERVER['HTTP_REFERER'], $wmc_id, 1);
 }
 ?>

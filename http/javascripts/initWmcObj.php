@@ -712,7 +712,7 @@ $validWMS = $wmcGetApi->getValidWms();
 $translation['wms'] = _mb("MapService");
 $resourceSymbol = "<img src='../img/osgeo_graphics/geosilk/server_map.png' alt='".$translation['wms']." - picture' title='".$translation['wms']."'>";
 $languageCode = 'de';
-$hostName = $_SERVER['HTTP_HOST'];
+$hostName = FULLY_QUALIFIED_DOMAIN_NAME;
 $tou = "";
 $classTou = new tou();
 $countWMS = count($validWMS);

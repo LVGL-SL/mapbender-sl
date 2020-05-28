@@ -9,7 +9,7 @@ $maxFontSize = 40;
 $minFontSize = 10;
 $maxObjects = 10;
 $outputFormat = 'html';
-$hostName = $_SERVER['HTTP_HOST'];
+$hostName = FULLY_QUALIFIED_DOMAIN_NAME;
 $orderBy = "rank";
 //read out information from database:
 
