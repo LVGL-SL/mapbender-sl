@@ -22,7 +22,6 @@ switch ($ajaxResponse->getMethod()) {
 	// gets available WMCs
 	case "getWmc":
 		$showPublic = $ajaxResponse->getParameter("showPublic");
-		//$e = new mb_notice("mod_loadwmc_server.php: showPublic: ".$showPublic);
 		$resultObj["wmc"] = $wmc->selectByUser($currentUser,$showPublic);
 		$ajaxResponse->setResult($resultObj);
 		$ajaxResponse->setSuccess(true);		
@@ -37,8 +36,6 @@ switch ($ajaxResponse->getMethod()) {
 		} else {
 			$newWindow = false;
 		}
-		//$e = new mb_notice("mod_loadwmc_server.php: showPublic: ".$showPublic);
-		//$resultObj["wmc"] = $wmc->selectByUser($currentUser,$showPublic);
 		//show qr for link 
 		//create uuid for qr graphic
 		$uuid = new Uuid;
@@ -46,8 +43,7 @@ switch ($ajaxResponse->getMethod()) {
 		//generate qr on the fly in tmp folder
 		//link to invoke wmc per get api if wrapper path isset
 		if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != "") {
-			$invokeLink = MAPBENDER_PATH."/extensions/mobilemap/map.php?wmcid=".$wmcid;
-			//$invokeLink = "http://www.geoportal.rlp.de/mapbender/extensions/mobilemap/map.php";
+			$invokeLink = MAPBENDER_PATH."/extensions/mobilemap2/index.html?wmc_id=".$wmcid;
 			QRcode::png($invokeLink,TMPDIR."/".$filename);
 			if ($newWindow) {
 				$html = "<a href = '".$invokeLink."' target='_blank'><img src='".TMPDIR."/".$filename."'></a>";

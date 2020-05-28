@@ -13,7 +13,6 @@ netgis.menu =
 	function()
 	{
 		"use strict";
-		
 		// Private Variables
 		var navbarContainer;
 		var layerMenu;
@@ -22,17 +21,14 @@ netgis.menu =
 		var searchList;
 		var searchResults;
 		var searchQuery;
-		//var searchSpinner;
 		var searchButton;
 		var searchMessage;
 		var scaleItems;
 		var scaleCustom;
 		var scaleDivider;
 		var scaleValue;
-		
 		var sideMenu;
 		var sideMenuContent;
-		
 		var legendPanel;
 		var geolocationDialog;
 		
@@ -44,7 +40,6 @@ netgis.menu =
 			searchInput = $( "#search-input" );
 			searchPanel = $( "#search-panel" );
 			searchList = $( "#search-list" );
-			//searchSpinner = $( "#search-spinner" );
 			searchButton = $( "#search-button" );
 			searchMessage = $( "#search-message" );
 			legendPanel = $( "#legend-panel" );
@@ -334,47 +329,19 @@ netgis.menu =
 			}
 
 			//TODO: optimize - insert into DOM only once
-
-			//layerMenu.find( ".btn-layer" ).click( onLayerClick );
 			layerMenu.find( ".btn-group" ).click( onGroupClick );
-
 			layerMenu.find( ".collapser" ).click( function() { $( this ).next().collapse( "toggle" ); } );
 		};
 		
 		var searchPlace = function( query )
 		{
-			//layerResultsList.empty();
-			//layerResultsCount.text( "0" );
-			
 			toggleSideMenu( false );
-			
 			query = encodeURIComponent( $.trim( query ) );
-			
 			if ( query.length < 2 ) return;
-			
 			if ( query === searchQuery ) return;
-			
 			searchButton.find( "i" ).toggleClass( "hidden" );
-			
-			/*
-			$.getJSON
-			(
-				//"http://www.geoportal.rlp.de/mapbender/extensions/mobilemap/mod_mapbender/search_proxy.php?languageCode=de&resultTarget=web&maxResults=40&searchText=Naturschutz"
-				"http://www.geoportal.rlp.de/mapbender/extensions/mobilemap/mod_mapbender/search_proxy.php",
-				{
-					languageCode: "de",
-					resultTarget: "web",
-					maxResults: 40,
-					searchText: query
-				},
-				onSearchResponse
-			);
-			*/
-		   
 			var maxResults = 5;
-			
-			var url = netgis.config.URL_SEARCH_REQUEST + "?outputFormat=json&resultTarget=web&searchEPSG=31466&maxResults=" + maxResults + "&maxRows=" + maxResults + "&searchText=" + query + "&featureClass=P&style=full&name_startsWith=" + query;
-			
+			var url = netgis.config.URL_SEARCH_REQUEST + "?outputFormat=json&resultTarget=web&searchEPSG=" + netgis.config.SEARCH_REQUEST_EPSG + "&maxResults=" + maxResults + "&maxRows=" + maxResults + "&searchText=" + query + "&featureClass=P&style=full&name_startsWith=" + query;
 			if ( netgis.config.URL_SEARCH_PROXY && netgis.config.URL_SEARCH_PROXY.length > 0 )
 			{
 				$.getJSON
@@ -396,32 +363,26 @@ netgis.menu =
 					onSearchResponse
 				);
 			}
-	
 			searchQuery = query;
 		};
-		
 		var toggleSideMenu = function( on )
 		{
 			sideMenu.toggleClass( "visible", on );
 		};
-		
 		var clearSideContent = function( content )
 		{
 			sideMenuContent.empty();
 		};
-		
 		var addSideContent = function( item )
 		{
 			sideMenuContent.append( item );
 		};
-		
 		// Event Handlers
 		$( document ).ready( init );
 		
 		var onBrandClick = function( event )
 		{
 			location.reload();
-			
 			event.preventDefault();
 		}
 		
@@ -429,8 +390,6 @@ netgis.menu =
 		{
 			if ( params.loading )
 			{
-				//layerMenu.empty();
-				
 				layerMenu.find( ".divider" ).nextAll().remove();
 			}
 			else
@@ -496,7 +455,6 @@ netgis.menu =
 				
 				layerMenu.find( ".btn-layer" ).click( onLayerClick );
 				layerMenu.find( ".btn-group" ).click( onGroupClick );
-				
 				layerMenu.find( ".collapser" ).click( function() { $( this ).next().collapse( "toggle" ); } );
 			}
 		};
@@ -601,8 +559,6 @@ netgis.menu =
 				parentIcon.toggleClass( "glyphicon-unchecked", ! parentActive );
 				
 				//TODO: recurse for parent parents etc.
-				
-				//netgis.events.call( netgis.events.LAYER_TOGGLE, { id: parent.id } );
 				
 				// Toggle Parent Parent
 				var parent2 = parent.components.parent ? parent.components.parent.value : null;
@@ -779,23 +735,7 @@ netgis.menu =
 			for ( var r = 0; r < searchResults.length; r++ )
 			{
 				var result = searchResults[ r ];
-				
 				var title = result.title;
-				/*
-				var regex = new RegExp( searchQuery, "gi" );
-				
-				title = title.replace( regex, "<b>" + searchQuery + "</b>" );
-				*/
-				/*			
-				var queryPos = title.search( regex );
-				
-				while ( queryPos > -1 ) //if ( queryPos > -1 )
-				{
-					title = title.substr( 0, queryPos ) + "!" + title.substr( queryPos );
-					
-					queryPos = title.search( regex );
-				}
-				*/
 				
 				var item =
 				{
@@ -839,8 +779,6 @@ netgis.menu =
 		
 		var onLegendShow = function( event )
 		{
-			// http://map1.naturschutz.rlp.de/service_lanis/mod_wms/wms_getmap.php?mapfile=wms_naturschutz_rlp&service=wms&version=1.1.1&request=GetLegendGraphic&format=image/png&layer=vogelschutzgebiet
-			
 			// Clear
 			legendPanel.empty();
 			
@@ -908,7 +846,6 @@ netgis.menu =
 			{
 				scaleValue.text( scale );
 				scaleCustom.data( "scale", scale );
-				
 				scaleCustom.show();
 				scaleDivider.show();
 			}
@@ -921,7 +858,6 @@ netgis.menu =
 			toggleSideMenu: toggleSideMenu,
 			clearSideContent: clearSideContent,
 			addSideContent: addSideContent,
-			
 			setTitleVisible: setTitleVisible,
 			setLayerMenuVisible: setLayerMenuVisible,
 			setToolMenuVisible: setToolMenuVisible,

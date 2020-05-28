@@ -1446,10 +1446,9 @@ $ckanPackage->registerobject_type = "Par_7_1_9";
 	            //generate "Kartenviewer intern" resource
 	            $resourcesArray[$indexResourceArray]->name = "Onlinekarte";//: ".$row['layer_title'];
 	            $resourcesArray[$indexResourceArray]->id = $row['uuid']."_geoportalrlp_mobile";
-	            $resourcesArray[$indexResourceArray]->description = "Ebene: ".$row['layer_title']." - Vorschau im integrierten Kartenviewer";
-	            $resourcesArray[$indexResourceArray]->url = $this->mapbenderUrl."/extensions/mobilemap/map.php?layerid=".$row['layer_id'];
+				$resourcesArray[$indexResourceArray]->description = "Ebene: ".$row['layer_title']." - Vorschau im integrierten Kartenviewer";
+				$resourcesArray[$indexResourceArray]->url = $this->mapbenderUrl."/extensions/mobilemap2/index.html?layerid=".$row['layer_id'];
 	            $resourcesArray[$indexResourceArray]->format = "Karte";
-		    //$resourcesArray[$indexResourceArray]->res_transparency_document_change_classification = "unaltered";
 	            $indexResourceArray++;
 	            //views to generate
 	            $viewArray[$indexViewArray]['view_type'] = "webpage_view";
