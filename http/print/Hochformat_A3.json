@@ -9,6 +9,7 @@
             "label" : "Titel",
             "type" : "text",
             "size" : 18,
+	    "maxCharacter" : 20,
             "pageElementsLink" : {
                 "titel" : "value"
             }
@@ -16,7 +17,7 @@
         
         {
             "id" : "dpi",
-            "label" : "DPI",
+            "label" : "Auflösung",
             "type" : "select",
             "size" : 20,
             "pageElementsLink" : {
@@ -37,6 +38,7 @@
             "id" : "comment1",
             "label" : "Notiz",
             "type" : "textarea",
+	  "maxCharacter" : 250,
             "size" : 5,
             "pageElementsLink" : {
                 "kommentar1" : "value"
@@ -126,7 +128,7 @@
                     "font_family" : "Arial",
                     "font_size" : 18
                 },
-        "messung" : {
+		"messung" : {
                  "type" : "measure",
                  "do_fill" : 0,
                  "fill_color" : {
@@ -144,36 +146,22 @@
                      "width" : 2.0
                      }
                     },
+
                 "kommentar1" : {
                     "type" : "para",
                     "x_ul" : 20.1,
                     "y_ul" : 365.2,
                     "font_family" : "Arial",
                     "font_size" : 11,
-                    "width" : 105,
+                    "width" : 215,
                     "height" : 5,
                     "align" : "L",
-                    "border" : 1,
-                    "fill" : 1,
+                    "border" : 0,
+                    "fill" :0,
                     "border_width" : 0.3
                 }
             }
-        },
-        {
-            "tpl" : "Hochformat_A3.pdf",
-            "useTplPage" : 2,
-            "elements" : {
-                "legende" : {
-                    "type" : "legend",
-                    "x_ul" : 7,
-                    "y_ul" : 40,
-                    "width" : 90,
-                    "height" : 180,
-                    "font_family" : "Arial",
-                    "font_size" : 14,
-                    "scale" : 1
-                }
-			}
         }
+        
     ]
 }

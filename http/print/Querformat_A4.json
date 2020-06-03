@@ -9,6 +9,7 @@
             "label" : "Titel",
             "type" : "text",
             "size" : 18,
+	    "maxCharacter" : 20,
             "pageElementsLink" : {
                 "titel" : "value"
             }
@@ -16,7 +17,7 @@
         
         {
             "id" : "dpi",
-            "label" : "DPI",
+            "label" : "Auflösung",
             "type" : "select",
             "size" : 20,
             "pageElementsLink" : {
@@ -37,6 +38,7 @@
             "id" : "comment1",
             "label" : "Notiz",
             "type" : "textarea",
+	  "maxCharacter" : 250,
             "size" : 5,
             "pageElementsLink" : {
                 "kommentar1" : "value"
@@ -119,30 +121,31 @@
                     "angle" : 0,
                     "filename" : "./img/northarrow.png"
                 },
+		"messung" : {
+                 "type" : "measure",
+                 "do_fill" : 0,
+                 "fill_color" : {
+                     "r" : 255,
+                     "g" : 0,
+                     "b" : 0
+                     },
+                 "do_stroke" : 1,
+                 "stroke_color" : {
+                     "r" : 255,
+                     "g" : 0,
+                     "b" : 0
+                     },
+                 "line_style" : {
+                     "width" : 2.0
+                     }
+                    },
+
 		"titel" : {
                     "type" : "text",
                     "x_ul" : 110,
                     "y_ul" : 15,
                     "font_family" : "Arial",
                     "font_size" : 16
-                },
-        		"messung" : {
-                 	"type" : "measure",
-                 	"do_fill" : 0,
-                 	"fill_color" : {
-                     	"r" : 255,
-                     	"g" : 0,
-                     	"b" : 0
-                     },
-                 	"do_stroke" : 1,
-                 	"stroke_color" : {
-                     	"r" : 255,
-                     	"g" : 0,
-                     	"b" : 0
-                     },
-                 	"line_style" : {
-                     	"width" : 2.0
-                     }
                 },
                 "kommentar1" : {
                     "type" : "para",
@@ -153,27 +156,11 @@
                     "width" : 60,
                     "height" : 5,
                     "align" : "L",
-                    "border" : 1,
-                    "fill" : 1,
+                    "border" : 0,
+                    "fill" : 0,
                     "border_width" : 0.3
                 }
             }
-        },
-        {
-            "tpl" : "Querformat_A4.pdf",
-            "useTplPage" : 2,
-            "elements" : {
-                "legende" : {
-                    "type" : "legend",
-                    "x_ul" : 7,
-                    "y_ul" : 36,
-                    "width" : 90,
-                    "height" : 180,
-                    "font_family" : "Arial",
-                    "font_size" : 10.5,
-                    "scale" : 0.9
-                }
-			}
         }
         
     ]
