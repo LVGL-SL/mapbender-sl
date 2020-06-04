@@ -236,21 +236,16 @@ class connector {
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->timeOut);
 		if ($this->curlSessionCookie !== false) {
 			curl_setopt($ch,CURLOPT_COOKIE, $this->curlSessionCookie);
-			//$e = new mb_exception("class_connector: cookie ".$this->curlSessionCookie);	
 		}
-		//$e = new mb_notice("connector: test1:");
-		//get hostname/ip out of url
-		//$host = parse_url($url,PHP_URL_HOST);
 		$arURL = parse_url($url);
 		$host = $arURL["host"];
-		$port = $arURL["port"];
+		isset($arURL["port"]) ? $port = $arURL["port"] : $port = 80;
 		if($port == ''){
 			$port = 80;
 			if($arURL["scheme"] == "https"){
 				$port = 443;
 			}
 		}
-
 		$path = $arURL["path"];
 
 		// fill array (HOSTs not for Proxy)

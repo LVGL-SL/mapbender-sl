@@ -316,13 +316,11 @@ class User implements RPCObject{
 			"is_active = $30, " .
 			"create_digest = $31, " .
 			"fkey_preferred_gui_id = $32, " .
-			
 			"mb_user_textsize = $33, " .
 			"mb_user_allow_survey = $34, " .
-			"mb_user_glossar_1 = $35, " .
+			"mb_user_glossar = $35, " .
 			"mb_user_newsletter = $36, " .
-			"mb_user_spatial_suggest_1 = $37 " .
-			
+			"mb_user_spatial_suggest = $37 " .
 			"WHERE mb_user_id = $38;";
 
 		if ($this->isActive !== 't') {$this->isActive = 'f';}

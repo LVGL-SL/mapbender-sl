@@ -80,23 +80,7 @@ if ($languageCode == 'fr'){
 	$pathToLoadScript = '/portal/fr/cartes.html?WMC=';
 }
 
-/*
-//define sql for selecting informations from database:
 $sql = "";
-$sql .= "SELECT search_wmc_view.wmc_serial_id,search_wmc_view.wmc_title,search_wmc_view.wmc_abstract, custom_category.custom_category_code_".$languageCode. ", search_wmc_view.load_count ";
-$sql .= "FROM search_wmc_view INNER JOIN wmc_custom_category ON "; 
-$sql .= "(wmc_custom_category.fkey_wmc_serial_id=search_wmc_view.wmc_serial_id) INNER JOIN custom_category ON ";
-$sql .= "(custom_category.custom_category_id=wmc_custom_category.fkey_custom_category_id) WHERE ";
-$sql .= "custom_category.custom_category_key = 'mbc1' ORDER BY search_wmc_view.load_count DESC LIMIT $1 ";
-*/
-//define sql for selecting informations from database:
-//$sql = "";
-//$sql .= "SELECT search_wmc_view.wmc_serial_id,search_wmc_view.wmc_title,search_wmc_view.wmc_abstract, search_wmc_view.load_count ";
-//$sql .= "FROM search_wmc_view ORDER BY search_wmc_view.load_count DESC LIMIT $1 ";
-
-$sql = "";
-//select wmc_serial_id,wmc_title,wmc_abstract,CASE WHEN (wmc_timestamp  > (extract(epoch from now())- ((86400)*5))) THEN wmc_timestamp ELSE 0 END as timestamp, load_count from search_wmc_view  order by timestamp desc, load_count desc LIMIT 
-
 $sql .= "SELECT search_wmc_view.wmc_serial_id,search_wmc_view.wmc_title,search_wmc_view.wmc_abstract,";
 $sql .= " CASE WHEN (wmc_timestamp  > (extract(epoch from now())- ((86400) * $2))) THEN wmc_timestamp ELSE 0 END as timestamp,search_wmc_view.load_count ";
 $sql .= " from search_wmc_view  order by timestamp desc, load_count desc LIMIT $1";
@@ -107,19 +91,16 @@ $res = db_prep_query($sql,$v,$t);
 $initialWmc = array();
 $i = 0;
 while($row = db_fetch_array($res)){
-	//$mobileUrl = $row['wmc_serial_id'];
-	//$uuid = new Uuid;
 	$filename = "qr_wmc_".$row['wmc_serial_id'].".png";
 	//generate qr on the fly in tmp folder if not already exists
 	//check if exists
 	if (file_exists(TMPDIR."/".$filename)) {
-    		$mobileUrl = MAPBENDER_PATH."/extensions/mobilemap/map.php?wmcid=".$row['wmc_serial_id'];
+    	$mobileUrl = MAPBENDER_PATH."/extensions/mobilemap2/index.html?wmc_id=".$row['wmc_serial_id'];
 		$mobileQrImageUrl = MAPBENDER_PATH."/tmp/".$filename;
 	} else {
-    		//link to invoke wmc per get api if wrapper path isset
+    	//link to invoke wmc per get api if wrapper path isset
 		if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != "") {
-			$mobileUrl = MAPBENDER_PATH."/extensions/mobilemap/map.php?wmcid=".$row['wmc_serial_id'];
-			//$invokeLink = "http://www.geoportal.rlp.de/mapbender/extensions/mobilemap/map.php";
+			$mobileUrl = MAPBENDER_PATH."/extensions/mobilemap2/index.html?wmc_id=".$row['wmc_serial_id'];
 			QRcode::png($mobileUrl,TMPDIR."/".$filename);
 			$mobileQrImageUrl = MAPBENDER_PATH."/tmp/".$filename;
 		} else {
@@ -129,7 +110,6 @@ while($row = db_fetch_array($res)){
 	}
 	$initialWmc[$i] = array('id'  =>$row['wmc_serial_id'], 'title' =>$row['wmc_title'], 'abstract' =>$row['wmc_abstract'],'loadUrl'=>'http://'.$hostName.$pathToLoadScript.$row['wmc_serial_id'],'metadataUrl'=>'http://'.$hostName.$pathToMetadata."languageCode=".$languageCode."&resource=wmc&id=".$row['wmc_serial_id'], 'previewUrl'=>'http://'.$hostName.$pathToPreview."resource=wmc&id=".$row['wmc_serial_id'],'timestamp' => $row['timestamp'],'loadCount' => $row['load_count'], 'mobileUrl' => $mobileUrl, 'mobileQrImageUrl' => $mobileQrImageUrl);
 	//generate qr images
-	
 	$i++;
 }
 if ($outputFormat == 'html'){

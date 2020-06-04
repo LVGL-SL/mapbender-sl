@@ -306,7 +306,7 @@ var LoadWmcApi = function () {
 		mobileUrl = Mapbender.baseUrl + "/mapbender/";
 		var olUrl = "";
 		olUrl = mobileUrl + "php/mod_wmc2ol.php?wmc_id=" + id ;
-		mobileUrl = mobileUrl + "extensions/mobilemap/map.php?wmcid=" + id ;
+		mobileUrl = mobileUrl + "extensions/mobilemap2/index.html?wmc_id=" + id ;
 		//initialize dialog
 		var $wmcApiDialog = $('<div class="wmcApiDialog" id="api_dialog"></div>');
 		$wmcApiDialog.dialog({
