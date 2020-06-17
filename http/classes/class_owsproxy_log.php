@@ -9,7 +9,6 @@ require_once(dirname(__FILE__)."/../../core/globalSettings.php");
 
 class OwsLogCsv {
     private $filename;
-    
     private $mb_user_id;
     private $function;
     private $listType;
@@ -19,16 +18,13 @@ class OwsLogCsv {
     private $timeFrom;
     private $timeTo;
     private $withContactData;
-    
     private $resultDisplay;
     private $resultData;
     private $resultMessage;
    
     private static $SEPARATOR_VALUE = "\t";
     private static $SEPARATOR_ROW = "\n";
-    
     private static $LIMIT_INT = OWS_LOG_EXPORT_LIMIT;
-    
     private static $LIMIT_SQL = " ORDER BY m.log_id DESC LIMIT ";
     
     private function __construct() {
@@ -132,7 +128,6 @@ class OwsLogCsv {
             }
 
             $join = " INNER JOIN mb_user AS u ON (u.mb_user_id = m.fkey_mb_user_id)";
-//            $innerjoinContactData = "";
             if($this->withContactData !== null && $this->withContactData == "1") {
                 $selectColumns .= ",u.mb_user_firstname,mb_user_lastname"
                     .",u.mb_user_department,u.mb_user_description"
@@ -149,7 +144,6 @@ class OwsLogCsv {
 			}
             }
             $v = array($this->mb_user_id, $this->timeFrom, $this->timeTo);
-//            $v = array($this->owsId, $this->timeFrom, $this->timeTo, 9415);
             $t = array('i', "t", "t");
             $owsIdWhere = "";
             if($this->owsId !== null && intval($this->owsId)> -1) {
@@ -212,7 +206,6 @@ class OwsLogCsv {
                     break;
             }
             $join = "";
-//            $innerjoinContactData = "";
             if($this->withContactData !== null && $this->withContactData == "1") {
                 $selectColumns .= ",u.mb_user_firstname,mb_user_lastname"
                         .",u.mb_user_department,u.mb_user_description"
@@ -305,7 +298,6 @@ class OwsLogCsv {
                         .",u.mb_user_postal_code,u.mb_user_city";
             }
             $v = array($this->owsId, $this->timeFrom, $this->timeTo, $this->mb_user_id);
-//            $v = array($this->owsId, $this->timeFrom, $this->timeTo, 9415);
             $t = array('i', "t", "t", "i");
             switch ($this->owsType) {
                 case "wms":
@@ -339,7 +331,6 @@ class OwsLogCsv {
                     break;
             }
             $join = "";
-//            $innerjoinContactData = "";
             if($this->withContactData !== null && $this->withContactData == "1") {
                 $selectColumns .= ",u.mb_user_firstname,mb_user_lastname"
                         .",u.mb_user_department,u.mb_user_description"
@@ -349,7 +340,6 @@ class OwsLogCsv {
                 $join .= " INNER JOIN mb_user AS u  ON (u.mb_user_id = m.fkey_mb_user_id)";
             }
             $v = array($this->userId, $this->timeFrom, $this->timeTo, $this->mb_user_id);
-//            $v = array($this->userId, $this->timeFrom, $this->timeTo, 9415);
             $t = array('i', "t", "t", "i");
             $whereOws = "";
             switch ($this->owsType) {
@@ -382,10 +372,6 @@ class OwsLogCsv {
         #function=deleteServiceLogs&listType=user&   serviceType=wms&userId=xyz&timeFrom=2012-05-31T12:01&timeTo=2012-05-31T12:12
         #function=deleteServiceLogs&listType=user&   serviceType=wms&userId=xyz&timeFrom=2012-05-31T12:01&timeTo=2012-05-31T12:12&owsId=xyz
         if($this->listType == "service") {
-//            $v = array($owsId, $timeFrom, $timeTo);
-//            $t = array('i', "t", "t");
-//            $sql = "DELETE FROM mb_proxy_log WHERE fkey_wms_id = $1"
-//                    ." AND proxy_log_timestamp >= $2 AND proxy_log_timestamp <= $3";
             $v = array($this->timeFrom, $this->timeTo, $this->mb_user_id);
             $t = array("t", "t", "i");
             switch ($this->owsType) {
@@ -430,15 +416,6 @@ class OwsLogCsv {
                 $this->resultMessage = "Kein Log-Datensatz (DienstId: ".$this->owsId.") wurde geloescht.";
             }
         } else if($this->listType == "user") {
-//            $v = array($userId, $timeFrom, $timeTo);
-//            $t = array('i', "t", "t");
-//            $sql = "DELETE FROM mb_proxy_log WHERE fkey_mb_user_id = $1"
-//                    ." AND proxy_log_timestamp >= $2 AND proxy_log_timestamp <= $3";
-//            if($owsId !== null && $owsId != "") {
-//                $sql .= " AND fkey_wms_id = $4";
-//                $v[] = $owsId;
-//                $t[] = 'i';
-//            }
             $v = array($this->userId, $this->timeFrom, $this->timeTo, $this->mb_user_id);
             $t = array('i', "t", "t", "i");
             $whereOws = "";
@@ -460,7 +437,6 @@ class OwsLogCsv {
     			}
 
                 $whereOws .= implode(",",$inParams); 
-    			
                 $whereOws .= ")";
             }
             switch ($this->owsType) {
@@ -572,7 +548,6 @@ class OwsLogCsv {
                     $sum[] = '---';
                 }
             }
-        
         }
 
         if ($storeChunks) {
@@ -592,9 +567,7 @@ class OwsLogCsv {
     }
     
     private function storeCsv($rows) {
-        //$this->csvChunks[] = $this->toCsv($rows);
         file_put_contents($this->filename, $this->toCsv($rows), FILE_APPEND);
-        //$this->csvStore .= $this->toCsv($rows).OwsLogCsv::$SEPARATOR_ROW;
     }
     
     public function toCsv($rows) {
@@ -605,9 +578,6 @@ class OwsLogCsv {
                 if ($value == null || $value == "") {
                     $value = "".OwsLogCsv::$SEPARATOR_VALUE;
                 } else {
-//                    if(CHARSET == 'UTF-8') {
-//                        $value = utf8_encode($value);
-//                    }
                     $value = str_replace('"', '""', $value);
                     $value = '"'.$value.'"'.OwsLogCsv::$SEPARATOR_VALUE;
                 }
@@ -621,7 +591,6 @@ class OwsLogCsv {
     public function getAsCsv() {
         if ($this->filename != "") {
             return file_get_contents($this->filename);
-            //return implode(OwsLogCsv::$SEPARATOR_ROW, $this->csvChunks);
         } else {
             $csv = $this->toCsv(array($this->resultData['header']))
                 .OwsLogCsv::$SEPARATOR_ROW
@@ -651,4 +620,3 @@ class OwsLogCsv {
         return $array;
     }
 }
-?>
