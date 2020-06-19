@@ -1042,15 +1042,8 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 	if ($type == 'SERVICE' && $generateFrom == "wfs") {
 	/*<link rel="related" href="http://xyz.org/wfs?request=GetCapabilities&amp;service=WFS&amp;version=2.0.0" type="application/xml" title="Service implementing Direct Access operations"/>*/
 		$feedLink = $feedDoc->createElement("link");
-		if ($admin->getWFSOWSstring($mapbenderMetadata[$m]->wfs_id) == false) {
-			//$wfsGetCapabilitiesUrl = $mapbenderMetadata[$m]->wfs_getcapabilities;
-			if (count($mapbenderMetadata) == 1) {
-//$e = new mb_exception(count($mapbenderMetadata));
-				$wfsGetCapabilitiesUrl = $mapbenderPath."php/wfs.php?INSPIRE=1&FEATURETYPE_ID=".$mapbenderMetadata[$m]->featuretype_id;
-			} else {
-				//TODO - set url to wfs proxy - wfs.php has to be adopted to allow more than one featuretype as parameter!
-				$wfsGetCapabilitiesUrl = $mapbenderMetadata[$m]->wfs_getcapabilities;
-			}
+		if ($admin->getWFSOWSstring($mapbenderMetadata[$m]->wfs_id) == false) {          
+			$wfsGetCapabilitiesUrl = $mapbenderMetadata[$m]->wfs_getcapabilities;			
 		} else {
 			$wfsGetCapabilitiesUrl = $mapbenderServerUrl."/registry/wfs/".$mapbenderMetadata[$m]->wfs_id."?INSPIRE=1";
 		}
