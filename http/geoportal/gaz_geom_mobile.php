@@ -156,15 +156,6 @@ foreach ($gazetteerObject->features as $feature) {
 		$returnObject->geonames[$countGeonames]->fcodeName = $feature->properties->typ;
 		$returnObject->geonames[$countGeonames]->countryName = $feature->properties->kreis;
 	}
-	if ($forceGeonames) {
-		//map to actual geonames objects
-		$returnObject->geonames[$countGeonames]->toponymName = $returnObject->geonames[$countGeonames]->title ;
-		$returnObject->geonames[$countGeonames]->name = $returnObject->geonames[$countGeonames]->toponymName;
-		$returnObject->geonames[$countGeonames]->lng = (double)(($feature->bbox[2] + $feature->bbox[0])/2);
-		$returnObject->geonames[$countGeonames]->lat = (double)(($feature->bbox[3] + $feature->bbox[1])/2);
-		$returnObject->geonames[$countGeonames]->fcodeName = $feature->properties->typ;
-		$returnObject->geonames[$countGeonames]->countryName = $feature->properties->kreis;
-	}
 	$countGeonames++;
 }
 $returnObject->totalResultsCount = $countGeonames;
