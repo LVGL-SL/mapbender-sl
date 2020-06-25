@@ -1,7 +1,6 @@
 <?php
 require_once(dirname(__FILE__) . "/../../core/globalSettings.php");
 require_once(dirname(__FILE__) . "/../classes/class_user.php");
-$hostName = FULLY_QUALIFIED_DOMAIN_NAME;
 $operation = "get";
 $key = "mb_user_id";
 $value = null;
@@ -13,7 +12,7 @@ $resultObj['success'] = false;
 $resultObj['message'] = 'no message';
 
 //if (!($hostName == '127.0.0.1')) {
-if (!($hostName == 'localhost' or $hostName == '127.0.0.1')) {
+if (!($_SERVER['HTTP_HOST'] == 'localhost' or $_SERVER['HTTP_HOST'] == '127.0.0.1')) {
 	$resultObj['message'] ='hostName not allowed - only local connections possible (localhost,127.0.0.1)';
 	$resultObj['result'] = null;
 	echo json_encode($resultObj);
