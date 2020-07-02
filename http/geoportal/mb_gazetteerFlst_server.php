@@ -93,7 +93,6 @@ if ($command == "getGmkName") {
             				<PropertyName>' . $gmkNameAttr . '</PropertyName>
                 			<Literal>*' . $searchString . '*</Literal>
         					</PropertyIsLike></Filter>';
-    $e = new mb_exception($filter);
     $resultObj = getGeoJson($searchFeaturetype, $filter);
     $resultArray = array();
 
