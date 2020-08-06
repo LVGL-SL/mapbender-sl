@@ -1418,12 +1418,6 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
             if ($log_id != null && is_integer($log_id)) {
             	$n->updateWmsLog($numColors <= 1 ? -1 : 1, null, null, $log_id);
             }
-            /*header("Content-Type: " . $reqParams['format']);
-            echo $content;*/
-            if ($mask !== null && $mask != false) {
-            	new mb_notice("spatial security: applying mask");
-            	$source->compositeImage($mask, Imagick::COMPOSITE_DSTIN, 0, 0, Imagick::CHANNEL_ALPHA);
-            }
             header("Content-Type: " . $reqParams['format']);
             echo $source->getImageBlob();
         }
