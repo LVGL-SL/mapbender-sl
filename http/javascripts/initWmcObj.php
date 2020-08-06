@@ -19,7 +19,6 @@ require_once(dirname(__FILE__)."/../classes/class_cache.php");
 require_once(dirname(__FILE__)."/../classes/class_crs.php");
 require_once(dirname(__FILE__)."/../classes/class_iso19139.php");
 require_once(dirname(__FILE__)."/../classes/class_group.php");
-
 /*check if key param can be found in SESSION, otherwise take it from $_GET
 */
 function getConfiguration ($key) {
@@ -28,17 +27,16 @@ function getConfiguration ($key) {
 	}
 	return $_GET[$key];
 }
-
 /*for debugging purposes only
 */
 function logit($text,$filename,$how){
 	 if($h = fopen(LOG_DIR."/".$filename,$how)){
-				$content = $text .chr(13).chr(10);
-				if(!fwrite($h,$content)){
-					//exit;
-				}
-				fclose($h);
-			}
+		$content = $text .chr(13).chr(10);
+		if(!fwrite($h,$content)){
+			//exit;
+		}
+		fclose($h);
+	}
 }
 $admin = new administration();
 /*
@@ -135,8 +133,8 @@ if ($saveInSession->value === "1") {
     $saveInSession = true;
    //$e = new mb_exception("javascripts/initWmcObj.php: wmc doc reference ".$wmc_filename." found in session and GUI: ".$app." will also save its state serverside!");
 } else {
-	    $saveInSession = false;
-	    //$e = new mb_exception("javascripts/initWmcObj.php: wmc doc reference ".$wmc_filename." found in session. And GUI ".$app." will not save its state to session!");
+	$saveInSession = false;
+	//$e = new mb_exception("javascripts/initWmcObj.php: wmc doc reference ".$wmc_filename." found in session. And GUI ".$app." will not save its state to session!");
 }
 //*********************************************************************************************************
 /*
@@ -226,11 +224,9 @@ $startWmcId = $input["id"];
 WMS
 */
 $e = new mb_notice("javascripts/initWmcObj.php: check WMS API");
-
 //private $datasetid; //new parameter to find a layer with a corresponding identifier element - solves the INSPIRE data service coupling after retrieving the ows from a dataset search via CSW interface! Only relevant, if a WMS is gioven 
-
 if ($getParams['WMS']) {
-// WMS param given as array
+	// WMS param given as array
 	if (is_array($getParams['WMS'])) {
 		$inputWmsArray = $getParams['WMS'];
 	}
@@ -280,7 +276,7 @@ if ($getParams['WMS']) {
 					);	
 			}
 		} else {
-			//one single WMS capabilities url is given - check it
+			//one single WMS capabilities url is given - normal case!
 			$currentWms = new wms();
 			if(is_numeric($key)) {
 				// get WMS by ID
@@ -291,7 +287,48 @@ if ($getParams['WMS']) {
 				else if (is_string($val)) {
 					//$e = new mb_exception("javascripts/initWmcObj.php: look for identifier element: ".$getParams['DATASETID']);		
 					$resultOfWmsParsing = $currentWms->createObjFromXML($val, false, $getParams['DATASETID']);
-					//$e = new mb_exception("javascripts/initWmcObj.php: wms object to add: ".json_encode($currentWms));	
+					//Set zoom to extent of wms 
+					//$e = new mb_exception("javascripts/initWmcObj.php: wms object to add: ".json_encode($currentWms));
+					//$e = new mb_exception("javascripts/initWmcObj.php: first layer layer_epsg: ".json_encode($currentWms->objLayer[0]->layer_epsg[0]));
+					//find layer epsg of service where epsg=EPSG:4326
+					foreach ($currentWms->objLayer[0]->layer_epsg as $layerExtent) {
+						//$e = new mb_exception("leayer_epsg: ".$layerExtent["epsg"]);
+						if ($layerExtent["epsg"] == "EPSG:4326") {
+							// overwrite extend from getApi
+							//$e = new mb_exception("overwrite extent");
+							$bbox = new Mapbender_bbox($layerExtent["minx"],$layerExtent["miny"],$layerExtent["maxx"],$layerExtent["maxy"],"EPSG:4326");
+							// check for current epsg and transform if needed
+							if ($wmcGetApi->mainMap->getEpsg() !== "EPSG:4326") {
+								$bbox->transform($wmcGetApi->mainMap->getEpsg());
+							}
+							$wmcGetApi->mainMap->setExtent($bbox);
+							//overwrite zoom to parameter 
+							break;	
+						}
+					}
+					//search for bbox of special layer - overwrite the bbox of the wms if such a layer was found!
+					if (isset($getParams['DATASETID']) && $getParams['DATASETID'] != "") {
+						foreach ($currentWms->objLayer as $layerObj) {
+							if ($layerObj->layer_identifier == $getParams['DATASETID']) {
+								foreach ($layerObj->layer_epsg as $subLayerExtent){
+									if ($subLayerExtent["epsg"] == "EPSG:4326") {
+										// overwrite extend from getApi
+										//$e = new mb_exception("overwrite extent");
+										$bbox = new Mapbender_bbox($subLayerExtent["minx"],$subLayerExtent["miny"],$subLayerExtent["maxx"],$subLayerExtent["maxy"],"EPSG:4326");
+										// check for current epsg and transform if needed
+										if ($wmcGetApi->mainMap->getEpsg() !== "EPSG:4326") {
+											$bbox->transform($wmcGetApi->mainMap->getEpsg());
+										}
+										$wmcGetApi->mainMap->setExtent($bbox);
+										//overwrite zoom to parameter
+										break;
+									}
+								}
+								break;
+							}
+						
+						}
+					}
 				}
 				if ($resultOfWmsParsing['success'] == true) {
 					array_push($wmsArray, $currentWms);
@@ -609,13 +646,10 @@ if (true) {
 	        //$jsonFile = new connector("http://localhost/mb_trunk/geoportal/testpolygon.json"); 
 	    }
     } else {
-        $e = new mb_exception("Found no mapbender application metadata!");
+        $e = new mb_notice("Found no mapbender application metadata!");
     }
 }
 //*******************************************************************************************************
-
-
-
 // TODO test following
 // workaround to have a fully merged WMC for loading
 $xml = $wmcGetApi->toXml();
@@ -769,11 +803,11 @@ if ($gml_string) {
 	try {
 		$gml2 = simplexml_load_string($gml2String);
 		if ($gml2 === false) {
-				foreach(libxml_get_errors() as $error) {
-					$err = new mb_exception("javascripts/mod_renderGML.php: ".$error->message);
-	    			}
-				throw new Exception("javascripts/initWmcObj.php: ".'Cannot parse GML from session!');
-				return false;
+			foreach(libxml_get_errors() as $error) {
+				$err = new mb_exception("javascripts/mod_renderGML.php: ".$error->message);
+	    	}
+			throw new Exception("javascripts/initWmcObj.php: ".'Cannot parse GML from session!');
+			return false;
 		}
 	}
 	catch (Exception $e) {
@@ -827,19 +861,18 @@ if ($gml_string) {
 		} else { //no multipolygon found
 			$e = new mb_notice("javascripts/initWmcObj.php: Other geometry than MultiPolygon found in session - try to parse it with mapbenders gml2 class!");
 			$gml = new gml2();
-                        $gml->parse_xml($gml_string);
-                        $bboxArray = $gml->bbox;
-                        $currentEpsg = Mapbender::session()->get("epsg");
-                        //create mapbender bbox object to zoom to
-                        $bbox = new Mapbender_bbox(
-                                $bboxArray[0],
-                                $bboxArray[1],
-                                $bboxArray[2],
-                                $bboxArray[3],
-                                $epsg = "EPSG:".$currentEpsg
-
-                        );
-                        $wmcGetApi->mainMap->setExtent($bbox);
+            $gml->parse_xml($gml_string);
+            $bboxArray = $gml->bbox;
+            $currentEpsg = Mapbender::session()->get("epsg");
+            //create mapbender bbox object to zoom to
+            $bbox = new Mapbender_bbox(
+                $bboxArray[0],
+                $bboxArray[1],
+                $bboxArray[2],
+                $bboxArray[3],
+                $epsg = "EPSG:".$currentEpsg
+            );
+            $wmcGetApi->mainMap->setExtent($bbox);
 		}
 	}
 }
@@ -867,14 +900,13 @@ if (count($zoom) == 3) {
 	$newExtent[2],
 	$newExtent[3],
 	$epsg = $wmcGetApi->mainMap->getEpsg());
-
     $wmcGetApi->mainMap->setExtent($bbox);
     //render point at middle position
     
 }
 if (count($zoom) == 4 || count($zoom) == 5) {
 	$e = new mb_notice("javascripts/initWmcObject.php: found EXTENT");
-	if (count($zoom) == 5){
+	if (count($zoom) == 5) {
 		$bbox = new Mapbender_bbox(
 			$zoom[0],
 			$zoom[1],
@@ -940,8 +972,7 @@ if (
 		});
 JS;
 	Mapbender::session()->delete("wmcGetApi", $wmcGetApi);
-}
-else {
+} else {
 	Mapbender::session()->set("wmcConstraints", $resultObj);
 	$output = $wmc->wmsToJavaScript();
 	$wmcJs = $wmc->toJavaScript(array());
@@ -1013,6 +1044,11 @@ if ($saveInSession == false) {
 	Mapbender::session()->delete("mb_wmc");
 	//delete also the current gui - this is handled by revertGui...
 } else {
+	//TODO: do the following only if wmc id was given by GET parameter or always - write wmc to session before initialize the client 
+	//if (){
+	    $admin->putToStorage($wmc_filename, $wmcGetApi->toXml(), TMP_WMC_SAVE_STORAGE, 3600);
+        //$e = new mb_exception("javascripts/initWmcObj.php: write initial wmc to storage - filename: ".$wmc_filename);
+	//}
     //$e = new mb_exception('javascripts/initWmcObj.php: wmc remain in session');
 }
 //$e = new mb_exception('javascripts/initWmcObj.php: Actual mb_wmc from session: '.Mapbender::session()->get("mb_wmc"));
