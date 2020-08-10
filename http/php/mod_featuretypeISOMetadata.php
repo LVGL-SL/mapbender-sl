@@ -462,7 +462,8 @@ SQL;
 	/*TODO: Exchange HTTP_HOST with other baseurl*/
     $pos = 0;
     while ($row_metadata = db_fetch_array($res_metadataurl)) {
-	$uniqueResourceIdentifierCodespace = $admin->getIdentifierCodespaceFromRegistry($departmentMetadata, $row_metadata);
+		$uniqueResourceIdentifierCodespace = $admin->getIdentifierCodespaceFromRegistry($departmentMetadata, $row_metadata);
+    	if (isset($row_metadata['uuid']) && $row_metadata['uuid'] != "") {
         switch ($row_metadata['origin']) {
             case 'capabilities':
                	$pos++;
@@ -494,6 +495,7 @@ SQL;
             default:
                 break;
         }
+    }
     }
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:distributionInfo/gmd:MD_Distribution/gmd:distributionFormat/gmd:MD_Format/gmd:name/@gco:nilReason',
