@@ -37,6 +37,7 @@ class connector {
 	private $curlSendCustomHeaders = true; //decide to send own headers or not
 	private $curlSessionCookie = false;
 	private $externalHeaders = "";
+	private $httpCode = null;
 
 
 	/**
@@ -69,9 +70,9 @@ class connector {
 		//HTTP_AUTH_PROXY or OWSPROXY. If some of those are part of the url they must be exchanged with 127.0.0.1 - 			//which hopefully should work.
 		$testMatch = $url;
 		$localTmpFolder = 'file://'.str_replace('classes',ltrim(TMPDIR,'\.\./'),dirname(__FILE__)).'/';
-		$pattern = '/^http:|https:|'.str_replace('/','\/',$localTmpFolder).'/';	
+		$pattern = '/^http:|https:|'.str_replace('/','\/',$localTmpFolder).'/';
 		//$e = new mb_exception('file://'.str_replace('classes',ltrim(TMPDIR,'../'),dirname(__FILE__)).'/');
- 		if (!preg_match($pattern,$testMatch)){ 
+ 		if (!preg_match($pattern,$testMatch)){
 			$e = new mb_exception('classes/class_connector.php: Access to resource not allowed!');
 			return false;
 		}
@@ -363,6 +364,7 @@ class connector {
 			fwrite($handle,$error_log);
 			fwrite($handle,"502: ".$file."\n");*/
 		}
+		$this->httpCode = $info['http_code'];
 		curl_close ($ch);
 		//fclose($handle);
 		//reset the env variable http_proxy to the former value
@@ -371,6 +373,10 @@ class connector {
 		}
 //$e = new mb_exception("class_connector.php: CURL give back: ".$file);
 		return $file;
+	}
+
+	public function getHttpCode() {
+		return $this->httpCode;
 	}
 
 	private function getHTTP($url){
