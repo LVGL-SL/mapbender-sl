@@ -298,63 +298,6 @@ if ($auth['auth_type'] == '') {
 switch (strtolower($reqParams['request'])) {
 
     case 'getcapabilities':
-<<<<<<< HEAD
-	switch (strtolower($reqParams['service'])) {
-		case 'wfs':
-			$arrayOnlineresources = checkWfsPermission($owsproxyString, false, $userId);
-        		$query->setOnlineResource($arrayOnlineresources['wfs_getcapabilities']);
-        		$request = $query->getRequest(); 
-			$request = str_replace('?&','?',$request);
-			//TODO: following is not the standard way because ows has not to handle vsp!!!
-			$request = delTotalFromQuery("wfs_id",$request);
-			//add force basic to request!!!!! - not for capabilities?
-			if ($authType == 'basic') {
-				$extraParameter = "forceBasicAuth=true";
-			} else {
-				$extraParameter = false;
-			}
-			//don't allow get parameters in conjunction with post!
-			if ($postData !== false) {
-				$request = $arrayOnlineresources['wfs_getcapabilities'];
-			}
-			if (isset($auth)) {
-            			getWfsCapabilities($request, $extraParameter, $auth);
-        		} else {
-            			getWfsCapabilities($request, $extraParameter);
-        		}		
-		break;
-		case 'wms':
-        		$arrayOnlineresources = checkWmsPermission($owsproxyString, $userId);
-        		$query->setOnlineResource($arrayOnlineresources['wms_getcapabilities']);
-			if (isset($_SERVER["HTTPS"])) {
-            			$urlPrefix = "https://";
-        		} else {
-            			$urlPrefix = "http://";
-        		}
-        		if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != '') {
-            			$request = MAPBENDER_PATH . "/php/wms.php?layer_id=" . $layerId;
-        		} else {
-            			$request = $urlPrefix . FULLY_QUALIFIED_DOMAIN_NAME . "/mapbender/php/wms.php?layer_id=" . $layerId;
-        		}
-        		if ($withChilds) {
-            			$requestFull .= $request . '&withChilds=1&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS';
-        		} else {
-            			$requestFull .= $request . '&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS';
-        		}
-			if ($authType == 'basic') {
-				$extraParameter = "&forceBasicAuth=true";
-			} else {
-				$extraParameter = false;
-			}
-        		if (isset($auth)) {
-            			getCapabilities($request, $requestFull, $extraParameter, $auth);
-        		} else {
-            			getCapabilities($request, $requestFull, $extraParameter);
-        		}
-		break;
-	
-	}
-=======
         switch (strtolower($reqParams['service'])) {
             case 'wfs':
                 $arrayOnlineresources = checkWfsPermission($owsproxyString, false, $userId);
@@ -409,7 +352,6 @@ switch (strtolower($reqParams['request'])) {
                 }
                 break;
         }
->>>>>>> v1.2.1_pull
         break;
 
     case 'getfeatureinfo':

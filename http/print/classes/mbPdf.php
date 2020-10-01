@@ -18,34 +18,6 @@ abstract class mbPdf
 
     abstract public function save();
 
-<<<<<<< HEAD
-	public function returnAbsoluteUrl($secureProtocol=false) {
-		$mbjson = new Mapbender_JSON();
-		if ($this->isSaved) {
-			if (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on")
-				$prot = "https://";
-			else
-				$prot = "http://";
-			//allow overwrite of protocol for some architectural reasons  
-			if ($secureProtocol) {
-				$prot = "https://";
-			}
-			$absoluteUrlToPdf = $prot. FULLY_QUALIFIED_DOMAIN_NAME .dirname($_SERVER['SCRIPT_NAME'])."/printPDF_download.php?f=".$this->outputFileName."&".SID;
-			return $mbjson->encode(array("outputFileName"=>$absoluteUrlToPdf));
-		}
-		else
-		    return $mbjson->encode(array("error"=>"Possibly no map urls delivered."));
-	}	
-	
-	public function returnUrl() {
-		$mbjson = new Mapbender_JSON();
-		if ($this->isSaved) {
-			return $mbjson->encode(array("outputFileName"=>TMPDIR."/".$this->outputFileName));
-		}
-		else
-		    return $mbjson->encode(array("error"=>"Possibly no map urls delivered."));
-	}	
-=======
     public function generateOutputFileName($prefix, $suffix)
     {
         return $prefix . "_" . substr(md5(uniqid(rand())), 0, 7) . "." . $suffix;
@@ -90,7 +62,6 @@ abstract class mbPdf
             return $mbjson->encode(array("error" => "Possibly no map urls delivered."));
         }
     }
->>>>>>> v1.2.1_pull
 
 }
 

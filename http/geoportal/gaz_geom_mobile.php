@@ -127,42 +127,7 @@ if ($_REQUEST['resultTarget'] != 'web') {
 	$epsg = $searchEPSG;
 	$searchThruWeb = true;
 }
-<<<<<<< HEAD
 $basUrl1 = "https://sg.geodatenzentrum.de/gdz_geokodierung";
-=======
-
-	//public function getBboxFromPoiScale($point, $scale, $pointEpsg = false, $mapResolutionDpi = MB_RESOLUTION){
-		//$geographicEpsgArray = array("EPSG:4326","EPSG:3857","EPSG:900913");
-		//$mapSetEpsg = $searchEPSG;
-                //$bbox =  array();
-/*
-        	if ($pointEpsg == false) { // point is interpreted as given in epsg of gui/wmc
-		    if (in_array($mapSetEpsg, $geographicEpsgArray)) {
-			$distanceInDeegree = $map_height * 0.00028 * (double)$scale * 360.0 / (2.0 * M_PI * 6378137.0);
-
-			//$e = new mb_exception("distance in deegree: ".$distanceInDeegree. " - scale: ".$scale. " - height: ".$this->getHeight());			
-			$bbox[0] = $point[0] - ($distanceInDeegree / 2);
-		        $bbox[1] = $point[1] - ($distanceInDeegree / 2);
-		        $bbox[2] = $point[0] + ($distanceInDeegree / 2);
-		        $bbox[3] = $point[1] + ($distanceInDeegree / 2);
-		    } else {
-		        $xtenty = $scale / ($mapResolutionDpi * 100) * $map_width; //x width in m
-		        $ytenty = $scale / ($mapResolutionDpi * 100) * $map_height;
-		        $bbox[0] = $point[0] - ($xtenty / 2);
-		        $bbox[1] = $point[1] - ($ytenty / 2);
-		        $bbox[2] = $point[0] + ($xtenty / 2);
-		        $bbox[3] = $point[1] + ($ytenty / 2);
-		    }
-		    return $bbox;
-		}
-*/
-	//}
-
-
-
-$key = BKG_GEOCODING_KEY;
-$basUrl1 = "https://sg.geodatenzentrum.de/gdz_geokodierung__";
->>>>>>> v1.2.1_pull
 $basUrl2 = "/geosearch?query=";
 $maxFeatures = 15;
 $searchText= str_replace('ß', 'SS', str_replace('Ü', 'UE', str_replace('Ä', 'AE', str_replace('Ö', 'OE', mb_strtoupper($searchText)))));
