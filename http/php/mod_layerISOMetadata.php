@@ -858,7 +858,7 @@ SQL;
 	if ($hasPermission) {
 		$gmd_URLText = $iso19139->createTextNode ( $mapbenderUrl . "/php/wms.php?inspire=1&layer_id=" . $mapbenderMetadata ['layer_id'] . "&withChilds=1&REQUEST=GetCapabilities&SERVICE=WMS" );
 	} else {
-		$gmd_URLText = $iso19139->createTextNode ( "https://" . $_SERVER ['HTTP_HOST'] . "/http_auth/" . $mapbenderMetadata ['layer_id'] . "?withChilds=1&REQUEST=GetCapabilities&SERVICE=WMS" );
+		$gmd_URLText = $iso19139->createTextNode ( "https://" . FULLY_QUALIFIED_DOMAIN_NAME . "/http_auth/" . $mapbenderMetadata ['layer_id'] . "?withChilds=1&REQUEST=GetCapabilities&SERVICE=WMS" );
 	}
 	$gmd_URL->appendChild ( $gmd_URLText );
 	$gmd_linkage->appendChild ( $gmd_URL );
