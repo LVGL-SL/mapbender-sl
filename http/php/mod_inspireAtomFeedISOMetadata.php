@@ -127,7 +127,8 @@ if ($generateFrom == "wfs") {
 function fillISO19139($iso19139, $recordId) {
 	global $admin, $generateFrom, $wfsId, $mapbenderPath;
 	// Pull download options for specific dataset from mapbender database and show them
-	$downloadOptionsConnector = new connector ( MAPBENDER_PATH . "/php/mod_getDownloadOptions.php?id=" . $recordId );
+	$downloadOptionsConnector = new connector ( "http://localhost" . $_SERVER ['SCRIPT_NAME'] . "/../mod_getDownloadOptions.php?id=" . $recordId );
+	// echo "http://localhost".$_SERVER['SCRIPT_NAME']."/../mod_getDownloadOptions.php?id=".$recordId;
 	$downloadOptions = json_decode ( $downloadOptionsConnector->file );
 	// switch for generateFrom
 	if ($downloadOptions == null) {
@@ -1355,6 +1356,19 @@ function getEpsgArrayByLayerId($layer_id) {
 	return $epsg_array;
 }
 
+
+function guid() {
+	if (function_exists ( 'com_create_guid' )) {
+		return com_create_guid ();
+	} else {
+		mt_srand ( ( double ) microtime () * 10000 ); // optional for php 4.2.0 and up.
+		$charid = strtoupper ( md5 ( uniqid ( rand (), true ) ) );
+		$hyphen = chr ( 45 ); // "-"
+		$uuid = chr ( 123 ) . // "{"
+substr ( $charid, 0, 8 ) . $hyphen . substr ( $charid, 8, 4 ) . $hyphen . substr ( $charid, 12, 4 ) . $hyphen . substr ( $charid, 16, 4 ) . $hyphen . substr ( $charid, 20, 12 ) . chr ( 125 ); // "}"
+		return $uuid;
+	}
+}
 
 function guid() {
 	if (function_exists ( 'com_create_guid' )) {
