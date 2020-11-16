@@ -60,6 +60,7 @@ if (isset ( $_REQUEST ['ID'] ) & $_REQUEST ['ID'] != "") {
 	$testMatch = $_REQUEST ["ID"];
 	$pattern = '/^[\d]*$/';
 	if (! preg_match ( $pattern, $testMatch )) {
+		// echo 'Id: <b>'.$testMatch.'</b> is not valid.<br/>';
 		echo 'Id is not valid (integer).<br/>';
 		die ();
 	}
@@ -75,6 +76,7 @@ if ($_REQUEST ['OUTPUTFORMAT'] == "iso19139" || $_REQUEST ['OUTPUTFORMAT'] == "r
 	$iso19139Doc->formatOutput = true;
 	$outputFormat = $_REQUEST ['OUTPUTFORMAT'];
 } else {
+	// echo 'outputFormat: <b>'.$_REQUEST['OUTPUTFORMAT'].'</b> is not set or valid.<br/>';
 	echo 'Parameter outputFormat is not set or valid (iso19139 | rdf | html | html-rdf-a).<br/>';
 	die ();
 }
@@ -95,7 +97,9 @@ if (! ($_REQUEST ['CN'] == "false")) {
 }
 
 // if validation is requested
+//
 if (isset ( $_REQUEST ['VALIDATE'] ) and $_REQUEST ['VALIDATE'] != "true") {
+	// echo 'validate: <b>'.$_REQUEST['VALIDATE'].'</b> is not valid.<br/>';
 	echo 'Parameter <b>validate</b> is not valid (true).<br/>';
 	die ();
 }
@@ -156,7 +160,9 @@ function fillISO19139($iso19139, $recordId) {
 	
 	// Creating the central "MD_Metadata" node
 	$MD_Metadata = $iso19139->createElementNS ( 'http://www.isotc211.org/2005/gmd', 'gmd:MD_Metadata' );
+	
 	$MD_Metadata = $iso19139->appendChild ( $MD_Metadata );
+	// $MD_Metadata->setAttribute("xmlns:gmd", "http://schemas.opengis.net/iso/19139/20060504/gmd/gmd.xsd");
 	$MD_Metadata->setAttribute ( "xmlns:srv", "http://www.isotc211.org/2005/srv" );
 	$MD_Metadata->setAttribute ( "xmlns:gml", "http://www.opengis.net/gml" );
 	$MD_Metadata->setAttribute ( "xmlns:gco", "http://www.isotc211.org/2005/gco" );
@@ -169,6 +175,7 @@ function fillISO19139($iso19139, $recordId) {
 				break;
 		}
 	}
+	// $MD_Metadata->setAttribute("xsi:schemaLocation", "http://www.isotc211.org/2005/gmd ./xsd/gmd/gmd.xsd http://www.isotc211.org/2005/srv ./xsd/srv/srv.xsd");
 	$MD_Metadata->setAttribute ( "xsi:schemaLocation", "http://www.isotc211.org/2005/gmd http://schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd" );
 	
 	// generate identifier part
@@ -762,8 +769,16 @@ SQL;
 	$gmd_linkage = $iso19139->createElement ( "gmd:linkage" );
 	$gmd_URL = $iso19139->createElement ( "gmd:URL" );
 	
+	// Check if anonymous user has rights to access this layer - if not ? which resource should be advertised? TODO
+	// if ($hasPermission) {
 	$gmd_URLText = $iso19139->createTextNode ( $mapbenderUrl . "/php/wms.php?inspire=1&layer_id=" . $mapbenderMetadata ['layer_id'] . "&withChilds=1&REQUEST=GetCapabilities&SERVICE=WMS" );
-
+	// }
+	/*
+	 * else {
+	 * $serverWithOutPort80 = str_replace(":80","",$_SERVER['HTTP_HOST']);//fix problem when metadata is generated thru curl invocations
+	 * $gmd_URLText=$iso19139->createTextNode("https://".$serverWithOutPort80."/http_auth/".$mapbenderMetadata['layer_id']."?REQUEST=GetCapabilities&SERVICE=WMS");
+	 * }
+	 */
 	$gmd_URL->appendChild ( $gmd_URLText );
 	$gmd_linkage->appendChild ( $gmd_URL );
 	$CI_OnlineResource->appendChild ( $gmd_linkage );
@@ -780,12 +795,15 @@ SQL;
 	// fill in operatesOn fields with datasetid if given
 	/* INSPIRE example: <srv:operatesOn xlink:href="http://image2000.jrc.it#image2000_1_nl2_multi"/> */
 	/* INSPIRE demands a href for the metadata record! */
+	/* TODO: Exchange HTTP_HOST with other baseurl */
 	$res_metadataurl = db_query ( $sql );
 	while ( $row_metadata = db_fetch_array ( $res_metadataurl ) ) {
+		// $row_metadata['datasetid_codespace']
 		// check codespace for trailing slash - if not there - add it ;-)
 		// unique resource identifier
 		$uniqueResourceIdentifierCodespace = $admin->getIdentifierCodespaceFromRegistry ( $departmentMetadata, $row_metadata );
 		if (isset ( $row_metadata ['uuid'] ) && $row_metadata ['uuid'] != "") {
+		//$e = new mb_exception($row_metadata ['origin']);
 			switch ($row_metadata ['origin']) {
 				case 'capabilities' :
 					$operatesOn = $iso19139->createElement ( "srv:operatesOn" );
@@ -810,7 +828,12 @@ SQL;
 			}
 		}
 	}
-
+	
+	/*
+	 * $serviceTypeVersion_cs->appendChild($serviceTypeVersionText);
+	 * $serviceTypeVersion->appendChild($serviceTypeVersion_cs);
+	 * $SV_ServiceIdentification->appendChild($serviceTypeVersion);
+	 */
 	$identificationInfo->appendChild ( $SV_ServiceIdentification );
 	
 	// distributionInfo - is demanded from iso19139
@@ -835,7 +858,7 @@ SQL;
 	if ($hasPermission) {
 		$gmd_URLText = $iso19139->createTextNode ( $mapbenderUrl . "/php/wms.php?inspire=1&layer_id=" . $mapbenderMetadata ['layer_id'] . "&withChilds=1&REQUEST=GetCapabilities&SERVICE=WMS" );
 	} else {
-		$gmd_URLText = $iso19139->createTextNode ( "https://" . FULLY_QUALIFIED_DOMAIN_NAME . "/http_auth/" . $mapbenderMetadata ['layer_id'] . "?withChilds=1&REQUEST=GetCapabilities&SERVICE=WMS" );
+		$gmd_URLText = $iso19139->createTextNode ( "https://" . $_SERVER ['HTTP_HOST'] . "/http_auth/" . $mapbenderMetadata ['layer_id'] . "?withChilds=1&REQUEST=GetCapabilities&SERVICE=WMS" );
 	}
 	$gmd_URL->appendChild ( $gmd_URLText );
 	$gmd_linkage->appendChild ( $gmd_URL );
@@ -930,6 +953,7 @@ SQL;
 	}
 	
 	$gmd_dataQualityInfo->appendChild ( $DQ_DataQuality );
+	// $MD_ScopeCode->setAttribute("codeListValue", "service");
 	$MD_Metadata->appendChild ( $identificationInfo );
 	$MD_Metadata->appendChild ( $gmd_distributionInfo );
 	$MD_Metadata->appendChild ( $gmd_dataQualityInfo );
@@ -992,8 +1016,8 @@ function getEpsgByLayerId($layer_id) { // from merge_layer.php
 	}
 	return trim ( $epsg_list );
 }
-function getEpsgArrayByLayerId($layer_id) {
-	
+function getEpsgArrayByLayerId($layer_id) { // from merge_layer.php
+                                             // $epsg_list = "";
 	$epsg_array = array ();
 	$sql = "SELECT DISTINCT epsg FROM layer_epsg WHERE fkey_layer_id = $1";
 	$v = array (
