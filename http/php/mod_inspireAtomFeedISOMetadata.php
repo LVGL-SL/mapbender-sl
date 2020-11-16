@@ -49,6 +49,7 @@ if (isset ( $_REQUEST ['ID'] ) & $_REQUEST ['ID'] != "") {
 	$uuid = new Uuid ( $testMatch );
 	$isUuid = $uuid->isValid ();
 	if (! $isUuid) {
+		// echo 'Id: <b>'.$testMatch.'</b> is not a valid uuid (12-4-4-4-8)!<br/>';
 		echo 'Parameter <b>Id</b> is not a valid uuid (12-4-4-4-8)!<br/>';
 		die ();
 	}
@@ -64,6 +65,7 @@ if ($_REQUEST ['OUTPUTFORMAT'] == "iso19139" || $_REQUEST ['OUTPUTFORMAT'] == "r
 	$iso19139Doc->formatOutput = true;
 	$outputFormat = $_REQUEST ['OUTPUTFORMAT'];
 } else {
+	// echo 'outputFormat: <b>'.$_REQUEST['OUTPUTFORMAT'].'</b> is not set or valid.<br/>';
 	echo 'Parameter outputFormat is not set or valid (iso19139 | rdf | html).<br/>';
 	die ();
 }
@@ -84,7 +86,10 @@ if (! ($_REQUEST ['CN'] == "false")) {
 }
 
 // if validation is requested
+//
 if (isset ( $_REQUEST ['VALIDATE'] ) and $_REQUEST ['VALIDATE'] != "true") {
+	//
+	// echo 'validate: <b>'.$_REQUEST['VALIDATE'].'</b> is not valid.<br/>';
 	echo 'Parameter <b>validate</b> is not valid (true).<br/>';
 	die ();
 }
@@ -99,6 +104,7 @@ if (isset ( $_REQUEST ['GENERATEFROM'] ) & $_REQUEST ['GENERATEFROM'] != "") {
 	// validate type
 	$testMatch = $_REQUEST ["GENERATEFROM"];
 	if ($testMatch != 'wmslayer' && $testMatch != 'dataurl' && $testMatch != 'wfs' && $testMatch != 'metadata') {
+		// echo 'GENERATEFROM: <b>'.$testMatch.'</b> is not valid.<br/>';
 		echo 'Parameter <b>GENERATEFROM</b> is not valid (dataurl, wfs, wmslayer, metadata).<br/>';
 		die ();
 	}
@@ -112,6 +118,7 @@ if ($generateFrom == "wfs") {
 		$testMatch = $_REQUEST ["WFSID"];
 		$pattern = '/^[\d]*$/';
 		if (! preg_match ( $pattern, $testMatch )) {
+			// echo 'WFSID must be an integer: <b>'.$testMatch.'</b> is not valid.<br/>';
 			echo 'Parameter <b>WFSID</b> must be an integer!<br/>';
 			die ();
 		}
@@ -123,13 +130,14 @@ if ($generateFrom == "wfs") {
 	}
 }
 
-
+// some needfull functions to pull metadata out of the database!
 function fillISO19139($iso19139, $recordId) {
 	global $admin, $generateFrom, $wfsId, $mapbenderPath;
 	// Pull download options for specific dataset from mapbender database and show them
 	$downloadOptionsConnector = new connector ( "http://localhost" . $_SERVER ['SCRIPT_NAME'] . "/../mod_getDownloadOptions.php?id=" . $recordId );
 	// echo "http://localhost".$_SERVER['SCRIPT_NAME']."/../mod_getDownloadOptions.php?id=".$recordId;
 	$downloadOptions = json_decode ( $downloadOptionsConnector->file );
+	// var_dump($downloadOptions);
 	// switch for generateFrom
 	if ($downloadOptions == null) {
 		echo "<error>No downloadable options for this metadatarecord found!</error>";
@@ -437,6 +445,12 @@ SQL;
 			$mapbenderMetadata ['datasetId'] = $mbMetadata ['datasetid'];
 			$mapbenderMetadata ['datasetIdCodeSpace'] = $mbMetadata ['datasetid_codespace'];
 			$mapbenderMetadata ['mdOrigin'] = $mbMetadata ['origin'];
+			// Problem multiple featuretypes maybe included to serve a dataset!!!
+			// We have to compute a general bbox, and?
+			// $downloadOptions->{$idList[$i]}->option[$j]->featureType[0] = $row['resource_id'];
+			
+			// read information for ft/ft_epsg/wfs/ft classification - 'inspireidentifiziert'?
+			// first only read service information!!
 			$sql = <<<SQL
 			select wfs_id, uuid, wfs_timestamp, providername, fkey_mb_group_id, wfs_owner, electronicmailaddress, wfs_timestamp_create, fees, accessconstraints from wfs where wfs_id = $1;
 SQL;
@@ -514,6 +528,36 @@ SQL;
 	}
 	$departmentMetadata = $admin->getOrgaInfoFromRegistry ( $type, $serviceId, $ownerId );
 	$userMetadata ['mb_user_email'] = $departmentMetadata ['mb_user_email'];
+	
+	// infos about the registrating department, check first if a special metadata point of contact is defined in the service table - function from mod_showMetadata - TODO: should be defined in admin class
+	/*
+	 * if (!isset($mapbenderMetadata['serviceGroupId']) or is_null($mapbenderMetadata['serviceGroupId']) or $mapbenderMetadata['serviceGroupId'] == 0){
+	 * $e = new mb_exception("mod_inspireAtomFeedISOMetadata.php: fkey_mb_group_id not found!");
+	 * //Get information about owning user of the relation mb_user_mb_group - alternatively the defined fkey_mb_group_id from the service must be used!
+	 * $sqlDep = "SELECT mb_group_name, mb_group_title, mb_group_id, mb_group_logo_path, mb_group_address, mb_group_email, mb_group_postcode, mb_group_city, mb_group_voicetelephone, mb_group_facsimiletelephone FROM mb_group AS a, mb_user AS b, mb_user_mb_group AS c WHERE b.mb_user_id = $1 AND b.mb_user_id = c.fkey_mb_user_id AND c.fkey_mb_group_id = a.mb_group_id AND c.mb_user_mb_group_type=2 LIMIT 1";
+	 * $vDep = array($mapbenderMetadata['serviceOwnerId']);
+	 * $tDep = array('i');
+	 * $resDep = db_prep_query($sqlDep, $vDep, $tDep);
+	 * $departmentMetadata = db_fetch_array($resDep);
+	 * } else {
+	 * $e = new mb_exception("mod_inspireAtomFeedISOMetadata.php: fkey_mb_group_id found!");
+	 * $sqlDep = "SELECT mb_group_name , mb_group_title, mb_group_id, mb_group_logo_path , mb_group_address, mb_group_email, mb_group_postcode, mb_group_city, mb_group_voicetelephone, mb_group_facsimiletelephone FROM mb_group WHERE mb_group_id = $1 LIMIT 1";
+	 * $vDep = array($mapbenderMetadata['serviceGroupId']);
+	 * $tDep = array('i');
+	 * $resDep = db_prep_query($sqlDep, $vDep, $tDep);
+	 * $departmentMetadata = db_fetch_array($resDep);
+	 * }
+	 *
+	 * //infos about the owner of the service - he is the man who administrate the metadata - register the service
+	 * $sql = "SELECT mb_user_email ";
+	 * $sql .= "FROM mb_user WHERE mb_user_id = $1";
+	 * $v = array((integer)$mapbenderMetadata['serviceOwnerId']);
+	 * $t = array('i');
+	 * $res = db_prep_query($sql,$v,$t);
+	 * $userMetadata = db_fetch_array($res);
+	 */
+	// check if resource is freely available to anonymous user - which are all users who search thru metadata catalogues:
+	// $hasPermission=$admin->getLayerPermission($mapbenderMetadata['serviceId'],$mapbenderMetadata['layer_name'],PUBLIC_USER);
 	$hasPermission = true; // Is always true for ATOM Service Feeds!
 	                       // Creating the central "MD_Metadata" node
 	$MD_Metadata = $iso19139->createElementNS ( 'http://www.isotc211.org/2005/gmd', 'gmd:MD_Metadata' );
@@ -530,11 +574,22 @@ SQL;
 				break;
 		}
 	}
+	// $MD_Metadata->setAttribute("xsi:schemaLocation", "http://www.isotc211.org/2005/gmd ./xsd/gmd/gmd.xsd http://www.isotc211.org/2005/srv ./xsd/srv/srv.xsd");
 	$MD_Metadata->setAttribute ( "xsi:schemaLocation", "http://www.isotc211.org/2005/gmd http://schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd" );
 	
 	// generate identifier part
 	$identifier = $iso19139->createElement ( "gmd:fileIdentifier" );
 	$identifierString = $iso19139->createElement ( "gco:CharacterString" );
+	// How to generate UUIDs for INSPIRE Download Service Metadata records (not really needed for INSPIRE!!! See DB Metadata)
+	// 8-4-4-4-12
+	// dataurl
+	// LAYER uuid (8-4), Type (4) - 0001, MD uuid (4-12)
+	// wfs
+	// WFS uuid (8-4), MD uuid (4-4-12)
+	// wmsgetmap
+	// WMS uuid (8-4), Type (4) - 0002, MD uuid (4-12)
+	// metadata
+	// metadata uuid (8-4),hash(downloadLink) (4-12);
 	
 	if (isset ( $mapbenderMetadata ['serviceUuid'] ) && $mapbenderMetadata ['serviceUuid'] != '') {
 		$servicePart = explode ( '-', $mapbenderMetadata ['serviceUuid'] );
@@ -550,7 +605,10 @@ SQL;
 			case "wfs" :
 				$dlsFileIdentifier = $servicePart [0] . "-" . $servicePart [1] . "-" . $mdPart [2] . "-" . $mdPart [3] . "-" . $mdPart [4];
 				break;
+			// TODO!!!!!
 			case "metadata" :
+				// $dlsFileIdentifier = $servicePart[0]."-".$servicePart[1]."-".$mdPart[2]."-".$mdPart[3]."-".$mdPart[4];
+				// generate hash from downloadLink
 				$linkPart = md5 ( $mapbenderMetadata ['downloadLink'] );
 				$dlsFileIdentifier = $mdPart [0] . "-" . $mdPart [1] . "-" . $mdPart [2] . "-" . substr ( $linkPart, - 12, 4 ) . "-" . substr ( $linkPart, - 12, 12 );
 				break;
@@ -621,12 +679,13 @@ SQL;
 	$CI_ResponsibleParty = $iso19139->createElement ( "gmd:CI_ResponsibleParty" );
 	$organisationName = $iso19139->createElement ( "gmd:organisationName" );
 	$organisationName_cs = $iso19139->createElement ( "gco:CharacterString" );
+	// $e = new mb_exception("Atom: mb_group_name: ".$departmentMetadata['mb_group_name']." - serviceOnwerId: ".$mapbenderMetadata['serviceOwnerId']);
 	if (isset ( $departmentMetadata ['mb_group_name'] )) {
 		$organisationNameText = $iso19139->createTextNode ( $departmentMetadata ['mb_group_name'] );
 	} else {
 		$organisationNameText = $iso19139->createTextNode ( 'department not known' );
 	}
-	
+	// $organisationNameText=$iso19139->createTextNode('wald');
 	// create xml tree
 	$organisationName_cs->appendChild ( $organisationNameText );
 	$organisationName->appendChild ( $organisationName_cs );
@@ -693,6 +752,8 @@ SQL;
 	// create nodes
 	$identificationInfo = $iso19139->createElement ( "gmd:identificationInfo" );
 	$SV_ServiceIdentification = $iso19139->createElement ( "srv:SV_ServiceIdentification" );
+	// TODO: add attribut if really needed
+	// $SV_ServiceIdentification->setAttribute("id", "dataId");
 	$citation = $iso19139->createElement ( "gmd:citation" );
 	$CI_Citation = $iso19139->createElement ( "gmd:CI_Citation" );
 	
@@ -752,6 +813,29 @@ SQL;
 		$date1->appendChild ( $CI_Date );
 		$CI_Citation->appendChild ( $date1 );
 	}
+	// Do things for B 5.4 date of creation
+	/*
+	 * if (isset($mapbenderMetadata['serviceTimestampCreate'])) {
+	 * $date1=$iso19139->createElement("gmd:date");
+	 * $CI_Date=$iso19139->createElement("gmd:CI_Date");
+	 * $date2=$iso19139->createElement("gmd:date");
+	 * $gcoDate=$iso19139->createElement("gco:Date");
+	 * $dateType=$iso19139->createElement("gmd:dateType");
+	 * $dateTypeCode=$iso19139->createElement("gmd:CI_DateTypeCode");
+	 * $dateTypeCode->setAttribute("codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_DateTypeCode");
+	 * $dateTypeCode->setAttribute("codeListValue", "creation");
+	 * $dateTypeCodeText=$iso19139->createTextNode('creation');
+	 * $dateText= $iso19139->createTextNode(date('Y-m-d',$mapbenderMetadata['serviceTimestampCreate']));
+	 * $dateTypeCode->appendChild($dateTypeCodeText);
+	 * $dateType->appendChild($dateTypeCode);
+	 * $gcoDate->appendChild($dateText);
+	 * $date2->appendChild($gcoDate);
+	 * $CI_Date->appendChild($date2);
+	 * $CI_Date->appendChild($dateType);
+	 * $date1->appendChild($CI_Date);
+	 * $CI_Citation->appendChild($date1);
+	 * }
+	 */
 	$citation->appendChild ( $CI_Citation );
 	$SV_ServiceIdentification->appendChild ( $citation );
 	
@@ -882,6 +966,7 @@ SQL;
 SELECT custom_category.custom_category_key as keyword FROM custom_category, wfs_featuretype_custom_category WHERE wfs_featuretype_custom_category.fkey_featuretype_id IN ( $1 ) AND wfs_featuretype_custom_category.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0;
 SQL;
 		// get keywords for all featuretypes
+		// $mapbenderMetadata['featureTypes'] - array of ft ids
 		$v = array (
 				implode ( ',', $mapbenderMetadata ['featureTypes'] ) 
 		);
@@ -939,6 +1024,28 @@ SQL;
 	$descriptiveKeywords->appendChild ( $MD_Keywords );
 	$SV_ServiceIdentification->appendChild ( $descriptiveKeywords );
 	
+	// a special keyword for all INSPIRE services in germany
+	/*
+	 * $keyword=$iso19139->createElement("gmd:keyword");
+	 * $keyword_cs=$iso19139->createElement("gco:CharacterString");
+	 * $keywordText = $iso19139->createTextNode("inspireidentifiziert");
+	 * $keyword_cs->appendChild($keywordText);
+	 * $keyword->appendChild($keyword_cs);
+	 * $MD_Keywords->appendChild($keyword);
+	 * $descriptiveKeywords->appendChild($MD_Keywords);
+	 * $SV_ServiceIdentification->appendChild($descriptiveKeywords);
+	 */
+	
+	// Part B 3 INSPIRE Category
+	// do this only if an INSPIRE keyword (Annex I-III) is set - not applicable to services!
+	// Resource Constraints B 8
+	// do a right mapping for fees and accessconstraints to inspire MD Constraints!
+	/*
+	 * New 2020 - use class to generate access and
+	 */
+	// Resource Constraints B 8 - to be handled with xml snippets from constraints class
+	// pull licence information
+	//$e = new mb_exception ( $generateFrom . " - " . $mapbenderMetadata ['serviceId'] );
 	$constraints = new OwsConstraints ();
 	$constraints->languageCode = "de";
 	$constraints->asTable = false; // 'wmslayer' && $testMatch != 'dataurl' && $testMatch != 'wfs' && $testMatch != 'metadata'
@@ -963,7 +1070,7 @@ SQL;
 	$constraints->returnDirect = false;
 	$constraints->outputFormat = 'iso19139';
 	$tou = $constraints->getDisclaimer ();
-	
+	//$e = new mb_exception ( json_encode ( $tou ) );
 	// constraints - after descriptive keywords
 	if (isset ( $tou ) && $tou !== '' && $tou !== false) {
 		// load xml from constraint generator
@@ -1098,6 +1205,10 @@ SQL;
 	$gmd_linkage = $iso19139->createElement ( "gmd:linkage" );
 	$gmd_URL = $iso19139->createElement ( "gmd:URL" );
 	
+	// examples for links to Atom service feeds
+	// http://www.geoportal.rlp.de/mapbender/php/mod_inspireDownloadFeed.php?id=e9d22d13-e045-f0e0-25cc-1f146d681216&type=SERVICE&generateFrom=wfs&wfsid=216
+	// http://www.geoportal.rlp.de/mapbender/php/mod_inspireDownloadFeed.php?id=aaa492a3-0585-e27f-ff56-df9118420560&type=SERVICE&generateFrom=wmslayer&layerid=32566
+	
 	switch ($generateFrom) {
 		case "wmslayer" :
 			$gmd_URLText = $iso19139->createTextNode ( $mapbenderPath . "php/mod_inspireDownloadFeed.php?id=" . $recordId . "&type=SERVICE&generateFrom=wmslayer&layerid=" . $mapbenderMetadata ['resourceId'] );
@@ -1114,6 +1225,15 @@ SQL;
 	}
 	
 	// Check if anonymous user has rights to access this layer - if not ? which resource should be advertised? TODO
+	/*
+	 * if ($hasPermission) {
+	 * $gmd_URLText=$iso19139->createTextNode("http://".$_SERVER['HTTP_HOST']."/mapbender/php/wms.php?inspire=1&layer_id=".$mapbenderMetadata['layer_id']."&REQUEST=GetCapabilities&SERVICE=WMS");
+	 * }
+	 * else {
+	 * $serverWithOutPort80 = str_replace(":80","",$_SERVER['HTTP_HOST']);//fix problem when metadata is generated thru curl invocations
+	 * $gmd_URLText=$iso19139->createTextNode("https://".$serverWithOutPort80."/http_auth/".$mapbenderMetadata['layer_id']."?REQUEST=GetCapabilities&SERVICE=WMS");
+	 * }
+	 */
 	$gmd_URL->appendChild ( $gmd_URLText );
 	$gmd_linkage->appendChild ( $gmd_URL );
 	$CI_OnlineResource->appendChild ( $gmd_linkage );
@@ -1127,6 +1247,17 @@ SQL;
 	
 	$SV_ServiceIdentification->appendChild ( $containsOperation );
 	
+	// fill in operatesOn fields with datasetid if given
+	/* INSPIRE example: <srv:operatesOn xlink:href="http://image2000.jrc.it#image2000_1_nl2_multi"/> */
+	/* INSPIRE demands a href for the metadata record! */
+	/* TODO: Exchange HTTP_HOST with other baseurl */
+	// $mapbenderMetadata['mdTitle'] = $mbMetadata['title'];
+	// $mapbenderMetadata['mdAbstract'] = $mbMetadata['abstract'];
+	// $mapbenderMetadata['mdRefSystem'] = $mbMetadata['ref_sytem'];
+	// $mapbenderMetadata['datasetId'] = $mbMetadata['datasetid'];
+	// $mapbenderMetadata['mdOrigin'] = $mbMetadata['origin'];
+	// $uniqueResourceIdentifierCodespace = $admin->getIdentifierCodespaceFromRegistry($departmentMetadata, $mbMetadata);
+	// FIX:
 	$mbMetadata ['datasetid'] = $mapbenderMetadata ['datasetId'];
 	$mbMetadata ['datasetid_codespace'] = $mapbenderMetadata ['datasetIdCodeSpace'];
 	
@@ -1155,6 +1286,11 @@ SQL;
 			break;
 	}
 	
+	/*
+	 * $serviceTypeVersion_cs->appendChild($serviceTypeVersionText);
+	 * $serviceTypeVersion->appendChild($serviceTypeVersion_cs);
+	 * $SV_ServiceIdentification->appendChild($serviceTypeVersion);
+	 */
 	$identificationInfo->appendChild ( $SV_ServiceIdentification );
 	
 	// distributionInfo - is demanded from iso19139
@@ -1176,6 +1312,14 @@ SQL;
 	$gmd_URL = $iso19139->createElement ( "gmd:URL" );
 	
 	// Check if anonymous user has rights to access this layer - if not ? which resource should be advertised? TODO
+	/*
+	 * if ($hasPermission) {
+	 * $gmd_URLText=$iso19139->createTextNode($mapbenderMetadata['datalink_url']);
+	 * }
+	 * else {
+	 * $gmd_URLText=$iso19139->createTextNode("https://".$_SERVER['HTTP_HOST']."/http_auth/".$mapbenderMetadata['layer_id']."?REQUEST=GetCapabilities&SERVICE=WMS");
+	 * }
+	 */
 	$gmd_URL->appendChild ( $gmd_URLText ); // same as before
 	$gmd_linkage->appendChild ( $gmd_URL );
 	$CI_OnlineResource->appendChild ( $gmd_linkage );
@@ -1185,11 +1329,29 @@ SQL;
 	$gmdProtocol = $iso19139->createElement ( "gmd:protocol" );
 	$gmdProtocol_cs = $iso19139->createElement ( "gco:CharacterString" );
 	$gmdProtocolText = $iso19139->createTextNode ( "http-get" ); // ?TODO what to put in here?
-
+	
+	/*
+	 * $gmdName=$iso19139->createElement("gmd:name");
+	 * $gmdName_cs=$iso19139->createElement("gco:CharacterString");
+	 * $gmdNameText=$iso19139->createTextNode($mapbenderMetadata['layer_name']); //Layername?
+	 *
+	 * $gmdDescription = $iso19139->createElement("gmd:description");
+	 * $gmdDescription_cs = $iso19139->createElement("gco:CharacterString");
+	 * $gmdDescriptionText = $iso19139->createTextNode($mapbenderMetadata['layer_abstract']);//Layer Abstract -TODO use metadata abstract if given
+	 */
 	$gmdProtocol_cs->appendChild ( $gmdProtocolText );
 	$gmdProtocol->appendChild ( $gmdProtocol_cs );
 	$CI_OnlineResource->appendChild ( $gmdProtocol );
-
+	
+	/*
+	 * $gmdName_cs->appendChild($gmdNameText);
+	 * $gmdName->appendChild($gmdName_cs);
+	 * $CI_OnlineResource->appendChild($gmdName);
+	 *
+	 * $gmdDescription_cs->appendChild($gmdDescriptionText);
+	 * $gmdDescription->appendChild($gmdDescription_cs);
+	 * $CI_OnlineResource->appendChild($gmdDescription);
+	 */
 	// ***********************************************************************************
 	$gmd_onLine->appendChild ( $CI_OnlineResource );
 	$MD_DigitalTransferOptions->appendChild ( $gmd_onLine );
@@ -1211,6 +1373,10 @@ SQL;
 	$MD_ScopeCodeText = $iso19139->createTextNode ( "service" );
 	$MD_ScopeCode->setAttribute ( "codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_ScopeCode" );
 	$MD_ScopeCode->setAttribute ( "codeListValue", "service" );
+	/*
+	 * https://github.com/inspire-eu-validation/community/issues/189
+	 * gmd:levelDescription/gmd:MD_ScopeDescription/gmd:other/gco:CharacterString>Dienst...
+	 */
 	if (defined("INSPIRE_METADATA_SPEC") && INSPIRE_METADATA_SPEC != "") {
 		switch(INSPIRE_METADATA_SPEC) {
 			case "2.0.1":
@@ -1247,6 +1413,7 @@ SQL;
 		$DQ_DataQuality->appendChild ( $iso19139->importNode ( $inputNodeList->item ( $i ), true ) );
 	}
 	$gmd_dataQualityInfo->appendChild ( $DQ_DataQuality );
+	// $MD_ScopeCode->setAttribute("codeListValue", "service");
 	$MD_Metadata->appendChild ( $identificationInfo );
 	$MD_Metadata->appendChild ( $gmd_distributionInfo );
 	$MD_Metadata->appendChild ( $gmd_dataQualityInfo );
@@ -1289,9 +1456,11 @@ function proxyFile($iso19139str, $outputFormat) {
 // function to validate against the inspire validation service
 function validateInspireMetadata($iso19139Doc, $recordId) {
 	$validatorUrl = 'http://www.inspire-geoportal.eu/INSPIREValidatorService/resources/validation/inspire';
+	// $validatorUrl2 = 'http://localhost/mapbender/x_geoportal/log_requests.php';
 	// send inspire xml to validator and push the result to requesting user
 	$validatorInterfaceObject = new connector ();
 	$validatorInterfaceObject->set ( 'httpType', 'POST' );
+	// $validatorInterfaceObject->set('httpContentType','application/xml');
 	$validatorInterfaceObject->set ( 'httpContentType', 'multipart/form-data' ); // maybe given automatically
 	$xml = fillISO19139 ( $iso19139Doc, $recordId );
 	// first test with data from ram - doesn't function
@@ -1309,17 +1478,25 @@ function validateInspireMetadata($iso19139Doc, $recordId) {
 	}
 	// send file as post like described under http://www.tecbrat.com/?itemid=13&catid=1
 	$fields ['dataFile'] = '@' . TMPDIR . '/' . $fileId . 'iso19139_validate_tmp.xml';
+	// if we give a string with parameters
+	// foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
+	// rtrim($fields_string,'&');
+	// $postData = $fields_string;
 	$postData = $fields;
+	// $e = new mb_exception("mod_layerISOMetadata: postData: ".$postData['dataFile']);
+	// number of post fields:
+	// curl_setopt($ch,CURLOPT_POST,count($fields));
 	$validatorInterfaceObject->set ( 'httpPostFieldsNumber', count ( $postData ) );
 	$validatorInterfaceObject->set ( 'curlSendCustomHeaders', false );
+	// $validatorInterfaceObject->set('httpPostData', $postData);
 	$validatorInterfaceObject->set ( 'httpPostData', $postData ); // give an array
 	$validatorInterfaceObject->load ( $validatorUrl );
 	header ( "Content-type: text/html; charset=UTF-8" );
 	echo $validatorInterfaceObject->file;
+	// delete file in tmp
+	// TODO - this normally done by a cronjob
 	die ();
 }
-
-
 function getEpsgByLayerId($layer_id) { // from merge_layer.php
 	$epsg_list = "";
 	$sql = "SELECT DISTINCT epsg FROM layer_epsg WHERE fkey_layer_id = $1";
@@ -1335,10 +1512,8 @@ function getEpsgByLayerId($layer_id) { // from merge_layer.php
 	}
 	return trim ( $epsg_list );
 }
-
-
-function getEpsgArrayByLayerId($layer_id) {
-	
+function getEpsgArrayByLayerId($layer_id) { // from merge_layer.php
+                                             // $epsg_list = "";
 	$epsg_array = array ();
 	$sql = "SELECT DISTINCT epsg FROM layer_epsg WHERE fkey_layer_id = $1";
 	$v = array (
@@ -1355,8 +1530,6 @@ function getEpsgArrayByLayerId($layer_id) {
 	}
 	return $epsg_array;
 }
-
-
 function guid() {
 	if (function_exists ( 'com_create_guid' )) {
 		return com_create_guid ();
@@ -1370,19 +1543,7 @@ substr ( $charid, 0, 8 ) . $hyphen . substr ( $charid, 8, 4 ) . $hyphen . substr
 	}
 }
 
-function guid() {
-	if (function_exists ( 'com_create_guid' )) {
-		return com_create_guid ();
-	} else {
-		mt_srand ( ( double ) microtime () * 10000 ); // optional for php 4.2.0 and up.
-		$charid = strtoupper ( md5 ( uniqid ( rand (), true ) ) );
-		$hyphen = chr ( 45 ); // "-"
-		$uuid = chr ( 123 ) . // "{"
-substr ( $charid, 0, 8 ) . $hyphen . substr ( $charid, 8, 4 ) . $hyphen . substr ( $charid, 12, 4 ) . $hyphen . substr ( $charid, 16, 4 ) . $hyphen . substr ( $charid, 20, 12 ) . chr ( 125 ); // "}"
-		return $uuid;
-	}
-}
-
+// do all the other things which had to be done ;-)
 if ($_REQUEST ['VALIDATE'] == "true") {
 	validateInspireMetadata ( $iso19139Doc, $recordId );
 } else {
