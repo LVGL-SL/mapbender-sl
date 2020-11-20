@@ -134,7 +134,7 @@ if ($generateFrom == "wfs") {
 function fillISO19139($iso19139, $recordId) {
 	global $admin, $generateFrom, $wfsId, $mapbenderPath;
 	// Pull download options for specific dataset from mapbender database and show them
-	$downloadOptionsConnector = new connector ( "http://localhost" . $_SERVER ['SCRIPT_NAME'] . "/../mod_getDownloadOptions.php?id=" . $recordId );
+	$downloadOptionsConnector = new connector ( MAPBENDER_PATH . "/php/mod_getDownloadOptions.php?id=" . $recordId );
 	// echo "http://localhost".$_SERVER['SCRIPT_NAME']."/../mod_getDownloadOptions.php?id=".$recordId;
 	$downloadOptions = json_decode ( $downloadOptionsConnector->file );
 	// var_dump($downloadOptions);
@@ -1549,5 +1549,3 @@ if ($_REQUEST ['VALIDATE'] == "true") {
 } else {
 	pushISO19139 ( $iso19139Doc, $recordId, $outputFormat ); // throw it out to world!
 }
-?>
-

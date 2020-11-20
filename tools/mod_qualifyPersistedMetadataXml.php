@@ -65,7 +65,7 @@ if ($handle = opendir($metadataDir)) {
 		
 		if (in_array('inspireidentifiziert', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && !in_array('bplan', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset') {
 		    //echo $metadataObject->title."<br>";
-                    //echo $metadataDir."/".$file." has keyword inspireidentifiziert!<br>";
+            //echo $metadataDir."/".$file." has keyword inspireidentifiziert!<br>";
 		    $keywordsArray[$newKeywordsIndex]->keyword = "Regional";
 		    $keywordsArray[$newKeywordsIndex]->thesaurusTitle = "Spatial scope";
 		    $keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";

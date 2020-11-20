@@ -461,7 +461,6 @@ SQL;
 	//fill in operatesOn fields with datasetid if given
 	/*INSPIRE example: <srv:operatesOn xlink:href="http://image2000.jrc.it#image2000_1_nl2_multi"/>*/
 	/*INSPIRE demands a href for the metadata record!*/
-	/*TODO: Exchange HTTP_HOST with other baseurl*/
     $pos = 0;
     while ($row_metadata = db_fetch_array($res_metadataurl)) {
 		$uniqueResourceIdentifierCodespace = $admin->getIdentifierCodespaceFromRegistry($departmentMetadata, $row_metadata);
@@ -568,7 +567,6 @@ SQL;
     return $xmlBuilder->getDoc()->saveXML();
 
     //TODO exchange specifications from inspire_legislation.json afterwards like it is done in mod_layerISOMetadata.php
-    //
 }
 
 //function to give away the xml data
@@ -612,7 +610,6 @@ function proxyFile($iso19139str,$outputFormat) {
 }
 
 function exchangeConstraintsAndConformity($metadataXml, $recordId) {
-	//get wfs_id from database
 	$sql = "SELECT fkey_wfs_id FROM wfs_featuretype WHERE featuretype_id = $1 LIMIT 1";
 	$v = array((integer)$recordId);
 	$t = array('i');
@@ -621,8 +618,6 @@ function exchangeConstraintsAndConformity($metadataXml, $recordId) {
 		$row = db_fetch_array($res);
 		$serviceId = $row['fkey_wfs_id'];
 		//parse XML part
-		//echo $metadataXml;
-		//die();
 		//do parsing with dom, cause we want to alter the xml which have been parsed afterwards
 		$metadataDomObject = new DOMDocument();
 		libxml_use_internal_errors(true);
@@ -716,7 +711,6 @@ function getEpsgByLayerId ($layer_id) { // from merge_layer.php
 	return trim($epsg_list);
 }
 function getEpsgArrayByLayerId ($layer_id) { // from merge_layer.php
-	//$epsg_list = "";
 	$epsg_array=array();
 	$sql = "SELECT DISTINCT epsg FROM layer_epsg WHERE fkey_layer_id = $1";
 	$v = array($layer_id);
