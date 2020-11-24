@@ -828,6 +828,7 @@ SQL;
 			}
 		}
 	}
+	$identificationInfo->appendChild ( $SV_ServiceIdentification );
 	
 	/*
 	 * $serviceTypeVersion_cs->appendChild($serviceTypeVersionText);

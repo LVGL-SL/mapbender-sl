@@ -49,7 +49,6 @@ if (isset ( $_REQUEST ['ID'] ) & $_REQUEST ['ID'] != "") {
 	$uuid = new Uuid ( $testMatch );
 	$isUuid = $uuid->isValid ();
 	if (! $isUuid) {
-		// echo 'Id: <b>'.$testMatch.'</b> is not a valid uuid (12-4-4-4-8)!<br/>';
 		echo 'Parameter <b>Id</b> is not a valid uuid (12-4-4-4-8)!<br/>';
 		die ();
 	}
@@ -529,35 +528,7 @@ SQL;
 	$departmentMetadata = $admin->getOrgaInfoFromRegistry ( $type, $serviceId, $ownerId );
 	$userMetadata ['mb_user_email'] = $departmentMetadata ['mb_user_email'];
 	
-	// infos about the registrating department, check first if a special metadata point of contact is defined in the service table - function from mod_showMetadata - TODO: should be defined in admin class
-	/*
-	 * if (!isset($mapbenderMetadata['serviceGroupId']) or is_null($mapbenderMetadata['serviceGroupId']) or $mapbenderMetadata['serviceGroupId'] == 0){
-	 * $e = new mb_exception("mod_inspireAtomFeedISOMetadata.php: fkey_mb_group_id not found!");
-	 * //Get information about owning user of the relation mb_user_mb_group - alternatively the defined fkey_mb_group_id from the service must be used!
-	 * $sqlDep = "SELECT mb_group_name, mb_group_title, mb_group_id, mb_group_logo_path, mb_group_address, mb_group_email, mb_group_postcode, mb_group_city, mb_group_voicetelephone, mb_group_facsimiletelephone FROM mb_group AS a, mb_user AS b, mb_user_mb_group AS c WHERE b.mb_user_id = $1 AND b.mb_user_id = c.fkey_mb_user_id AND c.fkey_mb_group_id = a.mb_group_id AND c.mb_user_mb_group_type=2 LIMIT 1";
-	 * $vDep = array($mapbenderMetadata['serviceOwnerId']);
-	 * $tDep = array('i');
-	 * $resDep = db_prep_query($sqlDep, $vDep, $tDep);
-	 * $departmentMetadata = db_fetch_array($resDep);
-	 * } else {
-	 * $e = new mb_exception("mod_inspireAtomFeedISOMetadata.php: fkey_mb_group_id found!");
-	 * $sqlDep = "SELECT mb_group_name , mb_group_title, mb_group_id, mb_group_logo_path , mb_group_address, mb_group_email, mb_group_postcode, mb_group_city, mb_group_voicetelephone, mb_group_facsimiletelephone FROM mb_group WHERE mb_group_id = $1 LIMIT 1";
-	 * $vDep = array($mapbenderMetadata['serviceGroupId']);
-	 * $tDep = array('i');
-	 * $resDep = db_prep_query($sqlDep, $vDep, $tDep);
-	 * $departmentMetadata = db_fetch_array($resDep);
-	 * }
-	 *
-	 * //infos about the owner of the service - he is the man who administrate the metadata - register the service
-	 * $sql = "SELECT mb_user_email ";
-	 * $sql .= "FROM mb_user WHERE mb_user_id = $1";
-	 * $v = array((integer)$mapbenderMetadata['serviceOwnerId']);
-	 * $t = array('i');
-	 * $res = db_prep_query($sql,$v,$t);
-	 * $userMetadata = db_fetch_array($res);
-	 */
 	// check if resource is freely available to anonymous user - which are all users who search thru metadata catalogues:
-	// $hasPermission=$admin->getLayerPermission($mapbenderMetadata['serviceId'],$mapbenderMetadata['layer_name'],PUBLIC_USER);
 	$hasPermission = true; // Is always true for ATOM Service Feeds!
 	                       // Creating the central "MD_Metadata" node
 	$MD_Metadata = $iso19139->createElementNS ( 'http://www.isotc211.org/2005/gmd', 'gmd:MD_Metadata' );
@@ -960,49 +931,81 @@ SQL;
 	$descriptiveKeywords = $iso19139->createElement ( "gmd:descriptiveKeywords" );
 	$MD_Keywords = $iso19139->createElement ( "gmd:MD_Keywords" );
 	// read keywords for resource out of the database:
-	if ($generateFrom == 'wfs') {
-		$sql = <<<SQL
+	switch ($generateFrom) {
+		case "wmslayer" :
+			// dls is generated from wms for one layer
+			$sql = <<<SQL
+				SELECT keyword.keyword as keyword FROM keyword, layer_keyword WHERE layer_keyword.fkey_layer_id=$1 AND layer_keyword.fkey_keyword_id=keyword.keyword_id union 
+SELECT custom_category.custom_category_key as keyword FROM custom_category, layer_custom_category WHERE layer_custom_category.fkey_layer_id = $1 AND layer_custom_category.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0;
+SQL;
+			$v = array (
+				( integer ) $mapbenderMetadata ["resourceId"] 
+			);
+			$t = array (
+					'i' 
+			);
+			$res = db_prep_query ( $sql, $v, $t );
+			while ( $row = db_fetch_array ( $res ) ) {
+				if (isset($row ['keyword']) && $row ['keyword'] != '') {
+					$keyword = $iso19139->createElement ( "gmd:keyword" );
+					$keyword_cs = $iso19139->createElement ( "gco:CharacterString" );
+					$keywordText = $iso19139->createTextNode ( $row ['keyword'] );
+					$keyword_cs->appendChild ( $keywordText );
+					$keyword->appendChild ( $keyword_cs );
+					$MD_Keywords->appendChild ( $keyword );
+				}
+			}
+			break;
+		case "wfs" :
+			$sql = <<<SQL
 			SELECT keyword.keyword as keyword FROM keyword, wfs_featuretype_keyword WHERE wfs_featuretype_keyword.fkey_featuretype_id IN ( $1 ) AND wfs_featuretype_keyword.fkey_keyword_id=keyword.keyword_id union 
 SELECT custom_category.custom_category_key as keyword FROM custom_category, wfs_featuretype_custom_category WHERE wfs_featuretype_custom_category.fkey_featuretype_id IN ( $1 ) AND wfs_featuretype_custom_category.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0;
 SQL;
-		// get keywords for all featuretypes
-		// $mapbenderMetadata['featureTypes'] - array of ft ids
-		$v = array (
+			// get keywords for all featuretypes
+			// $mapbenderMetadata['featureTypes'] - array of ft ids
+			$v = array (
 				implode ( ',', $mapbenderMetadata ['featureTypes'] ) 
-		);
-		$t = array (
+			);
+			$t = array (
 				's' 
-		);
-		$res = db_prep_query ( $sql, $v, $t );
-		while ( $row = db_fetch_array ( $res ) ) {
-			$keyword = $iso19139->createElement ( "gmd:keyword" );
-			$keyword_cs = $iso19139->createElement ( "gco:CharacterString" );
-			$keywordText = $iso19139->createTextNode ( $row ['keyword'] );
-			$keyword_cs->appendChild ( $keywordText );
-			$keyword->appendChild ( $keyword_cs );
-			$MD_Keywords->appendChild ( $keyword );
-		}
-	} else { // dls is generated from wms for one layer
-		$sql = <<<SQL
-			SELECT keyword.keyword as keyword FROM keyword, layer_keyword WHERE layer_keyword.fkey_layer_id=$1 AND layer_keyword.fkey_keyword_id=keyword.keyword_id union 
-SELECT custom_category.custom_category_key as keyword FROM custom_category, layer_custom_category WHERE layer_custom_category.fkey_layer_id = $1 AND layer_custom_category.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0;
+			);
+			$res = db_prep_query ( $sql, $v, $t );
+			while ( $row = db_fetch_array ( $res ) ) {
+				if (isset($row ['keyword']) && $row ['keyword'] != '') {
+					$keyword = $iso19139->createElement ( "gmd:keyword" );
+					$keyword_cs = $iso19139->createElement ( "gco:CharacterString" );
+					$keywordText = $iso19139->createTextNode ( $row ['keyword'] );
+					$keyword_cs->appendChild ( $keywordText );
+					$keyword->appendChild ( $keyword_cs );
+					$MD_Keywords->appendChild ( $keyword );
+				}
+			}
+			break;
+		default :
+			$sql = <<<SQL
+			SELECT keyword.keyword as keyword FROM keyword, mb_metadata_keyword WHERE mb_metadata_keyword.fkey_metadata_id=$1 AND mb_metadata_keyword.fkey_keyword_id=keyword.keyword_id union 
+SELECT custom_category.custom_category_key as keyword FROM custom_category, mb_metadata_custom_category WHERE mb_metadata_custom_category.fkey_metadata_id = $1 AND mb_metadata_custom_category.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0;
 SQL;
-		$v = array (
-				( integer ) $mapbenderMetadata ["resourceId"] 
-		);
-		$t = array (
+			$v = array (
+				( integer ) $mapbenderMetadata ["metadataId"] 
+			);
+			$t = array (
 				'i' 
-		);
-		$res = db_prep_query ( $sql, $v, $t );
-		while ( $row = db_fetch_array ( $res ) ) {
-			$keyword = $iso19139->createElement ( "gmd:keyword" );
-			$keyword_cs = $iso19139->createElement ( "gco:CharacterString" );
-			$keywordText = $iso19139->createTextNode ( $row ['keyword'] );
-			$keyword_cs->appendChild ( $keywordText );
-			$keyword->appendChild ( $keyword_cs );
-			$MD_Keywords->appendChild ( $keyword );
-		}
+			);
+			$res = db_prep_query ( $sql, $v, $t );
+			while ( $row = db_fetch_array ( $res ) ) {
+				if (isset($row ['keyword']) && $row ['keyword'] != '') {
+					$keyword = $iso19139->createElement ( "gmd:keyword" );
+					$keyword_cs = $iso19139->createElement ( "gco:CharacterString" );
+					$keywordText = $iso19139->createTextNode ( $row ['keyword'] );
+					$keyword_cs->appendChild ( $keywordText );
+					$keyword->appendChild ( $keyword_cs );
+					$MD_Keywords->appendChild ( $keyword );
+				}
+			}
+			break;
 	}
+
 	// a special keyword for service type wms as INSPIRE likes it ;-) infoMapAccessService or infoFeatureAccessService
 	$keyword = $iso19139->createElement ( "gmd:keyword" );
 	$keyword_cs = $iso19139->createElement ( "gco:CharacterString" );
@@ -1045,7 +1048,6 @@ SQL;
 	 */
 	// Resource Constraints B 8 - to be handled with xml snippets from constraints class
 	// pull licence information
-	//$e = new mb_exception ( $generateFrom . " - " . $mapbenderMetadata ['serviceId'] );
 	$constraints = new OwsConstraints ();
 	$constraints->languageCode = "de";
 	$constraints->asTable = false; // 'wmslayer' && $testMatch != 'dataurl' && $testMatch != 'wfs' && $testMatch != 'metadata'
@@ -1184,7 +1186,7 @@ SQL;
 	$operationName = $iso19139->createElement ( "srv:operationName" );
 	$operationName_cs = $iso19139->createElement ( "gco:CharacterString" );
 	
-	$operationNameText = $iso19139->createTextNode ( "Get Download Service Metadata" );
+	$operationNameText = $iso19139->createTextNode ( "Download" );
 	
 	$operationName_cs->appendChild ( $operationNameText );
 	$operationName->appendChild ( $operationName_cs );
@@ -1200,30 +1202,37 @@ SQL;
 	// connectPoint **********************************
 	$connectPoint = $iso19139->createElement ( "srv:connectPoint" );
 	
-	$CI_OnlineResource = $iso19139->createElement ( "gmd:CI_OnlineResource" );
+	$CI_OnlineResource1 = $iso19139->createElement ( "gmd:CI_OnlineResource" );
 	
-	$gmd_linkage = $iso19139->createElement ( "gmd:linkage" );
-	$gmd_URL = $iso19139->createElement ( "gmd:URL" );
-	
+	$gmd_linkage1 = $iso19139->createElement ( "gmd:linkage" );
+	$gmd_URL1 = $iso19139->createElement ( "gmd:URL" );
+	$gmd_URLText1 = $iso19139->createTextNode ("https://www.mapbender.org/dummyurl");
 	// examples for links to Atom service feeds
 	// http://www.geoportal.rlp.de/mapbender/php/mod_inspireDownloadFeed.php?id=e9d22d13-e045-f0e0-25cc-1f146d681216&type=SERVICE&generateFrom=wfs&wfsid=216
 	// http://www.geoportal.rlp.de/mapbender/php/mod_inspireDownloadFeed.php?id=aaa492a3-0585-e27f-ff56-df9118420560&type=SERVICE&generateFrom=wmslayer&layerid=32566
 	
 	switch ($generateFrom) {
 		case "wmslayer" :
-			$gmd_URLText = $iso19139->createTextNode ( $mapbenderPath . "php/mod_inspireDownloadFeed.php?id=" . $recordId . "&type=SERVICE&generateFrom=wmslayer&layerid=" . $mapbenderMetadata ['resourceId'] );
+			$gmd_URLText1 = $iso19139->createTextNode ( $mapbenderPath . "php/mod_inspireDownloadFeed.php?id=" . $recordId . "&type=SERVICE&generateFrom=wmslayer&layerid=" . $mapbenderMetadata ['resourceId'] );
+			$gmd_URLText = $iso19139->createTextNode ( $mapbenderPath . "php/mod_inspireDownloadFeed.php?id=" . $recordId . "&type=SERVICE&generateFrom=wmslayer&layerid=" . $mapbenderMetadata ['resourceId'] );	
 			break;
 		case "dataurl" :
+			$gmd_URLText1 = $iso19139->createTextNode ( $mapbenderPath . "php/mod_inspireDownloadFeed.php?id=" . $recordId . "&type=SERVICE&generateFrom=dataurl&layerid=" . $mapbenderMetadata ['resourceId'] );
 			$gmd_URLText = $iso19139->createTextNode ( $mapbenderPath . "php/mod_inspireDownloadFeed.php?id=" . $recordId . "&type=SERVICE&generateFrom=dataurl&layerid=" . $mapbenderMetadata ['resourceId'] );
 			break;
 		case "wfs" :
+			$gmd_URLText1 = $iso19139->createTextNode ( $mapbenderPath . "/php/mod_inspireDownloadFeed.php?id=" . $recordId . "&type=SERVICE&generateFrom=wfs&wfsid=" . $mapbenderMetadata ['serviceId'] );
 			$gmd_URLText = $iso19139->createTextNode ( $mapbenderPath . "/php/mod_inspireDownloadFeed.php?id=" . $recordId . "&type=SERVICE&generateFrom=wfs&wfsid=" . $mapbenderMetadata ['serviceId'] );
+				
 			break;
 		case "metadata" :
+			$gmd_URLText1 = $iso19139->createTextNode ( $mapbenderPath . "/php/mod_inspireDownloadFeed.php?id=" . $recordId . "&type=SERVICE&generateFrom=metadata" );
 			$gmd_URLText = $iso19139->createTextNode ( $mapbenderPath . "/php/mod_inspireDownloadFeed.php?id=" . $recordId . "&type=SERVICE&generateFrom=metadata" );
+				
 			break;
 	}
 	
+	//$gmd_URLText1 = $iso19139->createTextNode ("https://www.mapbender.org");
 	// Check if anonymous user has rights to access this layer - if not ? which resource should be advertised? TODO
 	/*
 	 * if ($hasPermission) {
@@ -1234,10 +1243,12 @@ SQL;
 	 * $gmd_URLText=$iso19139->createTextNode("https://".$serverWithOutPort80."/http_auth/".$mapbenderMetadata['layer_id']."?REQUEST=GetCapabilities&SERVICE=WMS");
 	 * }
 	 */
-	$gmd_URL->appendChild ( $gmd_URLText );
-	$gmd_linkage->appendChild ( $gmd_URL );
-	$CI_OnlineResource->appendChild ( $gmd_linkage );
-	$connectPoint->appendChild ( $CI_OnlineResource );
+	
+	$gmd_URL1->appendChild ( $gmd_URLText1 );
+	$gmd_linkage1->appendChild ( $gmd_URL1 );
+	$CI_OnlineResource1->appendChild ( $gmd_linkage1 );
+	
+	$connectPoint->appendChild ( $CI_OnlineResource1 );
 	
 	$SV_OperationMetadata->appendChild ( $operationName );
 	$SV_OperationMetadata->appendChild ( $DCP );
