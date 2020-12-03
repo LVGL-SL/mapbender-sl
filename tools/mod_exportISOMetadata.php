@@ -41,7 +41,7 @@ $wmsView = "wms_search_table";
 if (isset($configObject->metadataGenerationUri) && $configObject->metadataGenerationUri != "") {
     $baseUri = $configObject->metadataGenerationUri;
 } else {
-    $baseUri = MAPBENDER_PATH;
+    $baseUri = "http://localhost/mapbender";
 }
 
 $sql = "update mb_metadata set export2csw = false where position('GetRecordById' in data) <> 0 and position('GetRecordById' in data) is not null";
