@@ -408,7 +408,6 @@ switch (strtolower($reqParams['request'])) {
         break;
 
     case 'getmap':
-    	//$e = new mb_exception("http_auth/http/index.php: userId: ".$userId);
         $arrayOnlineresources = checkWmsPermission($owsproxyString, $userId);
         $query->setOnlineResource($arrayOnlineresources['wms_getmap']);
         $layers = checkLayerPermission($wmsId, $reqParams['layers'], $userId);
@@ -1604,7 +1603,7 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
             }
             $numColors = $source->getImageColors();
             if ($log_id != null && is_integer($log_id)) {
-            	$n->updateWmsLog($numColors <= 1 ? -1 : 1, null, null, $log_id);
+                $n->updateWmsLog($numColors <= 1 ? -1 : 1, null, null, $log_id);
             }
             header("Content-Type: " . $reqParams['format']);
             echo $source->getImageBlob();
