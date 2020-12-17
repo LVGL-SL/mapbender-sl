@@ -12,8 +12,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-#http://www.geoportal.rlp.de/mapbender/php/mod_wmc2ol.php?wmc_id=45_1291218568&withDigitize=1&xID=xCoord&yID=yCoord&LayerSwitcher=1
-#http://www.geoportal.rlp.de/mapbender/php/mod_wmc2ol.php?wmc_id=45_1291218568&GEORSS=1&LayerSwitcher=1
 
 require_once(dirname(__FILE__)."/../../core/globalSettings.php");
 require_once(dirname(__FILE__)."/../classes/class_user.php");
@@ -234,14 +232,13 @@ function createOlFromWMC_id($wmc_id, $pointRadius, $fillColor){
 			$html.="var logo = \"<a href = 'mod_getWmcDisclaimer.php?&id=".$wmcId."&languageCode=de&withHeader=true&hostName=".$hostName."' target='_blank'>"._mb('Terms of use')."</a>\";\n";
 		}
 	} else {
-		$html.="var logo = \"<a href = 'https://geoportal.saarland.de/' target='_blank'><img src='../img/logo_geoportal_neu.png' height='20' width='120' alt='Mapbender Logo'/></a><br><a href = 'mod_getWmcDisclaimer.php?&id=".$wmcId."&languageCode=de&withHeader=true&hostName=".$hostName."' target='_blank'>"._mb('Terms of use')."</a>\";\n";
+		$html.="var logo = \"<a href = 'https://geoportal.saarland.de/' target='_blank'><img src='../img/logo_geoportal_neu.png' height='20' width='120' alt='Geoportal Logo'/></a><br><a href = 'mod_getWmcDisclaimer.php?&id=".$wmcId."&languageCode=de&withHeader=true&hostName=".$hostName."' target='_blank'>"._mb('Terms of use')."</a>\";\n";
 	}
-	//$html.="var logo = \"<a href = 'http://www.geoportal.rlp.de' target='_blank'><img src='../img/logo_geoportal_neu.png' height='20' width='120' alt='Geoportal Logo'/></a><br><a href = 'mod_getWmcDisclaimer.php?&id=".$wmcId."&languageCode=de&hostName=".$hostName."' target='_blank'>"._mb('Terms of use')."</a>\";\n";
 	//check for some queryable layer in web map context document
 	$someLayerQueryable=false;
 	for ($i=0; $i<count($layer_array); $i++) {
 		$html.="var layer".$i.";\n";
-		$mb_extensions=$xml->LayerList->Layer[$i]->Extension->children('http://www.mapbender.org/context');
+		$mb_extensions=$xml->LayerList->Layer[$i]->Extension->children('https://geoportal.saarland.de');
 		$layer_array_queryable[$i]=$mb_extensions->querylayer;
 		if (($layer_array_queryable[$i]=='1') and ($xml->LayerList->Layer[$i]->attributes()->hidden=='0') and ($mb_extensions->layer_parent!='')){
 			$someLayerQueryable=true;
@@ -376,7 +373,7 @@ function createOlFromWMC_id($wmc_id, $pointRadius, $fillColor){
 		}
 		$i = $firstLayerId;
 		$html.="	layer0 = new OpenLayers.Layer.WMS( \"".str_replace("'","",str_replace('"','',$xml->LayerList->Layer[$i]->Title))."\",\n";
-		$extensions=$xml->LayerList->Layer[$i]->Extension->children('http://www.mapbender.org/context');
+		$extensions=$xml->LayerList->Layer[$i]->Extension->children('https://geoportal.saarland.de');
 		$layer_id=dom_import_simplexml($extensions->layer_id)->nodeValue;
 		$layer_name=$xml->LayerList->Layer[$i]->Name;
 		$wms_id=dom_import_simplexml($extensions->wms_id)->nodeValue;
@@ -444,7 +441,7 @@ function createOlFromWMC_id($wmc_id, $pointRadius, $fillColor){
 	//create the overlay layers for which the user guest has permissions
 	$startLayerId = $firstLayerId+1;
 	for ($i=$startLayerId; $i<count($layer_array); $i++) {
-		$extensions=$xml->LayerList->Layer[$i]->Extension->children('http://www.mapbender.org/context');
+		$extensions=$xml->LayerList->Layer[$i]->Extension->children('https://geoportal.saarland.de');
 		$wms_id=$extensions->wms_id;
 		$layer_id=dom_import_simplexml($extensions->layer_id)->nodeValue;
 		$layer_opacity=((double)dom_import_simplexml($extensions->gui_wms_opacity)->nodeValue)/100;
@@ -492,7 +489,6 @@ function createOlFromWMC_id($wmc_id, $pointRadius, $fillColor){
 			$html.="		singleTile: true,\n";
 			$html.="		opacity: ".$layer_opacity.",\n";
 			$html.="		numZoomLevels: ".$numberZoomLevels.",\n";
-			//$extensions=$xml->LayerList->Layer[$i]->Extension->children('http://www.mapbender.org/context');
 			$minScale=dom_import_simplexml($extensions->gui_minscale)->nodeValue;
 			$maxScale=dom_import_simplexml($extensions->gui_maxscale)->nodeValue;
 			if (!$maxScale){

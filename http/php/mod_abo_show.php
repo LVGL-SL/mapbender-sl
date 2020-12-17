@@ -107,11 +107,7 @@ if ($checkboxes > 0 || isset($_POST['wmslist'])){
 					LOGIN
 				);
 			}
-			//
-			//following need to be adopted in another installation than geoportal.rlp!! TODO
-			//here work some mod_rewrite rule ;-)
-			//metadataUrlPlaceholder
-			//$metadataUrl = "http://www.geoportal.rlp.de/layer/";
+			$metadataUrl="https://geoportal.saarland.de/layer/";
 			for ($i=0; $i<count($wms_array); $i++) {
 			// get layer id
 	       		$sql = "select layer_id from layer where fkey_wms_id= $1 and layer_pos = 0";
