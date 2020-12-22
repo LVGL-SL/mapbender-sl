@@ -1,4 +1,4 @@
-conf/*.conf
+conf/env.conf
 http/tmp/
 http/geoportal/preview/*.jpg
 log/
