@@ -4,4 +4,5 @@ http/tmp/
 http/geoportal/preview/*.jpg
 log/
 metadata/
+mapserver/spatial_security.map
 *.mo
