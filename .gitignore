@@ -1,7 +1,9 @@
-conf/*.conf
-tools/tmp/
+conf/env.php
 http/tmp/
 http/geoportal/preview/*.jpg
 log/
 metadata/
+mapserver/spatial_security.map
+tools/tmp/
+tools/wms_extent/extents.map
 *.mo

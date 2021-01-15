@@ -1,14 +1,3 @@
-// {
-//     "categories": {
-//         "Fix-Data": "Fix-Data",
-//         "Editable-Data": "Editable-Data",
-//         "Style-Data": "Style-Data",
-//         "Custom-Data": "Custom-Data"
-//     }
-// }
-
-
-
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "id": "/",

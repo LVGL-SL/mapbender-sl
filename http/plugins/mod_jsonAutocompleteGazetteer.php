@@ -1,55 +1,4 @@
 <?php
-/**
- * Package: mod_jsonAutocompleteGazetteer
- *
- * Description:
- * This module is a client for a json gazetteer webservice as used by http://www.geonames.org. The default 
- * service is the service from geonames.org which allows searching for 
- * 
- * 
- * Files:
- *  - http/plugins/mod_jsonAutocompleteGazetteer.php
- *
- * SQL:
- * >
- * > INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src,
- * > e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag,
- * > e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('<app_id>','jq_ui_autocomplete',5,1,
- * > 'Module to manage jQuery UI autocomplete module','','div','','',-1,-1,15,15,NULL ,'','','div',
- * > '','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/jquery.ui.autocomplete.js',
- * > '','jq_ui,jq_ui_widget,jq_ui_position','');
- * >
- * > INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,
- * > e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content,
- * > e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('<app_id>',
- * > 'jsonAutocompleteGazetteer',12,1,'Client for json webservices like geonames.org','Gazetteer',
- * > 'div','','',230,30,NULL ,NULL ,999,'','','div','../plugins/mod_jsonAutocompleteGazetteer.php',
- * > '','mapframe1','','http://www.mapbender.org/index.php/mod_jsonAutocompleteGazetteer');
- * >
- * > INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) 
- * > VALUES('<app_id>', 'jsonAutocompleteGazetteer', 'gazetteerUrl', 'http://ws.geonames.org/searchJSON?lang=de&',
- * >  '' ,'var');
- * > 
- * > INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type)
- * >  VALUES('<app_id>', 'jsonAutocompleteGazetteer', 'isGeonames', 'true', '' ,'var');
- * > 
- * Help:
- * http://www.mapbender.org/mod_jsonAutocompleteGazetteer
- *
- * Maintainer:
- * http://www.mapbender.org/User:Armin_Retterath
- * 
- * Parameters:
- * none
- * 
- *
- * License:
- * Copyright (c) 2009, Open Source Geospatial Foundation
- * This program is dual licensed under the GNU General Public License 
- * and Simplified BSD license.  
- * http://svn.osgeo.org/mapbender/trunk/mapbender/license/license.txt
- */
-
 require_once(dirname(__FILE__)."/../php/mb_validateSession.php");
 ?>
 var standingHighlight = null;
@@ -61,7 +10,7 @@ Mapbender.events.afterMapRequest.register( function(){
 
 //initialize modul
 if (options.gazetteerUrl === undefined) {
-	options.gazetteerUrl = 'http://ws.geonames.org/searchJSON?lang=de&';
+	options.gazetteerUrl = 'https://geoportal.saarland.de/mapbender/geoportal/gaz_geom_mobile.php';
 }
 if (options.isGeonames === undefined ) {
 	options.isGeonames = false;
