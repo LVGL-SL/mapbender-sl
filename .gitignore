@@ -1,4 +1,4 @@
-conf/env.php
+conf/.env.php
 http/tmp/
 http/geoportal/preview/*.jpg
 log/
