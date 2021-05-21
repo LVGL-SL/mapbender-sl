@@ -11,6 +11,9 @@ global $behindRewrite;
 global $linkedDataProxyUrl;
 global $nonceLife;
 global $restrictToOpenData;
+
+$origin =  URL_SCHEME . "://" . FULLY_QUALIFIED_DOMAIN_NAME;
+
 /*
  * examples:
  * get
@@ -100,9 +103,9 @@ $textualDataArray = array (
 
 $title = "Open Spatial Data served by Mapbender WFS 3.0 Proxy";
 $description = "Description of the instance of Mapbender WFS 3.0 Proxy";
-$datasource_url = "https://www.geoportal.rlp.de/";
-$legal_notice_link = "https://www.geoportal.rlp.de/article/Impressum";
-$privacy_notice_link = "https://www.geoportal.rlp.de/article/Datenschutz";
+$datasource_url = $origin;
+$legal_notice_link = $origin . "/article/Impressum";
+$privacy_notice_link = $origin . "/article/Datenschutz";
 $map_position = "side";
 
 if (! empty ( $_SERVER ['HTTPS'] )) {
@@ -111,7 +114,7 @@ if (! empty ( $_SERVER ['HTTPS'] )) {
 	$schema = "http";
 }
 
-$linkedDataProxyUrl = $schema."://".FULLY_QUALIFIED_DOMAIN_NAME."/".$rewritePath;
+$linkedDataProxyUrl = $origin . "/" . $rewritePath;
 
 if ($behindRewrite == true) {
 	$cssFile = MAPBENDER_PATH . "/php/" . $cssFile;
@@ -1333,14 +1336,12 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 			// ************************************************************************************************************************************
 			// service only part
 			// ************************************************************************************************************************************
-			// add from rlp!
 			$returnObject->id = $wfsid;
 			$returnObject->title = $wfs->title;
 			$returnObject->description = $wfs->summary;
 			$returnObject->provider = $wfs->providerName;
 			$returnObject->providerEmail = $wfs->electronicMailAddress;
-			// $returnObject->providerHomepage = $wfs->homepage; //TODO add to ows class!
-			$returnObject->providerHomepage = "https://www.geoportal.rlp.de/";
+			$returnObject->providerHomepage = $origin . "/";
 			$returnObject->license = $wfs->fees;
 			
 			// get contraints
@@ -1725,20 +1726,17 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 					if ($items == "all") { // show items in list!
 					                       // reinitialize object!
 						$returnObject = new stdClass ();
-						// for rlp:
 						$returnObject->serviceTitle = $wfs->title;
 						$returnObject->collectionId = $myFeatureType->id;
 						$returnObject->collectionName = $ftName;
 						$returnObject->collectionTitle = $myFeatureType->title;
-						//
+
 						$returnObject->title = $myFeatureType->title;
 						$returnObject->id = $ftName;
 						$returnObject->description = $myFeatureType->summary;
 						$returnObject->extent->spatial = $myFeatureType->latLonBboxArray;
 						$returnObject->extent->temporal = array ();
-						
-						
-						
+
 						$returnObject->type = "FeatureCollection";
 						$returnObject->links = array ();
 						$returnObject->links [0]->rel = "self";
@@ -1884,7 +1882,6 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						$returnObject->links [1]->title = "next page";
 						// $returnObject->links[1]->href = $_SERVER['REQUEST_URI']."&p=".($page + 1);
 						$returnObject->links [1]->href = get2Rest ( $_SERVER ['REQUEST_URI'] . "&offset=" . ($offset + 1 * $limit) . "&limit=" . $limit );
-						// for rlp
 						$returnObject->links [2]->rel = "last";
 						$returnObject->links [2]->type = "application/geo+json";
 						$returnObject->links [2]->title = "last page";
@@ -2355,12 +2352,11 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 					// integrate json-ld @context if it is resovable!*******************************************************************************
 					
 					// add service title and collection title for navigation
-					// for rlp
 					$returnObject->serviceTitle = $wfs->title;
 					$returnObject->collectionId = $myFeatureType->id;
 					$returnObject->collectionName = $ftName;
 					$returnObject->collectionTitle = $myFeatureType->title;
-					// end rlp specific
+
 					$returnObject->links [0]->href = get2Rest ( $_SERVER ['REQUEST_URI'] );
 					$returnObject->links [0]->rel = "self";
 					$returnObject->links [0]->type = "application/geo+json";
@@ -3216,7 +3212,7 @@ switch ($f) {
 		$html .= '    <div class="container d-flex flex-row justify-content-between align-items-center w-100">' . $newline;
 		$html .= '        <span>' . $newline;
 		$html .= '            <span class="text-muted small mr-2">powered by</span>' . $newline;
-		$html .= '            <a class="navbar-brand" href="https://git.osgeo.org/gitea/armin11/GeoPortal.rlp" target="_blank">GeoPortal.rlp</a>' . $newline;
+		$html .= '            <a class="navbar-brand" href="https://git.osgeo.org/gitea/LVGL/GeoPortal.sl" target="_blank">GeoPortal.sl</a>' . $newline;
 		$html .= '        </span>' . $newline;
 		$html .= '        <span>' . $newline;
 		if (! isset ( $collections ) || $collection == 'all') {
