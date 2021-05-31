@@ -1,6 +1,6 @@
 {
-  "title": "Offene Geodaten des Landes Saarland",
-  "description": "OGC API Schnittstelle für Feature Services des Geoportal Saarland.",
+  "title": "Geoportal SL | OAF",
+  "description": "OGC API für Feature Services des Geoportal Saarland.",
   "datasource_url": "https://geoportal.saarland.de/",
   "legal_notice_link": "https://geoportal.saarland.de/article/Impressum",
   "privacy_notice_link": "https://geoportal.saarland.de/article/Datenschutz",
