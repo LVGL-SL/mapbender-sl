@@ -153,8 +153,12 @@ var metadataCarouselTinySlider = function() {
 	};*/
 
 
-        //add 3 dummy slides to container identified by class dummy
-        this.sliderContainer.append('<div class="slider-item dummy"><div class="card"><img src="https://www.geoportal.rlp.de/mapbender/geoportal/mod_showPreview.php?resource=wmc&id=2506" alt=""><h2>Titel 1</h2><p class="card_description">Loresm ipsum dolor sit amet consectetur adipisicing elit. Dignissimos, voluptas!</p></div></div><div class="slider-item dummy"><div class="card"><img src="https://www.geoportal.rlp.de/mapbender/geoportal/mod_showPreview.php?resource=wmc&id=2506" alt=""><h2>Titel 2</h2><p class="card_description">Loresm ipsum dolor sit amet consectetur adipisicing elit. Dignissimos, voluptas!</p></div></div><div class="slider-item dummy"><div class="card"><img src="https://www.geoportal.rlp.de/mapbender/geoportal/mod_showPreview.php?resource=wmc&id=2506" alt=""><h2>Titel 3</h2><p class="card_description">Loresm ipsum dolor sit amet consectetur adipisicing elit. Dignissimos, voluptas!</p></div></div>');
+    // Without these the that.mainSlider object won't get initialized and breaks the entire script
+    // the dumy class is used to remove them later
+    this.sliderContainer.append('<div class="slider-item dummy"><div class="card"><img src="/mapbender/geoportal/mod_showPreview.php?resource=wmc&id=3019"><h2>Titel 1</h2><p class="card_description">Loresm ipsum dolor sit amet consectetur adipisicing elit. Dignissimos, voluptas!</p></div></div>');
+    this.sliderContainer.append('<div class="slider-item dummy"><div class="card"><img src="/mapbender/geoportal/mod_showPreview.php?resource=wmc&id=4331"><h2>Titel 2</h2><p class="card_description">Loresm ipsum dolor sit amet consectetur adipisicing elit. Dignissimos, voluptas!</p></div></div>');
+    this.sliderContainer.append('<div class="slider-item dummy"><div class="card"><img src="/mapbender/geoportal/mod_showPreview.php?resource=wmc&id=3960"><h2>Titel 3</h2><p class="card_description">Loresm ipsum dolor sit amet consectetur adipisicing elit. Dignissimos, voluptas!</p></div></div>');
+
     }
     //end of function initForm
 
