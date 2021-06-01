@@ -1020,7 +1020,6 @@ SQL;
 			$keywordText = $iso19139->createTextNode("infoFeatureAccessService");
 			break;
 	}
-	$keywordText = $iso19139->createTextNode ( "infoFeatureAccessService" );
 	$keyword_cs->appendChild ( $keywordText );
 	$keyword->appendChild ( $keyword_cs );
 	$MD_Keywords->appendChild ( $keyword );
