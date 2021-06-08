@@ -2,7 +2,7 @@ conf/.env.php
 conf/mobilemap2.conf
 http/tmp/
 http/geoportal/preview/*.jpg
-log/
+log/*
 metadata/
 mapserver/spatial_security.map
 tools/tmp/

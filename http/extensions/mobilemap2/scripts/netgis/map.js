@@ -68,14 +68,15 @@ netgis.map =
 		/**
 		 * Initialize the map client.
 		 * @memberof netgis
-		 * @param {string} containerId Map container element ID
 		 */
 		var init = function()
 		{
 			// Container
 			container = document.getElementById( netgis.config.MAP_CONTAINER_ID );
 			
+			// Projections
 			proj4.defs( netgis.config.MAP_PROJECTIONS );
+			ol.proj.proj4.register( proj4 );
 			
 			// View
 			view = new ol.View
@@ -134,7 +135,10 @@ netgis.map =
 					{
 						if ( zxy === null ) return undefined;
 						
-						return netgis.config.URL_BACKGROUND_HYBRID + "/" + zxy[ 0 ] + "/" + zxy[ 1 ] + "/" + zxy[ 2 ] + ".jpeg";
+						// Hybrid layer has different grid coords
+						var y = -zxy[ 2 ] - 1;
+						
+						return netgis.config.URL_BACKGROUND_HYBRID + "/" + zxy[ 0 ] + "/" + zxy[ 1 ] + "/" + y + ".jpeg";
 					}
 				}
 			);
@@ -342,6 +346,9 @@ netgis.map =
 			positionCenter = false;
 			
 			map.updateSize();
+			
+			// Additional Size Update, just to be sure
+			setTimeout( function() { map.updateSize(); }, 200 );
 			
 			// Parameters
 			var center = getCenter();
@@ -626,7 +633,7 @@ netgis.map =
 		
 		var getResolutionFromScale = function( scale )
 		{
-			var mpu = view ? ol.proj.METERS_PER_UNIT[ view.getProjection().getUnits() ] : 1.0;
+			var mpu = view ? ol.proj.Units.METERS_PER_UNIT[ view.getProjection().getUnits() ] : 1.0;
 			var ipu = mpu * 39.3701; // inches per unit = 39.3701
 			var dpi = 72;
 			

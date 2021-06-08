@@ -31,9 +31,13 @@ $e_id = 'metadataCarouselTinySlider';
 include '../include/dyn_js.php';
 include '../include/dyn_php.php';
 
-//if we need some other elements fom the database - do the stuff
-//echo "var mod_gui_wms_visible = '".$vis."';";
-
+/*
+ * To include further GUI elements from the database
+ * do as follows:
+ * 
+ *   echo "var mod_gui_wms_visible = '".$vis."';";
+ * 
+ */
 ?>
 
 options.loadMessage = "<?php echo _mb('Load theme');?>";
@@ -78,12 +82,9 @@ if(myIsNumeric(options.slidesPerSide)) {
 
 if (typeof options.searchUrl == 'undefined') {
     options.searchUrl = "../php/mod_callMetadata.php?";
-} else {
-    //alert(options.searchUrl);
 }
 //for debugging purposes
 //options.searchUrl = "../php/mod_callMetadataRemote.php?";
-
 
 
 var metadataCarouselTinySlider = function() {
@@ -97,83 +98,61 @@ var metadataCarouselTinySlider = function() {
         this.resourceFilterString = "";
     }
 
-    this.initForm = function() {
+    this.initForm = function () {
         this.tinySliderContainer = $('#metadataCarouselTinySlider');
-	this.tinySliderContainer.addClass('slider-container');
+        this.tinySliderContainer.addClass('slider-container');
 
-    //example from tiny-slider
-    /*<ul class="controls" id="customize-controls" aria-label="Carousel Navigation" tabindex="0">
-        <li class="prev" data-controls="prev" aria-controls="customize" tabindex="-1">
-            <i class="fas fa-angle-left fa-5x"></i>
-        </li>
-        <li class="next" data-controls="next" aria-controls="customize" tabindex="-1">
-            <i class="fas fa-angle-right fa-5x"></i>          
-        </li>
-    </ul>*/
-
-	this.controlsContainer = $(document.createElement('ul')).appendTo(this.tinySliderContainer);
+        this.controlsContainer = $(document.createElement('ul')).appendTo(this.tinySliderContainer);
         this.controlsContainer.addClass('controls');
-	this.controlsContainer.attr('id', 'customize-controls');
-	this.controlsContainer.attr('aria-label', 'Carousel Navigation');
-	this.controlsContainer.attr('tabindex', '0');
+        this.controlsContainer.attr('id', 'customize-controls');
+        this.controlsContainer.attr('aria-label', 'Carousel Navigation');
+        this.controlsContainer.attr('tabindex', '0');
 
-	this.prevContainer = $(document.createElement('li')).appendTo(this.controlsContainer);
-	this.prevContainer.addClass('prev');
+        this.prevContainer = $(document.createElement('li')).appendTo(this.controlsContainer);
+        this.prevContainer.addClass('prev');
 
-	this.prevContainer.attr('data-controls', 'prev');
-	this.prevContainer.attr('aria-controls', 'customize');
-	this.prevContainer.attr('tabindex', '-1');
+        this.prevContainer.attr('data-controls', 'prev');
+        this.prevContainer.attr('aria-controls', 'customize');
+        this.prevContainer.attr('tabindex', '-1');
 
-	this.prevTitleContainer = $(document.createElement('i')).appendTo(this.prevContainer);
-	this.prevTitleContainer.addClass('fas');
-	this.prevTitleContainer.addClass('fa-angle-right');
-	this.prevTitleContainer.addClass('fa-5x');
+        this.prevTitleContainer = $(document.createElement('i')).appendTo(this.prevContainer);
+        this.prevTitleContainer.addClass('fas');
+        this.prevTitleContainer.addClass('fa-angle-right');
+        this.prevTitleContainer.addClass('fa-5x');
 
-	this.nextContainer = $(document.createElement('li')).appendTo(this.controlsContainer);
-	this.nextContainer.addClass('next');
+        this.nextContainer = $(document.createElement('li')).appendTo(this.controlsContainer);
+        this.nextContainer.addClass('next');
 
-	this.nextContainer.attr('data-controls', 'next');
-	this.nextContainer.attr('aria-controls', 'customize');
-	this.nextContainer.attr('tabindex', '-1');
+        this.nextContainer.attr('data-controls', 'next');
+        this.nextContainer.attr('aria-controls', 'customize');
+        this.nextContainer.attr('tabindex', '-1');
 
-	this.nextTitleContainer = $(document.createElement('i')).appendTo(this.nextContainer);
-	this.nextTitleContainer.addClass('fas');
-	this.nextTitleContainer.addClass('fa-angle-right');
-	this.nextTitleContainer.addClass('fa-5x');
+        this.nextTitleContainer = $(document.createElement('i')).appendTo(this.nextContainer);
+        this.nextTitleContainer.addClass('fas');
+        this.nextTitleContainer.addClass('fa-angle-right');
+        this.nextTitleContainer.addClass('fa-5x');
 
-	this.sliderContainer = $(document.createElement('div')).appendTo(this.tinySliderContainer);
-	this.sliderContainer.addClass('my-slider');
+        this.sliderContainer = $(document.createElement('div')).appendTo(this.tinySliderContainer);
+        this.sliderContainer.addClass('my-slider');
 
-        //hide during initialization
-        //$('#' + options.id).hide();
-
-	//add event for loaded wmc like done in javascripts/mod_loadwmc.js
-	/*this.events = {
-		loaded: new Mapbender.Event()
-	};*/
-
-
-        //add 3 dummy slides to container identified by class dummy
-        this.sliderContainer.append('<div class="slider-item dummy"><div class="card"><img src="https://www.geoportal.rlp.de/mapbender/geoportal/mod_showPreview.php?resource=wmc&id=2506" alt=""><h2>Titel 1</h2><p class="card_description">Loresm ipsum dolor sit amet consectetur adipisicing elit. Dignissimos, voluptas!</p></div></div><div class="slider-item dummy"><div class="card"><img src="https://www.geoportal.rlp.de/mapbender/geoportal/mod_showPreview.php?resource=wmc&id=2506" alt=""><h2>Titel 2</h2><p class="card_description">Loresm ipsum dolor sit amet consectetur adipisicing elit. Dignissimos, voluptas!</p></div></div><div class="slider-item dummy"><div class="card"><img src="https://www.geoportal.rlp.de/mapbender/geoportal/mod_showPreview.php?resource=wmc&id=2506" alt=""><h2>Titel 3</h2><p class="card_description">Loresm ipsum dolor sit amet consectetur adipisicing elit. Dignissimos, voluptas!</p></div></div>');
+        // Without these the that.mainSlider object won't get initialized and breaks the entire script
+        // the dumy class is used to remove them later
+        this.sliderContainer.append('<div class="slider-item dummy"><div class="card"><img src="/mapbender/geoportal/mod_showPreview.php?resource=wmc&id=3019"><h2>Titel 1</h2><p class="card_description">Loresm ipsum dolor sit amet consectetur adipisicing elit. Dignissimos, voluptas!</p></div></div>');
+        this.sliderContainer.append('<div class="slider-item dummy"><div class="card"><img src="/mapbender/geoportal/mod_showPreview.php?resource=wmc&id=4331"><h2>Titel 2</h2><p class="card_description">Loresm ipsum dolor sit amet consectetur adipisicing elit. Dignissimos, voluptas!</p></div></div>');
+        this.sliderContainer.append('<div class="slider-item dummy"><div class="card"><img src="/mapbender/geoportal/mod_showPreview.php?resource=wmc&id=3960"><h2>Titel 3</h2><p class="card_description">Loresm ipsum dolor sit amet consectetur adipisicing elit. Dignissimos, voluptas!</p></div></div>');
     }
-    //end of function initForm
 
     var targetName = options.target;
     var maxResults = options.maxResults;
     var currentPage = 0;
-    var maxPages = 1; //set default to 1 page 
+    var maxPages = 1;
     var numberOfResults = 0;
     var searchUrl = options.searchUrl;
     var slidesPerSide = options.slidesPerSide;
 
-    //first init form
     that.initForm();
-
     this.loadMore = function(){
-that.removeEvent();
-        //alert("actual_loaded_page: "+ currentPage +" - max pages: "+maxPages); //1-10 (100)
-        //hide further loading button while loading more data
-        //$('.show_more_button').hide();
+    that.removeEvent();
         //load next page
         $.ajax({url: searchUrl+"searchText=*&searchResources=wmc&searchPages="+(parseInt(currentPage) + parseInt(1))+"&maxResults="+maxResults+that.resourceFilterString, async: false, success: function(result){
             result.wmc.srv.forEach(that.addElementToSlider);
@@ -190,7 +169,6 @@ that.removeEvent();
                 that.executeJavaScript({method:"loadWmc", parameters:{id:resourceId}});
             });
         }});
-        //alert("current page - to goto afterwards!: "+currentPage);
         that.mainSlider.goTo(parseInt(currentPage * slidesPerSide) + 1);
         that.addEvent();
     }
@@ -245,18 +223,14 @@ that.removeEvent();
         $("div.my-slider").append('<div class="slider-item" resourceId="'+item.id+'" title="' + item.title + ' - ' + item.abstract + '"><div class="card"><span class="load-count">'+item.loadCount+'</span><img class="load_image" src="../img/osgeo_graphics/document-send-symbolic.symbolic.png" title="Load" resourceId="'+item.id+'" resourceTitle="'+item.title+'"><img src="'+item.previewURL+'" alt=""></div></div>');
         $(".dummy").remove();
         that.mainSlider = that.mainSlider.rebuild();  
-        //add events again! 
-        //that.addEvent();
     }
 
     this.loadWmcById = function(wmcId){
-       //alert(options.loadMessage + ": " + wmcId);
        //Mapbender.modules.loadwmc.executeJavaScript({method:"loadWmc", parameters:{id:wmcId}});
        that.executeJavaScript({method:"loadWmc", parameters:{id:wmcId}});
     }
 
     this.addEvent = function(){
-        //add event 
         this.customizedFunction = function (info, eventName) {
             // direct access to info object
             //console.log(info.event.type, info.container.id);
@@ -300,19 +274,13 @@ that.removeEvent();
 					if (obj.javascript && typeof(obj.javascript) == "object") {
 						for (var j = 0; j < obj.javascript.length; j++) {
 							//TODO: prohibit multiple maprequests when load wmc, cause on maprequests the wmc maybe stored to session :-(
-							//alert("Statement: " + obj.javascript[j]);
-							//eventAfterLoadWMS.trigger(); -- load the each wms again and saves the wmc to session for each wms - prohibit this behaviour!!!! - Done by global lock_maprequest in class_wmc.php line 1220+!!
-							//console.log("Statement: " + obj.javascript[j]);
 							eval(obj.javascript[j]);                                           
 						}
 
 						if (options.allowResize == true) {
 						    if (Mapbender.modules.resizeMapsize) {
-						        //alert("Module resizeMapsize is available!");
 						        try {$('#resizeMapsize').trigger("click");} catch (e) {alert(e)};
 						    }
-						} else {
-						    //alert("allowResize not defined");
 						}
 						if (args.method === "loadWmc" || args.method === 'loadWmcFromFile') {
                                                     var kml = $('#mapframe1').data('kml');
@@ -333,10 +301,6 @@ that.removeEvent();
                                                             // just ignore the exception for now
                                                         }
                                                     }
-						    //following will not work, because event is not defined here
-						    //that.events.loaded.trigger({
-						    //		extensionData: restoredWmcExtensionData
-						    //});
                                                 //following copied from wfsConTree.js - because there it is only called via loadwmc module, which is not available in new GUI types (>2019 fullcreen with new layout. wfsConfTree.js / wfsConfTree_single.js triggers the loadwmc module!)
 						/*load wfs confs via ajax*/
                                                 if (restoredWmcExtensionData && restoredWmcExtensionData.WFSCONFIDSTRING) {
@@ -347,8 +311,6 @@ that.removeEvent();
 									wfsConfIdString: restoredWmcExtensionData.WFSCONFIDSTRING
 								},
 								callback: function(result,success,message){
-                                                                        //alert("try to reset wfsConfTree");
-									//alert(JSON.stringify(Mapbender.modules.wfsConfTree));
 									if (Mapbender.modules.wfsConfTree) {
 									    Mapbender.modules.wfsConfTree.reset(result);
 									}
@@ -356,7 +318,6 @@ that.removeEvent();
 							});
 							req.send();
 						}
-                                                /*end load wfs confs via ajax*/
 						}
 					}
 					that.hide();
