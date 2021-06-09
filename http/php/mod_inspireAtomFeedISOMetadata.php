@@ -761,6 +761,7 @@ SQL;
 		$date1->appendChild ( $CI_Date );
 		$CI_Citation->appendChild ( $date1 );
 	}
+
 	$citation->appendChild ( $CI_Citation );
 	$SV_ServiceIdentification->appendChild ( $citation );
 	
@@ -1422,3 +1423,5 @@ if ($_REQUEST ['VALIDATE'] == "true") {
 } else {
 	pushISO19139 ( $iso19139Doc, $recordId, $outputFormat ); // throw it out to world!
 }
+?>
+
