@@ -724,7 +724,10 @@ function updateParent(path){
 function handleSelectedWMS(path){
 	if(lock_update)return;
 	var t = path.split("|");
-	var wms_id = t[t.length-1].substr(4);
+	var wms_id;
+	for (element of t) {
+		if (element.startsWith("wms_")) wms_id = element.substr(4);
+	}
 	var reset_lock=!lock_check;
 	var ind =  getMapObjIndexByName(mod_treeGDE_map);
 	var wms =  getWMSIndexById(mod_treeGDE_map,wms_id);
@@ -959,7 +962,6 @@ function initArray(){
 									if(menu.indexOf("wms_down")!=-1 && ii!= mb_mapObj[i].wms.length-1)c_menu+="menu_move_down,";
 								}
 								if(menu.indexOf("remove")!=-1)c_menu+="menu_delete,";
-//								if(menu.indexOf("wms_switch")!=-1)c_menu+="menu_wms_switch,";
 								if(menu.indexOf("opacity_up")!=-1 && parseFloat( mb_mapObj[i].wms[ii].gui_wms_mapopacity) < 1)c_menu+="menu_opacity_up,";
 								if(menu.indexOf("opacity_down")!=-1 && parseFloat( mb_mapObj[i].wms[ii].gui_wms_mapopacity) > 0)c_menu+="menu_opacity_down,";
 								if(menu.indexOf("hide")!=-1)c_menu+="menu_hide";
