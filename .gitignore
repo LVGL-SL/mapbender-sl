@@ -8,3 +8,5 @@ mapserver/spatial_security.map
 tools/tmp/
 tools/wms_extent/extents.map
 *.mo
+http/img/altitude_profile/
+http/videos/
