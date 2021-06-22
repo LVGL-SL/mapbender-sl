@@ -183,15 +183,11 @@ foreach ($acceptHeaderArray as $acceptHeaderFomat) {
 }
 if (is_array($acceptedHeaderFormatArray) && count($acceptedHeaderFormatArray) > 0) {
 	$f = $acceptedHeaderFormatArray[0];
-} else {
-	//$f = "html"; //default value
 }
-/*
- * For debugging purposes only
- */
-// $e = new mb_exception("php/mod_linkedDataProxy.php: HTTP ACCEPT HEADER found: ".$_SERVER ["HTTP_ACCEPT"]);
-// $e = new mb_exception("php/mod_linkedDataProxy.php: REQUEST PARAMETER: ".json_encode($_REQUEST));
-// $e = new mb_exception("php/mod_linkedDataProxy.php: requested format: ".$f);
+
+new mb_notice("php/mod_linkedDataProxy.php: HTTP ACCEPT HEADER found: ".$_SERVER ["HTTP_ACCEPT"]);
+new mb_notice("php/mod_linkedDataProxy.php: REQUEST PARAMETER: ".json_encode($_REQUEST));
+new mb_notice("php/mod_linkedDataProxy.php: requested format: ".$f);
 
 // parameter to control if the native json should be requested from the server, if support for geojson is available!
 $nativeJson = false;
@@ -270,6 +266,7 @@ function string2html($string) {
 	}
 	return $string;
 }
+
 function delTotalFromQuery($paramName, $url) {
 	$query = explode ( "?", $url );
 	parse_str ( $query [1], $vars );
@@ -283,17 +280,18 @@ function delTotalFromQuery($paramName, $url) {
 	$urlNew = $query [0] . "?" . http_build_query ( $vars );
 	return $urlNew;
 }
+
 function getJsonSchemaObject($feature) {
-	// $e = new mb_exception("php/mod_linkedDataProxy.php - getJsonSchemaObject");
+	new mb_notice("php/mod_linkedDataProxy.php - getJsonSchemaObject");
 	$returnObject = new stdClass ();
 	$returnObject->success = false;
 	$cache = new Cache ();
 	$url = $feature->properties->{'json-schema_0.7_id'};
 	if (isset ( $url )) {
-		// $e = new mb_exception("php/mod_linkedDataProxy.php - getJsonSchemaObject - url is set");
+		new mb_notice("php/mod_linkedDataProxy.php - getJsonSchemaObject - url is set");
 		// cache schema resolving!
 		if ($cache->isActive) {
-			// $e = new mb_exception("php/mod_linkedDataProxy.php - cache is active!");
+			new mb_notice("php/mod_linkedDataProxy.php - cache is active!");
 			if ($cache->cachedVariableExists ( md5 ( $url ) ) == false) {
 				$schemaContextConnector = new Connector ();
 				$file = $schemaContextConnector->load ( $url );
@@ -305,11 +303,11 @@ function getJsonSchemaObject($feature) {
 					$cache->cachedVariableAdd ( md5 ( $url ), $returnObject );
 				}
 			} else {
-				// $e = new mb_exception("php/mod_linkedDataProxy.php - read json-schema from cache!");
+				new mb_notice("php/mod_linkedDataProxy.php - read json-schema from cache!");
 				$returnObject = $cache->cachedVariableFetch ( md5 ( $url ) );
 			}
 		} else {
-			//$e = new mb_exception ( "php/mod_linkedDataProxy.php - cache is inactive" );
+			new mb_notice( "php/mod_linkedDataProxy.php - cache is inactive" );
 			$schemaContextConnector = new Connector ();
 			$file = $schemaContextConnector->load ( $url );
 			$returnObject->schema = json_decode ( $file );
@@ -336,11 +334,6 @@ function mapFeatureKeys($featureList, $schemaObject) {
 				$attributeTitle = $key;
 			}
 			$featureNew[$attributeTitle] = $value;
-			/*if (isset ( $schemaObject->properties->{$key}->description )) {
-				$attributeDescription = $schemaObject->properties->{$key}->description;
-			} else {
-				$attributeDescription = $attributeTitle;
-			}*/
 		}	
 		$featureListNew[] = $featureNew;
 	}
