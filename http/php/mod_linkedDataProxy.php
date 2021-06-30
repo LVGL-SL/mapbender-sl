@@ -86,7 +86,7 @@ if (isset ( $configObject ) && isset ( $configObject->rewrite_path ) && $configO
 } else {
 	$rewritePath = "linkedDataProxy";
 }
-if (isset ( $configObject ) && isset ( $configObject->open_data_filter ) && $configObject->open_data_filter == true) {
+if (isset ( $configObject ) && isset ( $configObject->open_data_filter ) && $configObject->open_data_filter === true) {
     $restrictToOpenData = true;
 } else {
     $restrictToOpenData = false;	

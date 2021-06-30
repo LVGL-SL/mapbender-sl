@@ -14,5 +14,5 @@
   "map_position": "below_filter",
   "behind_rewrite": true,
   "rewrite_path": "spatial-objects",
-  "open_data_filter": "false"
+  "open_data_filter": false
 }

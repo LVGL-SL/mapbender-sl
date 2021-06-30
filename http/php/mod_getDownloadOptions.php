@@ -137,15 +137,19 @@ select service_id, resource_id, resource_name, service_uuid, resource_type, fkey
 	//for wfs 2.0 linked data proxy **********************************************************************************
 	$sql .= " union select fkey_wfs_id as service_id, service_uuid, featuretype_id as resource_id, featuretype_name as resource_name, 'rest' as resource_type, NULL as datalink, NULL as datalink_text, title, 'GeoJSON,GML,HTML' as format from ";
 
-	$sql .= " (select wfs_featuretype.featuretype_id, wfs_featuretype.featuretype_name, wfs_featuretype.fkey_wfs_id, open_wfs.uuid as service_uuid, wfs_featuretype.inspire_download from wfs_featuretype inner join ";
+	$sql .= " (select wfs_featuretype.featuretype_id, wfs_featuretype.featuretype_name, wfs_featuretype.fkey_wfs_id, wfs_featuretype.uuid as service_uuid, wfs_featuretype.inspire_download from wfs_featuretype inner join ";
 
-	$sql .= " (SELECT * FROM (SELECT wfs_id, wfs_version, uuid, wfs_termsofuse.fkey_termsofuse_id FROM wfs INNER JOIN wfs_termsofuse ON wfs_id = fkey_wfs_id) AS wfs_tou INNER JOIN termsofuse ON fkey_termsofuse_id = termsofuse_id WHERE isopen = 1) as open_wfs ";
-
-	$sql .= " on wfs_featuretype.fkey_wfs_id = open_wfs.wfs_id WHERE (open_wfs.wfs_version = '1.1.0' or open_wfs.wfs_version = '2.0.0' OR open_wfs.wfs_version = '2.0.2') AND wfs_featuretype.featuretype_searchable = 1 ORDER BY featuretype_id) as featuretype_wfs2 inner join ";
+	if (isset ( $configObject ) && isset ( $configObject->open_data_filter ) && ($configObject->open_data_filter === true))
+	{
+		$sql .= " (SELECT * FROM (SELECT wfs_id, wfs_version, uuid, wfs_termsofuse.fkey_termsofuse_id FROM wfs INNER JOIN wfs_termsofuse ON wfs_id = fkey_wfs_id) AS wfs_tou INNER JOIN termsofuse ON fkey_termsofuse_id = termsofuse_id WHERE isopen = 1) as open_wfs ";
+		$sql .= " on wfs_featuretype.fkey_wfs_id = open_wfs.wfs_id WHERE (open_wfs.wfs_version = '1.1.0' or open_wfs.wfs_version = '2.0.0' OR open_wfs.wfs_version = '2.0.2') AND wfs_featuretype.featuretype_searchable = 1 ORDER BY featuretype_id) as featuretype_wfs2 inner join ";
+	} else {
+		$sql .= " (SELECT wfs_id, wfs_version, uuid FROM wfs) AS wfs_data ";
+		$sql .= " on wfs_featuretype.fkey_wfs_id = wfs_data.wfs_id WHERE wfs_data.wfs_version IN ('1.1.0', '2.0.0', '2.0.2') AND wfs_featuretype.featuretype_searchable = 1 ORDER BY featuretype_id) as featuretype_wfs2 inner join ";
+	}
 
 	$sql .= " (select metadata_id, title, format, uuid, fkey_featuretype_id from mb_metadata inner join ows_relation_metadata on ows_relation_metadata.fkey_metadata_id = mb_metadata.metadata_id) as metadata_relation on metadata_relation.fkey_featuretype_id = featuretype_wfs2.featuretype_id and metadata_relation.uuid = $1";
 	//end for wfs 2.0 linked data proxy **********************************************************************************
-
 
 
 
