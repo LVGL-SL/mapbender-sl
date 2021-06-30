@@ -152,7 +152,6 @@ if (strpos ( $formatPartOfAcceptHeader, "," ) != false) {
 } else {
 	$acceptHeaderArray[0] = $_SERVER ["HTTP_ACCEPT"];
 }
-// $e = new mb_exception("php/mod_linkedDataProxy.php: first found format: ".$formatPartOfAcceptHeader);
 // TODO: check all given formats in header an choose the right one 
 $acceptedHeaderFormatArray = array();
 foreach ($acceptHeaderArray as $acceptHeaderFomat) {
@@ -774,11 +773,6 @@ function get2Rest($requestString) {
 		if (isset ( $requestArray ['wfsid'] ) && $requestArray ['wfsid'] != "") {
 			$apiPath .= "/" . $requestArray ['wfsid'] . "";
 		}
-		/*
-		 * if (isset($requestArray['getapidescription']) && $requestArray['getapidescription'] == "true") {
-		 * $apiPath .= "/api/";
-		 * }
-		 */
 		if ($requestArray ['collections'] == "api") {
 			$apiPath .= "/api";
 		}
@@ -841,7 +835,6 @@ if (isset ( $_REQUEST ["api"] ) && $_REQUEST ["api"] != "") {
 	switch (count ( $requestParams )) {
 		case "1" :
 			$_REQUEST ["wfsid"] = $requestParams [0];
-			// $apiParamsArray["wfsid"] = $requestParams[0];
 			break;
 		case "2" :
 			if ($requestParams [1] == "api") {
@@ -899,7 +892,6 @@ if (isset ( $_REQUEST ["wfsid"] ) & $_REQUEST ["wfsid"] != "") {
 	$testMatch = $_REQUEST ["wfsid"];
 	$pattern = '/^[\d,]*$/';
 	if (! preg_match ( $pattern, $testMatch )) {
-		// echo 'id: <b>'.$testMatch.'</b> is not valid.<br/>';
 		echo 'Parameter <b>wfsid</b> is not valid (integer or cs integer list).<br/>';
 		die ();
 	}
@@ -911,7 +903,6 @@ if (isset ( $_REQUEST ["fid"] ) & $_REQUEST ["fid"] != "") {
 	$testMatch = $_REQUEST ["fid"];
 	$pattern = '/^[0-9a-zA-Z\.\-_:]*$/';
 	if (! preg_match ( $pattern, $testMatch )) {
-		// echo 'id: <b>'.$testMatch.'</b> is not valid.<br/>';
 		echo 'Parameter <b>id</b> is not valid (integer or cs integer list).<br/>';
 		die ();
 	}
@@ -923,7 +914,6 @@ if (isset ( $_REQUEST ["p"] ) & $_REQUEST ["p"] != "") {
 	$testMatch = $_REQUEST ["p"];
 	$pattern = '/^[\d]*$/';
 	if (! preg_match ( $pattern, $testMatch )) {
-		// echo 'id: <b>'.$testMatch.'</b> is not valid.<br/>';
 		echo 'Parameter <b>p</b> is not valid (integer).<br/>';
 		die ();
 	}
@@ -946,7 +936,6 @@ if (isset ( $_REQUEST ["offset"] ) & $_REQUEST ["offset"] != "") {
 	$testMatch = $_REQUEST ["offset"];
 	$pattern = '/^[\d]*$/';
 	if (! preg_match ( $pattern, $testMatch )) {
-		// echo 'id: <b>'.$testMatch.'</b> is not valid.<br/>';
 		echo 'Parameter <b>offset</b> is not valid (integer).<br/>';
 		die ();
 	}
@@ -959,7 +948,6 @@ if (isset ( $_REQUEST ["collection"] ) & $_REQUEST ["collection"] != "") {
 	$pattern = '/^[0-9a-zA-Z\.\-
 _:]*$/';
 	if (! preg_match ( $pattern, $testMatch )) {
-		// echo 'id: <b>'.$testMatch.'</b> is not valid.<br/>';
 		echo 'Parameter <b>collection</b> is not valid (ogc resource name or id).<br/>';
 		die ();
 	}
@@ -992,11 +980,9 @@ if (isset ( $_REQUEST ["items"] ) & $_REQUEST ["items"] != "") {
 	$testMatch = NULL;
 }
 if (isset ( $_REQUEST ["item"] ) & $_REQUEST ["item"] != "") {
-	// reg expr
 	$testMatch = $_REQUEST ["item"];
 	$pattern = '/^[0-9a-zA-Z\.\-_:]*$/';
 	if (! preg_match ( $pattern, $testMatch )) {
-		// echo 'id: <b>'.$testMatch.'</b> is not valid.<br/>';
 		echo 'Parameter <b>item</b> is not valid (/^[0-9a-zA-Z\.\-_:]*$/).<br/>';
 		die ();
 	}
@@ -1027,7 +1013,6 @@ if (isset ( $_REQUEST ["f"] ) & $_REQUEST ["f"] != "") {
 if (isset ( $_REQUEST ["bbox"] ) & $_REQUEST ["bbox"] != "") {
 	// validate to float/integer
 	$testMatch = $_REQUEST ["bbox"];
-	// $pattern = '/^[-\d,]*$/';
 	$pattern = '/^[-+]?([0-9]*\.[0-9]+|[0-9]+)*$/';
 	$testMatchArray = explode ( ',', $testMatch );
 	if (count ( $testMatchArray ) != 4) {
@@ -1123,7 +1108,6 @@ while ( $row = db_fetch_array ( $res ) ) {
 	$i ++;
 }
 unset($i);
-//$e = new mb_exception("php/linkedDataProxy.php: open wfs: ".json_encode($openWfsIds));//strings !
 if (! isset ( $wfsid ) || $wfsid == "") {
 	// list all public available wfs which are classified as opendata!
 	$returnObject->service = array ();
@@ -1149,7 +1133,6 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 	if ($i == 0) {
 		$returnObject->success = false;
 		$returnObject->message = "No services found in registry";
-		// $e = new mb_exception("no wfs found");
 	} else {
 		$returnObject->success = true;
 		$returnObject->message = "Services found in registry!";
@@ -1166,7 +1149,6 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 	if (! in_array ( $wfsid, $openWfsIds )) {
 		$proxyActivated = false;
 		$authType = "digest";
-		// $e = new mb_exception("php/linkedDataProxy.php: wfs has no open data compatible license - check autorization!");
 		// for a special featuretype check autorization
 		// check authorization - see http_auth/http/index.php
 		// check if security proxy is activated
@@ -1183,7 +1165,6 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 			}
 		}
 		$anonymousAccess = false;
-		//$e = new mb_exception ( $collection );
 		if (isset ( $collection ) && ! is_null ( $collection ) && $proxyActivated == true) {
 			$user = new user ( PUBLIC_USER );
 			$anonymousAccess = $user->areFeaturetypesAccessible ( $collection, $wfsid );
@@ -1212,12 +1193,6 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						$mbUsername = $userIdentification [0];
 						$mbEmail = $userIdentification [1]; // not given in all circumstances
 						$userInformation = getUserInfo ( $mbUsername, $mbEmail );
-						/*
-						 * $result[0] = $row['mb_user_id'];
-						 * $result[1] = $row['mb_user_digest'];
-						 * $result[2] = $row['mb_user_password'];
-						 * $result[3] = $row['password'];
-						 */
 						if ($userInformation [0] == '-1') {
 							die ( 'User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' not known to security proxy!' );
 						}
@@ -1262,20 +1237,9 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							$mbUsername = $userIdentification [0];
 							$mbEmail = $userIdentification [1]; // not given in all circumstances
 							$userInformation = getUserInfo ( $mbUsername, $mbEmail );
-							/*
-							 * $result[0] = $row['mb_user_id'];
-							 * $result[1] = $row['mb_user_digest'];
-							 * $result[2] = $row['mb_user_password'];
-							 * $result[3] = $row['password'];
-							 */
 							if ($userInformation [0] == '-1') {
 								die ( 'User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' not known to security proxy!' );
 							}
-							/*
-							 * if ($userInformation[1] == '') { //check if digest exists in db - if no digest exists it should be a null string!
-							 * die('User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' has no digest - please set a new password and try again!');
-							 * }
-							 */
 							// check password - new since 06/2019 - secure password !!!!!
 							if ($userInformation [3] == '' || $userInformation [3] == null) {
 								die ( 'User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' has no password which is stored in a secure way. - Please login at the portal to generate one!' );
@@ -1293,15 +1257,11 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 			// userId known now
 			// check autorization
 			$user = new user ( $userId );
-			//$e = new mb_exception( $userId );
 			$accessAllowed = $user->areFeaturetypesAccessible ( $collection, $wfsid );
 			if ($accessAllowed == false) {
 				header('HTTP/1.0 403 Forbidden');
 				die("Access to requested collection is not allowed to current user - log out and try again!"); // give http 403!
-			} /*else {
-				echo "Access to " . $collection . " allowed for requesting user"; // give http 403!
-				die ();
-			}*/
+			}
 		}
 	}
 	$myWfsFactory = new UniversalWfsFactory ();
@@ -1310,7 +1270,6 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 		$returnObject->success = false;
 		$returnObject->message = "Wfs object could not be created from db!";
 	} else {
-		// $e = new mb_exception($wfs->providerName." - ".$wfs->summary." - ".$wfs->electronicMailAddress." - ".$wfs->fees);
 		// repair some missing wfs data
 		if (! isset ( $wfs->summary ) || $wfs->summary == null || $wfs->summary == "") {
 			$wfs->summary = "WFS description is missing!";
@@ -1519,66 +1478,6 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 				$jsonTemplate = json_decode ( getOpenApi3JsonComponentTemplate () );
 				
 				$apiDescriptionJson->components = $jsonTemplate->components;
-				/*
-				 * //components
-				 * $apiDescriptionJson->components->schemas->exception->required[0] = "code";
-				 * $apiDescriptionJson->components->schemas->exception->type = "object";
-				 * $apiDescriptionJson->components->schemas->exception->properties->code->type = "string";
-				 * $apiDescriptionJson->components->schemas->exception->properties->description->type = "string";
-				 *
-				 * $apiDescriptionJson->components->schemas->root->required[0] = "links";
-				 * $apiDescriptionJson->components->schemas->root->type = "object";
-				 * $apiDescriptionJson->components->schemas->root->properties->links->type = "array";
-				 * $apiDescriptionJson->components->schemas->root->properties->links->example[0]->href = "http://data.example.org/";
-				 * $apiDescriptionJson->components->schemas->root->properties->links->example[0]->rel = "self";
-				 * $apiDescriptionJson->components->schemas->root->properties->links->example[0]->type = "application/json";
-				 * $apiDescriptionJson->components->schemas->root->properties->links->example[0]->title = "this document";
-				 *
-				 * $apiDescriptionJson->components->schemas->root->properties->links->example[1]->href = "http://data.example.org/api";
-				 * $apiDescriptionJson->components->schemas->root->properties->links->example[1]->rel = "service-desc";
-				 * $apiDescriptionJson->components->schemas->root->properties->links->example[1]->type = "application/openapi+json;version=3.0";
-				 * $apiDescriptionJson->components->schemas->root->properties->links->example[1]->title = "the API definition";
-				 * $apiDescriptionJson->components->schemas->root->properties->links->example[2]->href = "http://data.example.org/conformance";
-				 * $apiDescriptionJson->components->schemas->root->properties->links->example[2]->rel = "conformance";
-				 * $apiDescriptionJson->components->schemas->root->properties->links->example[2]->type = "application/json";
-				 * $apiDescriptionJson->components->schemas->root->properties->links->example[2]->title = "WFS 3.0 conformance classes implemented by this server";
-				 * $apiDescriptionJson->components->schemas->root->properties->links->example[3]->href = "http://data.example.org/collections";
-				 * $apiDescriptionJson->components->schemas->root->properties->links->example[3]->rel = "data";
-				 * $apiDescriptionJson->components->schemas->root->properties->links->example[3]->type = "application/json";
-				 * $apiDescriptionJson->components->schemas->root->properties->links->example[1]->title = "Metadata about the feature collections";
-				 *
-				 *
-				 * $apiDescriptionJson->components->schemas->{'req-classes'}->required[0] = "conformsTo";
-				 * $apiDescriptionJson->components->schemas->{'req-classes'}->type = "object";
-				 * $apiDescriptionJson->components->schemas->{'req-classes'}->properties->conformsTo->type = "array";
-				 * $apiDescriptionJson->components->schemas->{'req-classes'}->properties->conformsTo->example[0] = "http://www.opengis.net/spec/wfs-1/3.0/req/core";
-				 * $apiDescriptionJson->components->schemas->{'req-classes'}->properties->conformsTo->example[1] = "http://www.opengis.net/spec/wfs-1/3.0/req/oas30";
-				 * $apiDescriptionJson->components->schemas->{'req-classes'}->properties->conformsTo->example[2] = "http://www.opengis.net/spec/wfs-1/3.0/req/html";
-				 * $apiDescriptionJson->components->schemas->{'req-classes'}->properties->conformsTo->example[3] = "http://www.opengis.net/spec/wfs-1/3.0/req/geojson";
-				 * $apiDescriptionJson->components->schemas->{'req-classes'}->properties->conformsTo->items = "string";
-				 *
-				 * $apiDescriptionJson->components->schemas->link->required[0] = "href";
-				 * $apiDescriptionJson->components->schemas->link->type = "object";
-				 * $apiDescriptionJson->components->schemas->link->properties->href->type = "string";
-				 * $apiDescriptionJson->components->schemas->link->properties->href->example = "http://data.example.com/buildings/123";
-				 * $apiDescriptionJson->components->schemas->link->properties->rel->type = "string";
-				 * $apiDescriptionJson->components->schemas->link->properties->rel->example = "prev";
-				 * $apiDescriptionJson->components->schemas->link->properties->type->type = "string";
-				 * $apiDescriptionJson->components->schemas->link->properties->type->example = "application/geo+json";
-				 * $apiDescriptionJson->components->schemas->link->properties->type->hreflang = "string";
-				 * $apiDescriptionJson->components->schemas->link->properties->type->hreflang = "de";
-				 *
-				 */
-				/*
-				 * $apiDescriptionJson->components->schemas->content->
-				 * $apiDescriptionJson->components->schemas->collectionInfo->
-				 * $apiDescriptionJson->components->schemas->extent->
-				 * $apiDescriptionJson->components->schemas->featureCollectionGeoJSON->
-				 * $apiDescriptionJson->components->schemas->featureGeoJSON->
-				 * $apiDescriptionJson->components->schemas->geometryGeoJSON->
-				 *
-				 * $apiDescriptionJson->components->parameters->
-				 */
 				$paramArray = array (
 						"f",
 						"limit",
@@ -1594,7 +1493,6 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 				echo json_encode ( $apiDescriptionJson, JSON_UNESCAPED_SLASHES );
 				die ();
 			}
-			//
 			$returnObject->links = array ();
 			$returnObject->crs = array ();
 			$returnObject->collections = array ();
@@ -1667,7 +1565,6 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 					                                              // get allowed attributes for filtering
 					$ftAllowedAttributesArray = array ();
 					foreach ( $ftElementArray as $ftElement ) {
-						// $e = new mb_exception($ftElement->name ." - " .$ftElement->type);
 						if ($ftElement->type == "string") {
 							$ftAllowedAttributesArray [] = $ftElement->name;
 						}
@@ -1682,11 +1579,8 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 				$stringFilterArray = array ();
 				$stringFilterActive = array ();
 				$stringFilterIndex = 0;
-				// $e = new mb_exception("test: count: ".count($ftAllowedAttributesArray));
 				foreach ( $ftAllowedAttributesArray as $ftAllowedAttribute ) {
-					// $e = new mb_exception("search for: ".$ftAllowedAttribute);
 					if (isset ( $_REQUEST [$ftAllowedAttribute] ) && $_REQUEST [$ftAllowedAttribute] != "") {
-						// $e = new mb_exception("found param:".$ftAllowedAttribute.": ".$_REQUEST[$ftAllowedAttribute]);
 						$testMatch = $_REQUEST [$ftAllowedAttribute];
 						$pattern = '/^[0-9a-zA-Z\.\-_:*]*$/';
 						if (! preg_match ( $pattern, $testMatch )) {
@@ -1822,11 +1716,8 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 								// $e = new mb_exception("read count from cache!");
 								$numberOfObjects = $cache->cachedVariableFetch ( md5 ( "count_" . $wfsid . "_" . $collection . "_" . md5 ( $filter ) ) );
 							}
-							// $e = new mb_notice("http/classes/class_crs.php - store crs info to cache!");
-							// return true;
 						} else {
 							// TODO - define post/get central
-							// $numberOfObjects = $wfs->countFeatures($collection, $filter, "2.0.0");
 							$numberOfObjects = $wfs->countFeatures ( $collection, $filter, "EPSG:4326", "2.0.0", false, $wfs_http_method );
 						}
 						// $numberOfObjects = 1000;
@@ -1840,18 +1731,13 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							// }
 							die ();
 						}
-						// $e = new mb_exception("number of objects: ".$numberOfObjects);
 						// request first object and metadata
 						// count objects
 						// TODO - create json
-						// $html .= "wfs max features: ".$wfs->wfs_max_features."<br>";
-						// $html .= $ftTitle." (".$numberOfObjects.") - id: " .$ftDbId. " - output formats: ".$ftOutputFormats."<br>";
 						// get first page
 						// calculate pages
-						// $numberOfPages = ceil($numberOfObjects / $maxObjectsPerPage);
 						$numberOfPages = ceil ( $numberOfObjects / $limit );
 						// decide which page should be requested
-						// $page = 0;
 						// calculate offset for requested page
 						if ($page >= $numberOfPages) {
 							$returnObject->success = false;
@@ -1873,12 +1759,10 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						$returnObject->links [1]->rel = "next";
 						$returnObject->links [1]->type = "application/geo+json";
 						$returnObject->links [1]->title = "next page";
-						// $returnObject->links[1]->href = $_SERVER['REQUEST_URI']."&p=".($page + 1);
 						$returnObject->links [1]->href = get2Rest ( $_SERVER ['REQUEST_URI'] . "&offset=" . ($offset + 1 * $limit) . "&limit=" . $limit );
 						$returnObject->links [2]->rel = "last";
 						$returnObject->links [2]->type = "application/geo+json";
 						$returnObject->links [2]->title = "last page";
-						// $returnObject->links[1]->href = $_SERVER['REQUEST_URI']."&p=".($page + 1);
 						$returnObject->links [2]->href = get2Rest ( $_SERVER ['REQUEST_URI'] . "&offset=" . $lastOffset . "&limit=" . $limit );
 						// check if outputformat geojson is available - if - gml don't need to be parsed!!!!! TODO - where to become hits ????? - has to count in a special request!!!!!
 						if (in_array ( 'application/json; subtype=geojson', explode ( ',', $ftOutputFormats ) ) && $nativeJson == true) {
@@ -1960,7 +1844,6 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 										}
 										break;
 								}
-								// $e = new mb_exception("bbox feature: minxF:".$minxF." minyF:".$minyF." maxxF:".$maxxF." maxyF:".$maxyF."");
 								if ($minxFC > $minxF) {
 									$minxFC = $minxF;
 								}
@@ -1979,7 +1862,6 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 								$geojsonBbox [$geojsonIndex]->maxy = $maxyF;
 								$geomType = $feature->geometry->type;
 								$geojsonIndex ++;
-								// $e = new mb_exception("bbox featurecollection: minxFC:".$minxFC." minyFC:".$minyFC." maxxFC:".$maxxFC." maxyFC:".$maxyFC."");
 							}
 							/*
 							 * log count of features, if logging is activated
@@ -1994,28 +1876,14 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							if ($log_id !== false) {
 								$admin->updateWfsLog(1, '', '', $geojsonIndex, $log_id);
 							}
-							/*
-							 * header('application/json');
-							 * echo $features;
-							 * die();
-							 */
 						} else {
-							// $e = new mb_exception($filter);
 							$features = $wfs->getFeaturePaging ( $ftName, $filter, "EPSG:4326", null, null, $limit, $startIndex, "2.0.0", false, $wfs_http_method );
 							// transform to geojson to allow rendering !
-							// $e = new mb_exception($features);
 							$gmlFeatureCache = $features;
 							$gml3Class = new Gml_3_Factory ();
 							// create featuretype object
 							// TODO
-							// $e = new mb_exception("geom column type: ".$geomColumnName);
-							// $e = new mb_exception("featuretype name: ".$ftName);
-							// $memBeforeGmlParsing = memory_get_usage();
-							// $e = new mb_exception("Memory before GML Object: ".((memory_get_usage() - $startmem) / 1000)." MB");
-							//$e = new mb_exception($wfs." - ".$myFeatureType." - ".$geomColumnName);
 							$gml3Object = $gml3Class->createFromXml ( $features, null, $wfs, $myFeatureType, $geomColumnName );
-							// $e = new mb_exception("Memory for GML Object: ".((memory_get_usage() - $memBeforeGmlParsing) / 1000)." MB");
-							// $e = new mb_exception("geojson from mb class: ".json_encode($gml3Object));
 							$geojsonList = new stdClass ();
 							$geojsonList->type = "FeatureCollection";
 							$geojsonList->features = array ();
@@ -2030,19 +1898,14 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 								$geoJsonVariable = "";
 								$geoJsonVariable = '<script>' . $newline;
 							}
-							// $e = new mb_exception("size of gml3Object: ".);
 							foreach ( $gml3Object->featureCollection->featureArray as $mbFeature ) {
-								// $e = new mb_exception("geojson from mb feature exporthandler: ".json_encode($mbFeature));
-								// $e = new mb_exception("geoJson object no.: ".$geojsonIndex." - current Memory usage: ".((memory_get_usage() - $startmem) / 1000)." MB");
 								// bbox
 								try {
 									$geojsonBbox [$geojsonIndex]->mbBbox = $mbFeature->getBbox ();
-									// $e = new mb_exception('bbox: '.$geojsonBbox[$geojsonIndex]->mbBbox);
 								} catch ( Exception $e ) {
 									$e = new mb_exception ( 'Problem to resolve bbox from gml - set to default values!', $e->getMessage () );
 									$geojsonBbox [$geojsonIndex]->mbBbox = "[(" . $minxFC . "," . $minyFC . ",,urn:ogc:def:crs:EPSG::4326)(" . $maxxFC . "," . $maxyFC . ",,urn:ogc:def:crs:EPSG::4326) urn:ogc:def:crs:EPSG::4326]";
 								}
-								// $e = new mb_exception('bbox: '.$geojsonBbox[$geojsonIndex]->mbBbox);
 								// transform to simple bbox object for leaflet
 								$bbox_new = explode ( ' ', str_replace ( ']', '', str_replace ( '[', '', $geojsonBbox [$geojsonIndex]->mbBbox ) ) );
 								$bbox_new = explode ( '|', str_replace ( ')', '', str_replace ( '(', '', str_replace ( ')(', '|', $bbox_new [0] ) ) ) );
@@ -2090,7 +1953,6 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							$resolveJsonSchema = getJsonSchemaObject ( $geojsonList->features [0] );
 						    $schemaObject = $resolveJsonSchema->schema;
 							if ($resolveJsonSchema->success = true) {
-								//$geojsonListView = mapFeatureKeys($geojsonList, $schemaObject);
 								$geoJsonVariable .= "var feature_schema=". json_encode ( $schemaObject ) . ";";
 							}
 							$geoJsonVariable .= "var feature_" . $geomType . "=" . json_encode ( $geojsonList ) . ";";
@@ -2121,14 +1983,10 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						// *****************************************************************************
 						$returnObject->features = $geojsonList->features;
 					}
-					
-					// $e = new mb_exception("wfsid: ".$wfsid." - collection: ".$collection." - item: ".$item);
 				} else {
-					// $e = new mb_exception("wfsid: ".$wfsid." - collection: ".$collection." - item: ".$item);
 					// ************************************************************************************************************************************
 					// item part
 					// ************************************************************************************************************************************
-					// $e = new mb_exception("wfsid: ".$wfsid." - collection: ".$collection." - item: ".$item);
 					if (in_array ( 'application/json; subtype=geojson', explode ( ',', $ftOutputFormats ) ) && $nativeJson == true) {
 						$features = $wfs->getFeatureById ( $collection, 'application/json; subtype=geojson', $item, "2.0.0", "EPSG:4326" );
 						$gmlFeatureCache = $features;
@@ -2327,16 +2185,6 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 					$returnObject = $geojsonList->features [0];
 					
 					// integrate json-ld @context if it is resovable!*******************************************************************************
-					/*
-					 * $ldContextConnector = new Connector();
-					 * $url = "http://localhost/mapbender/geoportal/".str_replace(":","__",$ftName).".jsonld";
-					 * $file = $ldContextConnector->load($url);
-					 * //$e = new mb_exception($file);
-					 * $contextObject = json_decode($file);
-					 * //$e = new mb_exception(json_encode($contextObject));
-					 * $returnObject->properties->{'@context'} = $contextObject->{'@context'};
-					 */
-					// integrate json-ld @context if it is resovable!*******************************************************************************
 					// integrate json-schema @id if it is resolvable! - {json-schema_0.7_id} attribute to avoid problems with gml encoding and @ in element name! *******************************************************************************
 					// $schemaObject =
 					
@@ -2379,7 +2227,6 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 
 switch ($f) {
 	case "json" :
-		//header ( "Content-type: application/json" );
 		//define header type - if only wfsid is given, give application/json
 		if (! isset ( $collection ) || $collection == "" || $collections == "all" || $collections == "api") {
 			header ( "Content-type: application/json" );
@@ -2391,7 +2238,6 @@ switch ($f) {
 	case "xml" :
 		header ( "Content-type: application/xml" );
 		//Content-type: application/xhtml+xml; charset=UTF-8
-		//header ( "application/gml+xml; version=3.2; profile=http://www.opengis.net/def/profile/ogc/2.0/gml-sf0" );
 		echo $gmlFeatureCache;
 		break;
 	case "html" :
@@ -2455,20 +2301,9 @@ switch ($f) {
         $js2 .= "	format: 'image/png',";
         $js2 .= "	attribution: 'BKG - 2021 - <a href=\'https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf\'  target=\'_blank\'>Datenquellen<a>'";
         $js2 .= "}).addTo(map);";
-		/*
-		$js2 .= "	var map = L.map('map').setView([50, 7.44], 7);";
-		$js2 .= "	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?";
-		$js2 .= "access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {";
-		$js2 .= "		maxZoom: 18,";
-		$js2 .= "		attribution: 'Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, ' +";
-		$js2 .= "			'<a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, ' +";
-		$js2 .= "			'Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>',";
-		$js2 .= "		id: 'mapbox.light'";
-		$js2 .= "	}).addTo(map);";*/
 
 		if (! isset ( $wfsid ) || ! isset ( $ft )) {
 			$js2 .= 'document.getElementById("map").style.display = "none"; ';
-			// $js2 .= 'document.getElementById("bboxButtons").style.display = "none"; ';
 		}
 		$js2 .= $newline . '</script>' . $newline;
 		$newline = " ";
@@ -2717,7 +2552,6 @@ switch ($f) {
 			} else {
 				// collection is selected - show items
 				// if (!isset($item) || $items == 'all') { //new for items and itemlists!
-				
 				$html .= '<div class="container py-4">' . $newline;
 				if (! isset ( $item ) || $items == "all") {
 					$html .= '    <div>' . $newline;
@@ -2746,7 +2580,6 @@ switch ($f) {
 					// $stringFilterArray[$stringFilterIndex]->elementFilter = $testMatch;
 					// ********************************************************************************
 					$html .= '<button type="button" id="edit_filter_button" class="py-0 btn btn-outline-secondary btn-sm collapse show" onclick="var elements = [\'edit_filter_button\',  \'cancel_filter_button\', \'filter_div\']; elements.forEach(myFunction); function myFunction(item) { var element = document.getElementById(item);element.classList.toggle(\'show\'); };">' . _mb ( 'Edit' ) . '</button>';
-					// $html .= '<button type="button" id="apply_filter_button" class="py-0 btn btn-outline-secondary btn-sm collapse" onclick="">Apply</button>';
 					$html .= '<button type="button" id="cancel_filter_button" class="py-0 btn btn-outline-secondary btn-sm collapse" onclick="var elements = [\'edit_filter_button\', \'cancel_filter_button\', \'filter_div\']; elements.forEach(myFunction); function myFunction(item) { var element = document.getElementById(item);element.classList.toggle(\'show\'); };">' . _mb ( 'Cancel' ) . '</button>' . $newline;
 					// bbox filter part from ldproxy
 					$html .= '<div id="filter_div" class="collapse">' . $newline;
@@ -2867,11 +2700,6 @@ switch ($f) {
 						$html .= '       filterErrMsgHolder.innerHTML=';
 						$html .= '                \'Only alphabets or * are allowed\'';
 						$html .= '    }';
-						// $html .= ' else if(!(/^(?:(\w)(?!\1\1))+$/.test(inputValue)))';
-						// $html .= ' {';
-						// $html .= ' filterErrMsgHolder.innerHTML=';
-						// $html .= ' \'per 3 alphabets allowed\'';
-						// $html .= ' }';
 						$html .= '    else {';
 						$html .= '        filterErrMsgHolder.innerHTML = \'\';';
 						$html .= '        return true;';
@@ -2883,7 +2711,6 @@ switch ($f) {
 						$html .= '        filterValueAddButton.classList.remove("disabled");';
 						$html .= '        filterValueAddButton.disabled = false;';
 						$html .= '    } else {';
-						// $html .= ' filterValueAddButton.classList.add("disabled");';
 						$html .= '        filterValueAddButton.disabled = true;';
 						$html .= '   }';
 						$html .= '});';
@@ -3025,7 +2852,6 @@ switch ($f) {
 							$schemaOrgArray = explode ( "/", str_replace ( "https://", "", $uri ) );
 							$schemaOrgObject = $schemaOrgArray [1];
 							$schemaOrgAttribute = $schemaOrgArray [2];
-							// $semAttribution = "vocab=\"https://schema.org/\" typeof=\"$schemaOrgObject\" property=\"$schemaOrgAttribute\"";
 							// TODO - check semantics !!!! $semAttribution = "itemscope=\"\" itemtype=\"http://schema.org/".$schemaOrgObject."\" itemprop=\"$schemaOrgAttribute\"";
 						} else {
 							$semAttribution = "";
@@ -3093,19 +2919,8 @@ switch ($f) {
         		$js2 .= "	format: 'image/png',";
         		$js2 .= "	attribution: 'BKG - 2021 - <a href=\'https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf\'  target=\'_blank\'>Datenquellen<a>'";
         		$js2 .= "}).addTo(map);";
-				/*
-				$js2 .= "	var map = L.map('map').setView([50, 7.44], 7);";
-				$js2 .= "	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?";
-				$js2 .= "access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {";
-				$js2 .= "		maxZoom: 18,";
-				$js2 .= "		attribution: 'Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, ' +";
-				$js2 .= "			'<a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, ' +";
-				$js2 .= "			'Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>',";
-				$js2 .= "		id: 'mapbox.light'";
-				$js2 .= "	}).addTo(map);";*/
 				if (! isset ( $wfsid ) || ! isset ( $collection )) {
 					$js2 .= 'document.getElementById("map").style.display = "none"; ';
-					// $js2 .= 'document.getElementById("bboxButtons").style.display = "none"; ';
 				}
 				$js2 .= $newline . '    </script>' . $newline;
 				// add first scripts to html
@@ -3123,8 +2938,6 @@ switch ($f) {
 				
 				$js3 = "    <script>" . $newline;
 				$js3 .= "	function onEachFeature(feature, layer) {";
-				//$js3 .= "	//alert('on each feature');";
-				//$js3 .= "	//alert(JSON.stringify(feature_schema));";
 				$js3 .= "		var popupContent = \"<p><b>\"+ feature.id + \" (\" +";
 				$js3 .= "				feature.geometry.type + \")</b></p>\";";
 				$js3 .= "		if (feature.properties && feature.properties.popupContent) {";
@@ -3138,7 +2951,6 @@ switch ($f) {
 				$js3 .= "		layer.bindPopup(popupContent);";
 				$js3 .= "	}";
 				// zoom to featurecollection
-				// $e = new mb_exception($minxFC.",".$minyFC.",".$maxxFC.",".$maxyFC);
 				$js3 .= "		map.fitBounds([";
 				$js3 .= "   				[" . $minxFC . "," . $minyFC . "],";
 				$js3 .= "   				[" . $maxxFC . "," . $maxyFC . "]";
@@ -3178,18 +2990,7 @@ switch ($f) {
 				$js3 .= "	}";
 				$js3 .= $newline . "    </script>" . $newline;
 				// add geojson object from page
-				// $html .= $geojsonVariable.$newline;
 				$html .= $js3;
-				/*
-				 * } else {
-				 * //item is set !
-				 * //$html .= '<div id="feature_table">';
-				 * //header("Content-Type: application/gml+xml;version=3.1");
-				 * header("Content-Type: ".$outputFormat);
-				 * echo $wfs->getFeatureById($collection, $outputFormat, $item, "2.0.0", "EPSG:4326");
-				 * die();
-				 * }
-				 */
 			}
 		}
 		// ************************************************************************************************************************************

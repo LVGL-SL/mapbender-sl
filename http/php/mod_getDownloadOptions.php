@@ -45,7 +45,6 @@ if (isset($_REQUEST["languageCode"]) & $_REQUEST["languageCode"] != "") {
 	//validate to csv integer list
 	$testMatch = $_REQUEST["languageCode"];
 	if (!($testMatch == 'de' or $testMatch == 'fr' or $testMatch == 'en')){ 
-		//echo 'languageCode: <b>'.$testMatch.'</b> is not valid.<br/>'; 
 		echo 'Parameter <b>languageCode</b> is not valid (de,fr,en).<br/>'; 
 		die(); 		
  	}
@@ -59,7 +58,6 @@ $localeObj->setCurrentLocale($languageCode);
 if (isset($_REQUEST["outputFormat"]) & $_REQUEST["outputFormat"] != "") {
 	$testMatch = $_REQUEST["outputFormat"];	
  	if (!($testMatch == 'json' or $testMatch == 'html')){ 
-		//echo 'outputFormat: <b>'.$testMatch.'</b> is not valid.<br/>'; 
 		echo 'Parameter <b>outputFormat</b> is not valid (json,html).<br/>'; 
 		die(); 		
  	}
@@ -87,15 +85,12 @@ foreach($_REQUEST as $key => $val) {
 if (isset($_REQUEST['ID']) & $_REQUEST['ID'] != "") {
 	//validate cs list of uuids or other identifiers - which?
 	$testMatch = $_REQUEST["ID"];
-	//$uuid = new Uuid($testMatch);
-	//$isUuid = $uuid->isValid();
 	$idList = explode(',',$_REQUEST['ID']);
 	for ($i = 0; $i < count($idList); $i++) {
 		$testMatch = $idList[$i];
 		$uuid = new Uuid($testMatch);
 		$isUuid = $uuid->isValid();
 		if (!$isUuid) {
-			//echo 'Id: <b>'.$testMatch.'</b> is not a valid uuid (12-4-4-4-8)!<br/>'; 
 			echo 'Parameter <b>Id</b> is not a valid uuid (12-4-4-4-8) or a list of uuids!<br/>'; 
 			die(); 		
 		}
@@ -152,7 +147,6 @@ select service_id, resource_id, resource_name, service_uuid, resource_type, fkey
 	//end for wfs 2.0 linked data proxy **********************************************************************************
 
 
-
 	/*
 	$sql = "select service_id, resource_id, resource_type, fkey_datalink_id as datalink from (select fkey_wms_id as service_id, layer_id as resource_id, 'layer' as resource_type from layer inner join (select metadata_id, uuid, fkey_layer_id from mb_metadata inner join ows_relation_metadata on ows_relation_metadata.fkey_metadata_id = mb_metadata.metadata_id) ";
 
@@ -163,8 +157,6 @@ select service_id, resource_id, resource_name, service_uuid, resource_type, fkey
 	$sql .= "ows_relation_metadata.fkey_metadata_id = mb_metadata.metadata_id) as metadata_relation on metadata_relation.fkey_featuretype_id = featuretype_inspire.featuretype_id and metadata_relation.uuid = $1;";*/
 
 	//initialize array for result
-	//$e = new mb_exception($idList);
-	//$downloadOptions = new stdClass();
 	for ($i = 0; $i < count($idList); $i++) {
 		$v = array($idList[$i]);
 		$t = array('s');
@@ -173,26 +165,14 @@ select service_id, resource_id, resource_name, service_uuid, resource_type, fkey
 		//push rows into associative array
 		$j = 0;
 
-/*while ($row = db_fetch_assoc($res)) {
-echo "j: ".$j."<br>";
-echo $row['service_id']." - ".$row['resource_type']."<br>";
-$j++;
-}
-die();*/
-
 		while ($row = db_fetch_assoc($res)) {
-			//echo "j: ".$j."<br>";
 			switch ($row['resource_type']) {		
 				case "wfs":
 					$serviceIdIndex = false;
 					//check existing options - maybe some option for a wfs already exists 
 					for ($k = 0; $k < count($downloadOptions->{$idList[$i]}->option); $k++) {
-						//echo "k: ".$k."<br>";
-						//echo "service_id: ".$row['service_id']." - searched Id: ".$downloadOptions->{$idList[$i]}->option[$k]->serviceId."<br>";
 						if ($row['service_id'] == $downloadOptions->{$idList[$i]}->option[$k]->serviceId && $downloadOptions->{$idList[$i]}->option[$k]->serviceSubType != "REST") {
-							//service_id found at index $k
 							$serviceIdIndex = $k;
-							//echo "Service already found on index: ".$serviceIdIndex."<br>";
 						} 
 					}
 					if ($serviceIdIndex !== false) {
@@ -200,16 +180,14 @@ die();*/
 						//old wfs has been found
 						//get count of current fts
 						$m = count($downloadOptions->{$idList[$i]}->option[$serviceIdIndex]->featureType);
-						//echo "m: ".$m."<br>";
 						$downloadOptions->{$idList[$i]}->option[$serviceIdIndex]->featureType[$m] = $row['resource_id'];
-$downloadOptions->{$idList[$i]}->option[$serviceIdIndex]->featureType[$m]->name = $row['resource_name'];
+						$downloadOptions->{$idList[$i]}->option[$serviceIdIndex]->featureType[$m]->name = $row['resource_name'];
 					} else {
 						$downloadOptions->{$idList[$i]}->option[$j]->type = "wfsrequest";
 						$downloadOptions->{$idList[$i]}->option[$j]->serviceId = $row['service_id'];
 						$downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = $row['service_uuid'];
 						$downloadOptions->{$idList[$i]}->option[$j]->featureType[0] = $row['resource_id'];
-$downloadOptions->{$idList[$i]}->option[$j]->featureType[0]->name = $row['resource_name'];
-
+						$downloadOptions->{$idList[$i]}->option[$j]->featureType[0]->name = $row['resource_name'];
 						$downloadOptions->{$idList[$i]}->option[$j]->format = $row['format'];
 						//new 2019/07
 						$downloadOptions->{$idList[$i]}->option[$j]->serviceType = "download";
@@ -229,13 +207,11 @@ $downloadOptions->{$idList[$i]}->option[$j]->featureType[0]->name = $row['resour
 						$row['format'] = 'GeoTIFF';
 					} else {
 						$downloadOptions->{$idList[$i]}->option[$j]->type = "wmslayerdataurl";
-						//add to array with datalink (ids)
-						//$arrayDataLinks[] = $row['datalink'];
 					}
 					$downloadOptions->{$idList[$i]}->option[$j]->serviceId = $row['service_id'];
 					$downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = $row['service_uuid'];//This is a layer uuid - not a service uuid!!!!
 					$downloadOptions->{$idList[$i]}->option[$j]->resourceId = $row['resource_id'];
-$downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'];
+					$downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'];
 					$downloadOptions->{$idList[$i]}->option[$j]->format = $row['format'];
 					$downloadOptions->{$idList[$i]}->option[$j]->dataLink = $row['datalink'];
 					//new 2019/07
@@ -251,13 +227,11 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 				break;
 				case "rest":
 					$downloadOptions->{$idList[$i]}->option[$j]->type = "ogcapifeatures";
-				
 					$downloadOptions->{$idList[$i]}->option[$j]->serviceId = $row['service_id'];
 					$downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = $row['service_uuid'];
 					$downloadOptions->{$idList[$i]}->option[$j]->resourceId = $row['resource_id'];
-$downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'];
+					$downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'];
 					$downloadOptions->{$idList[$i]}->option[$j]->format = $row['format'];
-					//$downloadOptions->{$idList[$i]}->option[$j]->dataLink = $row['datalink'];
 					//new 2019/07
 					$downloadOptions->{$idList[$i]}->option[$j]->serviceType = "download";
 					$downloadOptions->{$idList[$i]}->option[$j]->serviceSubType = "REST";
@@ -274,7 +248,6 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 						$downloadOptions->{$idList[$i]}->option[$j]->accessClient = $webPath."php/mod_linkedDataProxy.php?wfsid=".$row['service_id']."&collection=".$row['resource_name'];
 						$downloadOptions->{$idList[$i]}->option[$j]->accessUrl = $webPath."php/mod_linkedDataProxy.php?wfsid=".$row['service_id']."&collections=api";
 					}
-					//$downloadOptions->{$idList[$i]}->option[$j]->accessClient = "https://www....";
 					$downloadOptions->{$idList[$i]}->title = $row['title'];
 					$downloadOptions->{$idList[$i]}->uuid = $idList[$i];
 				break;
@@ -283,10 +256,8 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 						$downloadLinks = json_decode($row['datalink_text']);
 						$downloadOptions->{$idList[$i]}->option[$j]->type = "downloadlink";
 						//parse json and add some more info?
-						//$downloadLinks = json_decode($row['datalink_text']);
 						foreach ($downloadLinks->downloadLinks as $downloadLink) {
 							$downloadOptions->{$idList[$i]}->option[$j]->link = $downloadLink->{"0"};
-							//check if 
 							$downloadOptions->{$idList[$i]}->option[$j]->format = $row['format'];
 							$downloadOptions->{$idList[$i]}->option[$j]->serviceType = "download";
 							$downloadOptions->{$idList[$i]}->option[$j]->serviceSubType = "ATOM";
@@ -303,14 +274,7 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 			}
 		$j++;
 		}
-		//delete double entries - maybe url is given from dataurl - use this 
-		//get all dataurlids
-		//foreach($downloadOptions->{$idList[$i]}->option as $option) {
-			//$option->dataLink;
-		//}
 	}
-	//$e = new mb_exception(json_encode($downloadOptions));
-	//add further option from metadata itself - if 
 	$result = json_encode($downloadOptions);
 	return $result;
 }
@@ -370,10 +334,8 @@ if ($downloadOptions != "null" && $outputFormat == "html") {
 	$iTabs = 1;
 	$metadataList.= '</ul>';
 	foreach ($idList as $currentUuid){
-		//$metadataList .= "<a href='../php/mod_iso19139ToHtml.php?url=".urlencode($mapbenderUrl."/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$currentUuid)."'>".$options->{$currentUuid}->title."</a> <a href='../php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$currentUuid."&validate=true'>".'validate'."</a>";
 		$metadataList .= '<div id="tabs-'.$iTabs.'">';
 		$metadataList .= "<a href='../php/mod_iso19139ToHtml.php?url=".urlencode($mapbenderUrl."/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$currentUuid)."'>"._mb('Metadata')."</a>";
-		//echo $options->{$currentUuid}->title;
 		$metadataList .= "<br>";
 		if ($downloadOptions != null) {
 			$iOptions = 1;
