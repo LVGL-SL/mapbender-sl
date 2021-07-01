@@ -1,4 +1,5 @@
 conf/.env.php
+conf/linkedDataProxy.json
 conf/mobilemap2.conf
 http/tmp/
 http/geoportal/preview/*.jpg
