@@ -5,6 +5,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
+@import '/static/useroperations/css/color_schema.css';
+
 html {
   position: relative;
   min-height: 100%;
@@ -24,36 +26,36 @@ body {
 }
 
 a {
-  color: #871d33;
+  color: var(--primary);
 }
 
 a.hover {
-  color: #871d33;
+  color: var(--primary);
 }
 
 .page-link {
-  color: #871d33;
+  color: var(--primary);
 }
 
 .page-link:hover {
-  color: #871d33;
+  color: var(--primary);
 }
 
 .page-item.active .page-link {
-  background-color: #871d33;
-  border-color: #871d33;
+  background-color: var(--primary);
+  border-color: var(--primary);
 }
 
 .btn-primary:hover {
   color: #fff;
-  background-color: #6c757d;
-  border-color: #871d33;
+  background-color: var(--primary-hover);
+  border-color: var(--primary);
 }
 
 .btn-primary {
   color: #fff;
-  background-color: #871d33;
-  border-color: #871d33;
+  background-color: var(--primary);
+  border-color: var(--primary);
 }
 
 .btn.disabled,
@@ -65,8 +67,8 @@ a.hover {
 .btn-primary:disabled {
 
   color: #fff;
-  background-color: #871d33;
-  border-color: #871d33;
+  background-color: var(--primary);
+  border-color: var(--primary);
 
 }
 
@@ -117,7 +119,7 @@ table {
 }
 
 tbody>tr:nth-child(odd) {
-  background-color: #f2f2f2;
+  background-color: var(--secondary-light);
 }
 
 td:first-child {
