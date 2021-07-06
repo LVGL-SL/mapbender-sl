@@ -2,7 +2,7 @@
 
 function geoJSONSwapCoordinateAxes($inputString)
 {
-    $pattern = "/\[(\d{1,8}\.\d{1,8})[,](\d{1,8}\.\d{1,8})\]/";
+    $pattern = "/\[(\d{1,8}(?:\.\d{1,8})?)[,](\d{1,8}(?:\.\d{1,8})?)\]/";
     $replacement = '[\2,\1]';
     $result = preg_replace($pattern, $replacement, $inputString);
     return $result;
