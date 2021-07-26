@@ -134,14 +134,13 @@ netgis.map =
 					tileUrlFunction: function( zxy )
 					{
 						if ( zxy === null ) return undefined;
-						
+
 						// Hybrid layer has different grid coords
 						var y = -zxy[ 2 ] - 1;
 						
-						return netgis.config.URL_BACKGROUND_HYBRID + "/" + zxy[ 0 ] + "/" + zxy[ 1 ] + "/" + y + ".jpeg";
-					}
-				}
-			);
+						//return netgis.config.URL_BACKGROUND_HYBRID + "/" + zxy[ 0 ] + "/" + zxy[ 1 ] + "/" + zxy[ 2 ] + ".jpeg";
+						// Hybrid layer has different grid coords
+						var y = -zxy[ 2 ] - 1;
 			
 			backLayerHybrid = new ol.layer.Tile
 			(
