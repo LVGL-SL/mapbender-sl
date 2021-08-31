@@ -843,7 +843,6 @@ netgis.map =
 		//TODO: testing
 		var update = function()
 		{
-			console.info( "Update..." );
 			// Clear
 			map.getLayers().clear();
 			
@@ -1706,8 +1705,6 @@ netgis.map =
 			);
 	
 			markerLayer.getSource().addFeature( feature );
-			
-			console.info( "Marker Layer:", markerLayer.getSource().getFeatures() );
 		};
 		
 		// Public Interface
