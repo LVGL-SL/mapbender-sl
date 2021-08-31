@@ -68,14 +68,15 @@ netgis.map =
 		/**
 		 * Initialize the map client.
 		 * @memberof netgis
-		 * @param {string} containerId Map container element ID
 		 */
 		var init = function()
 		{
 			// Container
 			container = document.getElementById( netgis.config.MAP_CONTAINER_ID );
 			
+			// Projections
 			proj4.defs( netgis.config.MAP_PROJECTIONS );
+			ol.proj.proj4.register( proj4 );
 			
 			// View
 			view = new ol.View
@@ -133,11 +134,13 @@ netgis.map =
 					tileUrlFunction: function( zxy )
 					{
 						if ( zxy === null ) return undefined;
+
+						// Hybrid layer has different grid coords
+						var y = -zxy[ 2 ] - 1;
 						
-						return netgis.config.URL_BACKGROUND_HYBRID + "/" + zxy[ 0 ] + "/" + zxy[ 1 ] + "/" + zxy[ 2 ] + ".jpeg";
-					}
-				}
-			);
+						//return netgis.config.URL_BACKGROUND_HYBRID + "/" + zxy[ 0 ] + "/" + zxy[ 1 ] + "/" + zxy[ 2 ] + ".jpeg";
+						// Hybrid layer has different grid coords
+						var y = -zxy[ 2 ] - 1;
 			
 			backLayerHybrid = new ol.layer.Tile
 			(
@@ -629,7 +632,7 @@ netgis.map =
 		
 		var getResolutionFromScale = function( scale )
 		{
-			var mpu = view ? ol.proj.METERS_PER_UNIT[ view.getProjection().getUnits() ] : 1.0;
+			var mpu = view ? ol.proj.Units.METERS_PER_UNIT[ view.getProjection().getUnits() ] : 1.0;
 			var ipu = mpu * 39.3701; // inches per unit = 39.3701
 			var dpi = 72;
 			
@@ -968,7 +971,7 @@ netgis.map =
 					if ( mapLayer )
 					{
 						// Do Query
-						var url = mapLayer.getSource().getGetFeatureInfoUrl
+						var url = mapLayer.getSource().getFeatureInfoUrl
 						(
 							event.coordinate,
 							view.getResolution(),

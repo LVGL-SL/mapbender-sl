@@ -241,7 +241,7 @@ var WMS_preferencesDiv = function() {
 				}
 			}
 			//extract wms title, id and abstract 
-			var wmsTitle = my.wms[z].wms_title;
+			var wmsTitle = my.wms[z].objLayer[0].layer_title;
 			var wmsAbstract = my.wms[z].wms_abstract;
 			var wmsId = my.wms[z].wms_id;
 			

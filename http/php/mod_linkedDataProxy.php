@@ -182,15 +182,11 @@ foreach ($acceptHeaderArray as $acceptHeaderFomat) {
 }
 if (is_array($acceptedHeaderFormatArray) && count($acceptedHeaderFormatArray) > 0) {
 	$f = $acceptedHeaderFormatArray[0];
-} else {
-	//$f = "html"; //default value
 }
-/*
- * For debugging purposes only
- */
-// $e = new mb_exception("php/mod_linkedDataProxy.php: HTTP ACCEPT HEADER found: ".$_SERVER ["HTTP_ACCEPT"]);
-// $e = new mb_exception("php/mod_linkedDataProxy.php: REQUEST PARAMETER: ".json_encode($_REQUEST));
-// $e = new mb_exception("php/mod_linkedDataProxy.php: requested format: ".$f);
+
+new mb_notice("php/mod_linkedDataProxy.php: HTTP ACCEPT HEADER found: ".$_SERVER ["HTTP_ACCEPT"]);
+new mb_notice("php/mod_linkedDataProxy.php: REQUEST PARAMETER: ".json_encode($_REQUEST));
+new mb_notice("php/mod_linkedDataProxy.php: requested format: ".$f);
 
 // parameter to control if the native json should be requested from the server, if support for geojson is available!
 $nativeJson = false;
@@ -269,6 +265,7 @@ function string2html($string) {
 	}
 	return $string;
 }
+
 function delTotalFromQuery($paramName, $url) {
 	$query = explode ( "?", $url );
 	parse_str ( $query [1], $vars );
@@ -282,17 +279,18 @@ function delTotalFromQuery($paramName, $url) {
 	$urlNew = $query [0] . "?" . http_build_query ( $vars );
 	return $urlNew;
 }
+
 function getJsonSchemaObject($feature) {
-	// $e = new mb_exception("php/mod_linkedDataProxy.php - getJsonSchemaObject");
+	new mb_notice("php/mod_linkedDataProxy.php - getJsonSchemaObject");
 	$returnObject = new stdClass ();
 	$returnObject->success = false;
 	$cache = new Cache ();
 	$url = $feature->properties->{'json-schema_0.7_id'};
 	if (isset ( $url )) {
-		// $e = new mb_exception("php/mod_linkedDataProxy.php - getJsonSchemaObject - url is set");
+		new mb_notice("php/mod_linkedDataProxy.php - getJsonSchemaObject - url is set");
 		// cache schema resolving!
 		if ($cache->isActive) {
-			// $e = new mb_exception("php/mod_linkedDataProxy.php - cache is active!");
+			new mb_notice("php/mod_linkedDataProxy.php - cache is active!");
 			if ($cache->cachedVariableExists ( md5 ( $url ) ) == false) {
 				$schemaContextConnector = new Connector ();
 				$file = $schemaContextConnector->load ( $url );
@@ -304,11 +302,11 @@ function getJsonSchemaObject($feature) {
 					$cache->cachedVariableAdd ( md5 ( $url ), $returnObject );
 				}
 			} else {
-				// $e = new mb_exception("php/mod_linkedDataProxy.php - read json-schema from cache!");
+				new mb_notice("php/mod_linkedDataProxy.php - read json-schema from cache!");
 				$returnObject = $cache->cachedVariableFetch ( md5 ( $url ) );
 			}
 		} else {
-			//$e = new mb_exception ( "php/mod_linkedDataProxy.php - cache is inactive" );
+			new mb_notice( "php/mod_linkedDataProxy.php - cache is inactive" );
 			$schemaContextConnector = new Connector ();
 			$file = $schemaContextConnector->load ( $url );
 			$returnObject->schema = json_decode ( $file );
@@ -335,11 +333,6 @@ function mapFeatureKeys($featureList, $schemaObject) {
 				$attributeTitle = $key;
 			}
 			$featureNew[$attributeTitle] = $value;
-			/*if (isset ( $schemaObject->properties->{$key}->description )) {
-				$attributeDescription = $schemaObject->properties->{$key}->description;
-			} else {
-				$attributeDescription = $attributeTitle;
-			}*/
 		}	
 		$featureListNew[] = $featureNew;
 	}
@@ -1570,9 +1563,11 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 					// extract schema - get all elements that are strings and integers
 					$ftElementArray = $featureType->elementArray; // consists of name and type
 					                                              // get allowed attributes for filtering
+					//$e = new mb_exception("php/mod_linkedDataProxy.php: ftElementArray: ".json_encode($ftElementArray));
 					$ftAllowedAttributesArray = array ();
 					foreach ( $ftElementArray as $ftElement ) {
-						if ($ftElement->type == "string") {
+						// $e = new mb_exception($ftElement->name ." - " .$ftElement->type);
+					    if (in_array((string)$ftElement->type, array("string", "xsd:string", "int"))) {
 							$ftAllowedAttributesArray [] = $ftElement->name;
 						}
 					}
@@ -1884,6 +1879,8 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 								$admin->updateWfsLog(1, '', '', $geojsonIndex, $log_id);
 							}
 						} else {
+							// $e = new mb_exception($filter);
+						    //$e = new mb_exception("php/mod_linkedDataProxy.php: supported output formats: ".json_encode($ftOutputFormats));
 							$features = $wfs->getFeaturePaging ( $ftName, $filter, "EPSG:4326", null, null, $limit, $startIndex, "2.0.0", false, $wfs_http_method );
 							// transform to geojson to allow rendering !
 							$gmlFeatureCache = $features;
@@ -2102,7 +2099,18 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							$admin->updateWfsLog(1, '', '', $geojsonIndex, $log_id);
 						}
 					} else {
-						$features = $wfs->getFeatureById ( $collection, 'text/xml; subtype=gml/3.1.1', $item, "2.0.0", "EPSG:4326" );
+					    //use outputformat if supported is not in list!
+					    //$e = new mb_exception("php/mod_linkedDataProxy.php - getfeaturebyid outputformats: ".json_encode($ftOutputFormats));
+					    if (!in_array('text/xml; subtype=gml/3.1.1', $ftOutputFormats)) {
+					        $forcedOutputFormat = false;
+					    } else {
+					        $forcedOutputFormat = 'text/xml; subtype=gml/3.1.1'; //TODO - maybe use another one ;-) 
+					    }
+					    //$e = new mb_exception("php/mod_linkedDataProxy.php item:". $item);
+					    $features = $wfs->getFeatureById ( $collection, $forcedOutputFormat, $item, "2.0.0", "EPSG:4326" );
+						//$e = new mb_exception($features);
+						//use postgis to transform gml geometry to geojson - this maybe better ;-)
+						
 						// transform to geojson to allow rendering !
 						// TODO test for ows:ExceptionReport!!!!
 						$gml3Class = new Gml_3_Factory ();
@@ -2110,6 +2118,8 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						// create featuretype object
 						// TODO
 						$gml3Object = $gml3Class->createFromXml ( $features, null, $wfs, $myFeatureType, $geomColumnName );
+
+						//$e = new mb_exception("after creation of object!");
 						$geojsonList = new stdClass ();
 						$geojsonList->type = "FeatureCollection";
 						$geojsonList->features = array ();
@@ -2124,6 +2134,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							$geoJsonVariable = "";
 							$geoJsonVariable .= '<script>' . $newline;
 						}
+						//$e = new mb_exception("number of features: ".count($gml3Object->featureCollection->featureArray));
 						foreach ( $gml3Object->featureCollection->featureArray as $mbFeature ) {
 							// bbox
 							$geojsonBbox [$geojsonIndex]->mbBbox = $mbFeature->getBbox ();

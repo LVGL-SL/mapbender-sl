@@ -726,7 +726,10 @@ function updateParent(path){
 function handleSelectedWMS(path){
 	if(lock_update)return;
 	var t = path.split("|");
-	var wms_id = t[t.length-1].substr(4);
+	var wms_id;
+	for (element of t) {
+		if (element.startsWith("wms_")) wms_id = element.substr(4);
+	}
 	var reset_lock=!lock_check;
 	var ind =  getMapObjIndexByName(mod_treeGDE_map);
 	var wms =  getWMSIndexById(mod_treeGDE_map,wms_id);

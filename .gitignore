@@ -1,11 +1,13 @@
+*.mo
 conf/.env.php
 conf/linkedDataProxy.json
 conf/mobilemap2.conf
-http/tmp/
 http/geoportal/preview/*.jpg
+http/img/altitude_profile/
+http/tmp/
+http/videos/
 log/*
-metadata/
 mapserver/spatial_security.map
+metadata/
 tools/tmp/
 tools/wms_extent/extents.map
-*.mo
