@@ -49,6 +49,12 @@ netgis.config =
 	GEORSS_POINT_FILL_COLOR:	"#861d31",
 	GEORSS_POINT_STROKE_COLOR:	"white",
 	GEORSS_POINT_STROKE_WIDTH:	2,
+	
+	/** Default style for marker points. */
+	MARKER_POINT_RADIUS:		8,
+	MARKER_POINT_FILL_COLOR:	"#861d31",
+	MARKER_POINT_STROKE_COLOR:	"white",
+	MARKER_POINT_STROKE_WIDTH:	2,
 
 	/** Service URLs (avoid proxies by setting to null or empty string). */
 	//URL_WMC_PROXY:			"./scripts/proxy.php", //TODO: empty proxy to invoke from js client on same machine!!!

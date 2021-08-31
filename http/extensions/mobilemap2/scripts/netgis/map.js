@@ -39,6 +39,8 @@ netgis.map =
 		var positionCenter;
 		var positionOverlay;
 		
+		var markerLayer;
+		
 		var measureSource;
 		var measureFeature;
 		var measureListener;
@@ -189,6 +191,32 @@ netgis.map =
 				}
 			);
 	
+			// Marker Point
+			var markerStyle = new ol.style.Style
+			(
+				{
+					image: new ol.style.Circle
+					(
+						{
+							radius: netgis.config.MARKER_POINT_RADIUS,
+							fill: new ol.style.Fill( { color: netgis.config.MARKER_POINT_FILL_COLOR } ),
+							stroke: new ol.style.Stroke( { color: netgis.config.MARKER_POINT_STROKE_COLOR, width: netgis.config.MARKER_POINT_STROKE_WIDTH } )
+						}
+					)
+				}
+			);
+	
+			markerLayer = new ol.layer.Vector
+			(
+				{
+					source: new ol.source.Vector(),
+					style: markerStyle,
+					zIndex: 1000
+				}
+			);
+	
+			map.addLayer( markerLayer );
+	
 			// Measure
 			measureSource = new ol.source.Vector();
 			
@@ -206,7 +234,7 @@ netgis.map =
 				{
 					source: measureSource,
 					style: measureStyle,
-					zIndex: 1000
+					zIndex: 1010
 				}
 			);
 	
@@ -355,6 +383,28 @@ netgis.map =
 			setView( center, zoom );
 			
 			if ( netgis.params.getInt( "scale_bar" ) === 0 ) setScaleBarVisible( false );
+			
+			if ( netgis.params.get( "point" ) )
+			{
+				var coords = netgis.params.getString( "point" );
+				coords = coords.split( "," );
+				coords[ 0 ] = parseFloat( coords[ 0 ] );
+				coords[ 1 ] = parseFloat( coords[ 1 ] );
+				
+				addMarkerPoint( coords );
+			}
+			
+			if ( netgis.params.get( "point_lonlat" ) )
+			{
+				var coords = netgis.params.getString( "point_lonlat" );
+				coords = coords.split( "," );
+				coords[ 0 ] = parseFloat( coords[ 0 ] );
+				coords[ 1 ] = parseFloat( coords[ 1 ] );
+				
+				coords = ol.proj.fromLonLat( coords, netgis.config.MAP_PROJECTION );
+				
+				addMarkerPoint( coords );
+			}
 		};
 		
 		var setScaleBarVisible = function( on )
@@ -793,6 +843,7 @@ netgis.map =
 		//TODO: testing
 		var update = function()
 		{
+			console.info( "Update..." );
 			// Clear
 			map.getLayers().clear();
 			
@@ -1157,6 +1208,7 @@ netgis.map =
 			   
 				map.getLayers().clear();
 				
+				map.addLayer( markerLayer );
 				map.addLayer( measureLayer );
 			}
 			else
@@ -1642,6 +1694,20 @@ netgis.map =
 
 				return style;
 			}
+		};
+		
+		var addMarkerPoint = function( coords )
+		{
+			var feature = new ol.Feature
+			(
+				{
+					geometry: new ol.geom.Point( coords )
+				}
+			);
+	
+			markerLayer.getSource().addFeature( feature );
+			
+			console.info( "Marker Layer:", markerLayer.getSource().getFeatures() );
 		};
 		
 		// Public Interface
