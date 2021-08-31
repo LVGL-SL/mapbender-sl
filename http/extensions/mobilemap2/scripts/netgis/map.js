@@ -448,7 +448,12 @@ netgis.map =
 			};
 
 			var viewFull = function () {
-				viewExtent(403960, 5468250, 595890, 5733150);
+				const full_extend = netgis.config.MAP_EXTENT;
+				const full_extend_minx = full_extend[0];
+				const full_extend_miny = full_extend[1];
+				const full_extend_maxx = full_extend[2];
+				const full_extend_maxy = full_extend[3];
+				viewExtent(full_extend_minx, full_extend_miny, full_extend_maxx, full_extend_maxy);
 			};
 
 			var viewExtent = function (minx, miny, maxx, maxy) {
@@ -922,7 +927,7 @@ netgis.map =
 
 									content += "<div id='" + panelId + "' class='panel-collapse collapse'>";
 									content += "<div class='panel-body'>";
-									//content += "<iframe seamless width='280' height='100' src='" + frame_url + "'></iframe>";
+
 									content += "<iframe seamless width='280' src='" + frame_url + "'></iframe>";
 									content += "</div>";
 									content += "</div>";
@@ -943,7 +948,6 @@ netgis.map =
 											}
 										);
 
-									//popupContent.append( element );
 									netgis.menu.addSideContent(element);
 								}
 							}
@@ -985,7 +989,6 @@ netgis.map =
 							var element = $(content);
 							element.find(".panel-heading").click(function () { element.find("#" + panelId).collapse("toggle"); });
 
-							//popupContent.append( element );
 							netgis.menu.addSideContent(element);
 						}
 					);
@@ -995,9 +998,6 @@ netgis.map =
 				popupOverlay.setPosition(event.coordinate);
 
 				//TODO: use showPopup method
-
-				// Go back to pan mode
-				//if ( ! netgis.sidebar.isVisible() ) pan();
 			};
 
 			var onDigitizeClick = function (evt) {
@@ -1030,8 +1030,6 @@ netgis.map =
 			};
 
 			var onFeatureInfoResponse = function (data, layer) {
-				//console.info( "FEATURE INFO:", data );
-
 				popupContent.append(data);
 			};
 
