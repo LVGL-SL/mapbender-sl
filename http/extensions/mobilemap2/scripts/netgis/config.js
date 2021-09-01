@@ -71,7 +71,7 @@ netgis.config =
 	//URL_LAYERS_REQUEST:		"http://localhost/mapbender/extensions/mobilemap/mod_mapbender/search_proxy.php",
 	URL_LAYERS_REQUEST:		"../mobilemap/mod_mapbender/search_proxy.php",
 	
-	//URL_SEARCH_PROXY:		"./scripts/proxy.php",
+	//URL_SEARCH_PROXY:		"./scripts/proxy_dev.php",
 	URL_SEARCH_PROXY:		"",
 	//URL_SEARCH_REQUEST:		"http://www.geoportal.rlp.de/mapbender/geoportal/gaz_geom_mobile.php",
 	URL_SEARCH_REQUEST:		"../../geoportal/gaz_geom_mobile.php",

@@ -1048,7 +1048,7 @@ netgis.map =
 					if ( mapLayer )
 					{
 						// Do Query
-						var url = mapLayer.getSource().getGetFeatureInfoUrl
+						var url = mapLayer.getSource().getFeatureInfoUrl
 						(
 							event.coordinate,
 							view.getResolution(),
