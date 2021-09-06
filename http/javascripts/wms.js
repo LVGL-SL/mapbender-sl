@@ -627,10 +627,9 @@ wms_const.prototype.handleLayer = function(layer_name, type, value){
 	}
 	
 	//Set visibility/queryability of Layer and Sublayers
-	for(var j = i; j < this.objLayer.length; j++){
-		if (i != j && this.objLayer[i].layer_parent >= this.objLayer[j].layer_parent) {
-			break;
-		}
+	for(var j = 0; j < this.objLayer.length; j++){
+		if (this.objLayer[j].layer_parent != this.objLayer[i].layer_pos && i != j) continue;
+
 		if(type == "visible") {
 			this.objLayer[j].gui_layer_visible = parseInt(value, 10);
 		}

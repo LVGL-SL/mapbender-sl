@@ -91,112 +91,6 @@ function mb_checkScale(frameName,mObj,wmsObj){
  */
 function setFeatureInfoRequest(fName,x,y, path) {
 	new Mb_warning("The function setFeatureInfoRequest is deprecated.");
-
-/*
-	var functionName = 'setFeatureInfoRequest';
-	var ts = mb_timestamp();
-	eventBeforeFeatureInfo.trigger({"fName":fName});
-	var cnt_fi = 0;
-	for(i=0; i<mb_mapObj.length; i++){
-		if(mb_mapObj[i].frameName == fName){
-			for(var ii=0; ii<mb_mapObj[i].wms.length; ii++){
-				var newfeatureInfoRequest = "";
-				var requestParams = "";
-				var validation = false;
-				newfeatureInfoRequest += mb_mapObj[i].wms[ii].wms_getfeatureinfo;          
-            	newfeatureInfoRequest += mb_getConjunctionCharacter(mb_mapObj[i].wms[ii].wms_getfeatureinfo);
-            	
-				if(mb_mapObj[i].wms[ii].wms_version == "1.0.0"){requestParams += "WMTVER="+mb_mapObj[i].wms[ii].wms_version+"&REQUEST=feature_info&";}
-				if(mb_mapObj[i].wms[ii].wms_version != "1.0.0"){requestParams += "VERSION="+mb_mapObj[i].wms[ii].wms_version+"&REQUEST=GetFeatureInfo&SERVICE=WMS&";}
-				requestParams += "SRS="+mb_mapObj[i].epsg+"&";
-				requestParams += "BBOX="+mb_mapObj[i].extent.toString()+"&";
-				requestParams += "WIDTH="+mb_mapObj[i].width+"&";
-				requestParams += "HEIGHT="+mb_mapObj[i].height+"&";
-				requestParams += "LAYERS="+mb_mapObj[i].layers[ii]+"&";
-				requestParams += "STYLES="+mb_mapObj[i].styles[ii]+"&";
-				requestParams += "FORMAT="+mb_mapObj[i].wms[ii].gui_wms_mapformat+"&";
-				requestParams += "INFO_FORMAT="+mb_mapObj[i].wms[ii].gui_wms_featureinfoformat+"&";
-				requestParams += "EXCEPTIONS=application/vnd.ogc.se_xml&";
-				if(mb_feature_count > 0){             
-					requestParams += "FEATURE_COUNT="+mb_feature_count+"&";
-				}
-				requestParams += "QUERY_LAYERS="+mb_mapObj[i].querylayers[ii]+"&";
-				requestParams += "X=" + x  + "&";
-				requestParams += "Y=" + y;
-				
-				if(mb_mapObj[i].querylayers[ii] !== "" && mb_mapObj[i].layers[ii] !== ""){
-					validation = true;
-				}
-				//add vendor-specific
-				for(var v=0; v < mb_vendorSpecific.length; v++){
-					var vendorSpecificString = eval(mb_vendorSpecific[v]); 
-					requestParams += "&" + vendorSpecificString; 
-				}
-				if(Mapbender.log && validation){
-					var tmp = eval(Mapbender.log + "('" + newfeatureInfoRequest + requestParams + "','" + ts + "')");
-				}
-				if(document.getElementById("FeatureInfoRedirect") && validation){
-					newfeatureInfoRequest += requestParams;
-					if(path){
-						window.frames.FeatureInfoRedirect.document.getElementById(mb_mapObj[i].wms[ii].wms_id).src = path + "?url=" + escape(newfeatureInfoRequest)+"&"+mb_nr;
-					}
-					else{
-						window.frames.FeatureInfoRedirect.document.getElementById(mb_mapObj[i].wms[ii].wms_id).src = newfeatureInfoRequest;
-					}
-					cnt_fi++;
-            	}
-				else if(path && validation){
-					newfeatureInfoRequest += requestParams;
-					(function () {
-						var currentRequest = newfeatureInfoRequest;
-						mb_ajax_post(path, {'url':currentRequest},function(js_code,status){
-							if(js_code){
-								try{
-									var p = new mb_popup({
-										title:"Feature Info",
-										url:path + "?url=" + escape(currentRequest)+"&"+mb_nr,
-										width:600,
-										height:500,
-										top:200,
-										left:600
-									});
-									p.show();
-								}catch(e){
-									window.open(path + "?url=" + escape(currentRequest)+"&"+mb_nr, "" , "width=300,height=400,scrollbars=yes,resizable=yes");
-								}
-							}
-							else{
-								var e = new Mb_exception("No featureInfo results.");
-							}
-						});
-					}());
-					cnt_fi++;
-				}
-				else if(validation){
-					newfeatureInfoRequest += requestParams;
-					try{
-						var p = new mb_popup({
-							title:"Feature Info",
-							url:newfeatureInfoRequest,
-							width:600,
-							height:500,
-							top:200,
-							left:600
-						});
-						p.show();
-					}
-					catch(e){
-						window.open(newfeatureInfoRequest, "" , "width=300,height=400,scrollbars=yes,resizable=yes");					
-					}
-					cnt_fi++;
-				}     
-			}
-		}
-	}
-   	if(cnt_fi === 0){
-		alert(unescape("Please select a layer! \n Bitte waehlen Sie eine Ebene zur Abfrage aus!"));
-	}
-*/
 }
 
 /**
@@ -217,21 +111,6 @@ function mb_panMap(frameName,dir){
 	return obj.pan(dir);
 }
 
-/**
- * @deprecated
- */
-/*
-function handleSelectedLayer (frameName, wms_title, layerName, type, status) {
-	new Mb_warning("The function handleSelectedLayer is deprecated.");
-	var obj = getMapObjByName(frameName);
-	for (var ii = 0; ii < obj.wms.length; ii++) {
-		if (obj.wms[ii].wms_title == wms_title) {
-			obj.wms[ii].handleLayer(layerName, type, status);
-            obj.restateLayers(obj.wms[ii].wms_id);
-		}
-	}
-}
-*/
 /**
  * @deprecated
  */
