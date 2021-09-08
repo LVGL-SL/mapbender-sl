@@ -607,51 +607,53 @@ wms_const.prototype.getSublayerState = function(layer_id, type){
 };
 /**
  * handle change of visibility / queryability of a layer
+ * including sublayers
  * 
  * @param string layer_name of layer to handle
  * @param string type of change ("visible" or "querylayer")
  * @param int value of the change
  */
-wms_const.prototype.handleLayer = function(layer_name, type, value){
-	var i;
-	var found = false;
-	for(i = 0; i < this.objLayer.length; i++){
-		if(this.objLayer[i].layer_name==layer_name) {
-			found = true;
+
+wms_const.prototype.handleLayer = function(layer_name, type, value) {
+	const clicked_layer = this.getLayerByLayerName(layer_name);
+	const status = parseInt(value);
+
+	switch(type)
+	{
+		case "visible":
+			this.changeLayerVisibilitiy(clicked_layer, status);
 			break;
-		}
-	}
-	// layer not found
-	if (!found) {
-		return;
-	}
-	
-	//Set visibility/queryability of Layer and Sublayers
-	for(var j = 0; j < this.objLayer.length; j++){
-		if (this.objLayer[j].layer_parent != this.objLayer[i].layer_pos && i != j) continue;
-
-		if(type == "visible") {
-			this.objLayer[j].gui_layer_visible = parseInt(value, 10);
-		}
-		else if(type=="querylayer" && this.objLayer[j].gui_layer_queryable) {
-			this.objLayer[j].gui_layer_querylayer = parseInt(value, 10);
-		}
-	}
-
-	//Update visibility/queryability of parent layer
-	var parentLayer = this.getLayerByLayerPos(this.objLayer[i].layer_parent);
-	if(parentLayer){
-		var state = this.getSublayerState(parentLayer.layer_id, type);
-		if(state!=-1){
-			if(type == "visible") {
-				this.objLayer[j].gui_layer_visible = state;
-			}
-			else if(type=="querylayer" && this.objLayer[j].gui_layer_queryable) {
-				this.objLayer[j].gui_layer_querylayer = state;
-			}
-		}
+		case "querylayer":
+			this.changeLayerQueryablity(clicked_layer, status);
+			break;
 	}
 };
+
+wms_const.prototype.changeLayerVisibilitiy = function(layer, status)
+{
+	layer.gui_layer_visible = status;
+	for (let l of this.objLayer)
+	{
+		if (l.layer_parent === layer.layer_pos) this.changeLayerVisibilitiy(l, status);
+	}
+}
+
+wms_const.prototype.changeLayerQueryablity = function(layer, status)
+{
+	layer.gui_layer_querylayer = status;
+	for (let l of this.objLayer)
+	{
+		if (l.layer_parent === layer.layer_pos) this.changeLayerQueryablity(l, status);
+	}
+}
+
+wms_const.prototype.getLayerByLayerId = function(layer_id)
+{
+	for (let layer of this.objLayer)
+	{
+		if (layer.layer_id === layer_id) return layer;
+	}
+}
 
 
 /**
