@@ -640,7 +640,8 @@ wms_const.prototype.changeLayerVisibilitiy = function(layer, status)
 
 wms_const.prototype.changeLayerQueryablity = function(layer, status)
 {
-	layer.gui_layer_querylayer = status;
+	layer.gui_layer_querylayer = (layer.gui_layer_queryable) ? status : 0;
+	if (this.objLayer.length > 0 && layer.layer_pos === "0") layer.gui_layer_querylayer = 0;
 	for (let l of this.objLayer)
 	{
 		if (l.layer_parent === layer.layer_pos) this.changeLayerQueryablity(l, status);
