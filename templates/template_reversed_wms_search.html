@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test</title>
+    <style>
+        #fendpoint {
+            width: 50em;
+            height: 1.2em;
+        }
+    </style>
+</head>
+
+<body>
+    <?php if (!$request->user->isAuthenticated()) : ?>
+        <h1>Welcome!</h1>
+        <p>Please <a href="/login/">login</a> to use this service.</p>
+    <?php else : ?>
+        <h1>Welcome, <?= $request->user->getUserName(); ?>!</h1>
+        <section>
+            <h2>Find WMS by registered URIs end point</h2>
+            <form action="" method="POST">
+                <label for="fendpoint">WMS end point URI:</label>
+                <input type="url" id="fendpoint" name="fendpoint" value="https://geoportal.saarland.de/">
+                <input type="submit" value="Submit">
+            </form>
+            <?php if ($request->method === 'POST') : ?>
+                <?php if (empty($context)) : ?>
+                    <p>No WMS found associated with the given endpoint.</p>
+                <?php else : ?>
+                    <p>The following end point was effectively searched for: <code><?= $context["effective_uri"]; ?></code></p>
+                    <p>The following <?= sizeof($context["object_list"]); ?> WMS have been found:</p>
+                    <ul>
+                        <?php foreach ($context["object_list"] as $object) : ?>
+                            <li><?= $object["wms_id"] . " - \"" . $object["wms_title"] . "\""; ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+            <?php endif; ?>
+        </section>
+    <?php endif; ?>
+</body>
+
+</html>
