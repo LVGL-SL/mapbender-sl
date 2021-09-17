@@ -76,8 +76,11 @@ function db_connect($DBSERVER="",$OWNER="",$PW="") {
 	
 	$sys_dbport = PORT; 	
 		
-	if($GLOBALS['DB'])
-		$sys_dbname = $DB;
+	if($GLOBALS['DB']) {
+		$sys_dbname = DB;
+	} else {
+		$sys_dbname = "mapbender";
+	}
 			
 	$connstring = "";
 	if ($sys_dbuser)		
