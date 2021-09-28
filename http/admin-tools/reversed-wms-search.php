@@ -6,7 +6,7 @@ use Mapbender\WMS\Search\WMSSearch;
 use Mapbender\WMS\Search\WMSSearchPermission;
 
 $view = new View();
-$view->template_path = "/opt/geoportal/mapbender/templates";
+$view->template_path = "/opt/geoportal/mapbender/templates/admin-tools";
 $view->template_name = "template_reversed_wms_search";
 
 if (!$view->request->user->isAuthenticated()) {
