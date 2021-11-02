@@ -1,6 +1,4 @@
 *.mo
-composer.json
-composer.lock
 conf/.env.php
 conf/linkedDataProxy.json
 conf/mobilemap2.conf

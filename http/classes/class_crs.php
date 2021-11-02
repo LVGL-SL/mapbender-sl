@@ -108,7 +108,7 @@ class Crs {
 				return;
 			} else {
 				//case urn:x-ogc:def:crs:EPSG:25832?? - geoserver
-                if (substr(strtoupper($identifier), 0, 23) === "URN:X-OGC:DEF:CRS:EPSG:") {
+                		if (substr(strtoupper($identifier), 0, 23) === "URN:X-OGC:DEF:CRS:EPSG:") {
 					//delete this part from original identifier
 					$identifierNew = str_replace('URN:X-OGC:DEF:CRS:EPSG:','',strtoupper($identifier));	
 					$this->identifier = $identifier;
@@ -136,6 +136,10 @@ class Crs {
 	}
 
 	private function resolveCrsInfo () {
+		if (!preg_match("/^\d+$/", $this->identifierCode)) {
+                    $e = new mb_exception("classes/class_crs.php: identifierCode is not an integer: ".$this->identifierCode);
+                    return false;
+		}
 		$cache = new Cache();
 		//try to read from cache if already exists
 		if ($cache->isActive && $cache->cachedVariableExists(md5($this->identifier))) {
@@ -279,7 +283,7 @@ class Crs {
 		}
 		//store information - maybe to cache, if it does not already exists!
 		if ($cache->isActive && $cache->cachedVariableExists(md5($this->identifier)) == false) {
-			$cache->cachedVariableAdd(md5($this->identifier), json_encode($jsonCrsInfo));
+			$cache->cachedVariableAdd(md5($this->identifier), json_encode($jsonCrsInfo), 86400);
 			$e = new mb_notice("http/classes/class_crs.php - store crs info to cache!");
 			return true;
 		}

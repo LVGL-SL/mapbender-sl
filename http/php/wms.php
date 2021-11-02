@@ -870,7 +870,7 @@ while ($keyword_sql = db_fetch_array($res_keyword_sql))
     #Creating the "KeywordList" node
     if ($keywordlistExist == 0) {
         $keywordList = $doc->createElement("KeywordList");
-        $keywordList = $layer->appendChild($keywordList);
+        $keywordList = $service->appendChild($keywordList);
 		$keywordlistExist = 1;	
     }
     

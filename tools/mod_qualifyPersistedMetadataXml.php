@@ -92,7 +92,7 @@ if ($handle = opendir($metadataDir)) {
 					$keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
 							$e = new mb_exception("test3");*/
 				}
-				if (in_array('bplan', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset' && in_array('inspireidentifiziert', $metadataObject->keywords)) {
+				if (in_array('bplan', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && !in_array('Lokal', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset' && in_array('inspireidentifiziert', $metadataObject->keywords)) {
 					$keywordsArray[$newKeywordsIndex]->keyword = "Lokal";
 					$keywordsArray[$newKeywordsIndex]->thesaurusTitle = "Spatial scope";
 					$keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
@@ -133,14 +133,16 @@ if ($handle = opendir($metadataDir)) {
 			fclose($h); //close file for read
 			
 			$metadataXml = exchangeLanguageAndDeletePolygon( $metadataXml );
+			$metadataXml = str_replace('http://www.opengis.net/gml/3.2', 'http://www.opengis.net/gml', $metadataXml);
+		    	$metadataXml = str_replace('http://www.opengis.net/gml', 'http://www.opengis.net/gml/3.2', $metadataXml);
 			//open same file for write and insert xml into the file!
-            $writeHandle = fopen($metadataDir."/".$file, "w+");
+            		$writeHandle = fopen($metadataDir."/".$file, "w+");
 			fwrite($writeHandle, $metadataXml);
 			fclose($writeHandle);
 			logMessages("Number of altered file: ".($numberOfFile + 1));
 			$numberOfFile++;
 			$timeToBuild = microtime(true) - $startTime;
-            logMessages("time to alter xml: ".$timeToBuild);
+            		logMessages("time to alter xml: ".$timeToBuild);
 			//save xml to file
 			//echo $metadataDir."/".$file." will be altered!<br>";
 		} else {
@@ -191,7 +193,7 @@ function exchangeLanguageAndDeletePolygon($metadataXml) {
 		// $e = new mb_exception($rootNamespace);
 		// $xpath->registerNamespace('georss','http://www.georss.org/georss');
 		$xpath->registerNamespace ( "csw", "http://www.opengis.net/cat/csw/2.0.2" );
-		$xpath->registerNamespace ( "gml", "http://www.opengis.net/gml" );
+		$xpath->registerNamespace ( "gml", "http://www.opengis.net/gml/3.2" );
 		$xpath->registerNamespace ( "gco", "http://www.isotc211.org/2005/gco" );
 		$xpath->registerNamespace ( "gmd", "http://www.isotc211.org/2005/gmd" );
 		$xpath->registerNamespace ( "gts", "http://www.isotc211.org/2005/gts" );
@@ -264,7 +266,7 @@ function addKeywords($metadataXml, $keywordsArray, $inspireCategoriesArray=false
 		$xpath->registerNamespace('defaultns', $rootNamespace); 
 		//$xpath->registerNamespace('georss','http://www.georss.org/georss');
 		$xpath->registerNamespace("csw", "http://www.opengis.net/cat/csw/2.0.2");
-		$xpath->registerNamespace("gml", "http://www.opengis.net/gml");
+		$xpath->registerNamespace("gml", "http://www.opengis.net/gml/3.2");
 		$xpath->registerNamespace("gco", "http://www.isotc211.org/2005/gco");
 		$xpath->registerNamespace("gmd", "http://www.isotc211.org/2005/gmd");
 		$xpath->registerNamespace("gts", "http://www.isotc211.org/2005/gts");
@@ -298,8 +300,11 @@ function addKeywords($metadataXml, $keywordsArray, $inspireCategoriesArray=false
             foreach ($inspireCategoryNodeList as $inspireCategoryKeyword) {
                 if (array_key_exists($inspireCategoryKeyword->nodeValue, $inspireCategoriesArray)) {
                     logMessages("Exchange " . $inspireCategoryKeyword->nodeValue . " with " . $inspireCategoriesArray[$inspireCategoryKeyword->nodeValue]);
+                    //$newElement = $metadataDomObject->createTextNode($inspireCategoriesArray[$inspireCategoryKeyword->nodeValue]);
+                    $gco__character_string = $metadataDomObject->createElement('gco:CharacterString');
                     $newElement = $metadataDomObject->createTextNode($inspireCategoriesArray[$inspireCategoryKeyword->nodeValue]);
-                    $inspireCategoryKeyword->parentNode->replaceChild($newElement, $inspireCategoryKeyword);
+                    $gco__character_string->appendChild($newElement);
+                    $inspireCategoryKeyword->parentNode->replaceChild($gco__character_string, $inspireCategoryKeyword);
                 }
             }
         }
@@ -424,6 +429,17 @@ function addKeywords($metadataXml, $keywordsArray, $inspireCategoriesArray=false
 		    //$fragment = $metadataDomObject->createElementNS('http://www.isotc211.org/2005/gco', 'gmd:keyword', $dateTimeNew);
 		
 		}	
+		//repair urls for transfer options
+		$downloadNodeList = $xpath->query('//gmd:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage/gmd:URL');
+		if ($downloadNodeList->length > 0) {
+		    $oldUri = $downloadNodeList->item(0)->nodeValue;
+		    $newUri = str_replace(PHP_EOL, null, $oldUri);
+		    $newUri = str_replace(" ", "", $newUri);
+		    $fragment = $metadataDomObject->createElement('gmd:URL');
+		    $textNode = $metadataDomObject->createTextNode($newUri);
+		    $fragment->appendChild($textNode);
+		    $downloadNodeList->item(0)->parentNode->replaceChild($fragment, $downloadNodeList->item(0));
+		}
 	} //end for parsing xml successfully
 	return $metadataDomObject->saveXML();
 }

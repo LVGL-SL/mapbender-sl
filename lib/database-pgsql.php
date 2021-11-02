@@ -76,8 +76,11 @@ function db_connect($DBSERVER="",$OWNER="",$PW="") {
 	
 	$sys_dbport = PORT; 	
 		
-	if($GLOBALS['DB'])
-		$sys_dbname = $DB;
+	if($GLOBALS['DB']) {
+		$sys_dbname = DB;
+	} else {
+		$sys_dbname = "mapbender";
+	}
 			
 	$connstring = "";
 	if ($sys_dbuser)		
@@ -96,27 +99,14 @@ function db_connect($DBSERVER="",$OWNER="",$PW="") {
 
 	$conn = pg_connect($connstring);		
 
-		#if(isset($sys_db_clientencoding) && $sys_db_clientencoding > "")
-		#{
-		#pg_set_client_encoding ( $conn, $sys_db_clientencoding);
-		#}
-	#return $conn;
 	if ($db_debug)
 		echo "conn=".$conn;
-#echo $connstring;
-#if(!$conn)
-#{echo "FEHLER in Connection";
-#pg_error($conn);}	
 	
 	return $conn;
 }
 
 function db_select_db($DB,$con="") {
 	global $conn,$sys_dbname; 
-#	$sys_dbname = DB;	
-#	$_con = $con ? $con : $conn;
-#	$ret = @mysql_select_db($sys_dbname,$_con);
-//	echo "$ret=@mysql_select_db($sys_dbname,$_con);";
 }
 
 /**
@@ -131,7 +121,6 @@ function db_query($qstring) {
 		$conn,$conn_update,$QUERY_COUNT,$DBSERVER,$OWNER,$PW,$DB;
 	$QUERY_COUNT++;
 	$ret = pg_exec($qstring);
-//	$e = new mb_exception("not ps:  ".$_SERVER['SCRIPT_FILENAME']." : ".$qstring);
 	if(!$ret){
 		$e = new mb_exception("db_query($qstring)=$ret db_error=".db_error());
 	}
@@ -374,16 +363,7 @@ function db_insertid($qhandle="",$table_name="",$pkey_field_name="") {
 function db_insert_id($qhandle="",$table_name="",$pkey_field_name="") {
 		global $sys_dbhost,$sys_dbuser,$sys_dbpasswd,$sys_dbname,$db_debug,
 		$conn,$conn_update,$QUERY_COUNT,$DBSERVER,$OWNER,$PW,$DB;
-	/*	
-	$oid =pg_last_oid($qhandle);
-	echo $oid;
-	
-	$res=db_query("SELECT ".$pkey_field_name." FROM ".$table_name." WHERE oid =".$oid );
-    if ($res && db_numrows($res) > 0) {
-        return @db_result($res,0,0);
-    } else {
-        return 0;
-    }*/
+
     $res=db_query("SELECT max($pkey_field_name) AS id FROM $table_name");
     if ($res && db_numrows($res) > 0) {
         return db_result($res,0,'id');
@@ -421,7 +401,6 @@ function db_error() {
 
 function db_field_flags($lhandle,$fnumber) {
 	   print "db_field_flags()	isn't implemented";
-	   
 }
 
 /**                                                       
@@ -444,6 +423,4 @@ function db_field_type($lhandle,$fnumber) {
                                                           
 function db_field_len($lhandle,$fnumber) {               
 	   return @pg_fieldlen($lhandle,$fnumber);         
-} 
-
-?>
+}

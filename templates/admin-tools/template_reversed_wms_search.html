@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Geoportal SL</title>
+    <link rel="icon" href="/static/useroperations/images/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css"
+        integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/static/useroperations/css/base.css" media="all">
+    <style>
+        form>div {
+            margin: 0.5em;
+        }
+
+        input {
+            box-sizing: border-box;
+            padding: 1em;
+            margin: 0.5em;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header">
+            <div class="upper-header">
+            </div>
+            <figure class="left-header">
+                <a href="/"><img alt="" id="logo_country" src="/static/useroperations/images/logo-state.jpg"
+                        title="" /></a>
+            </figure>
+            <div class="middle-header">
+            </div>
+            <figure class="right-header">
+                <a href="/"><img alt="Logo of the spatial data infrastructure organization" id="logo_gdi"
+                        src="/static/useroperations/images/logo-gdi.png" title="Geoportal Saarland" /></a>
+            </figure>
+        </div>
+    </header>
+
+    <main id="body-content" class="body-content">
+        <div class="landing-page-body">
+            <div class="landing-page-headline">
+                <h1>Mapbender Administration Tools</h1>
+            </div>
+            <div>
+                <?php if (!$request->user->isAuthenticated()) : ?>
+                <p><strong>Please <a href="/login/">login</a> to use this service.</strong></p>
+                <?php else : ?>
+                <p><strong>Welcome,
+                        <?= $request->user->getUserName(); ?>!
+                    </strong></p>
+                <?php endif; ?>
+            </div>
+            <div class="landing-page-headline">
+                <h3>Search WMS by given endpoint</h3>
+            </div>
+            <form action="" method="POST">
+                <div class="form-group">
+                    <label for="fendpoint">WMS end point URI:</label>
+                    <input type="url" id="fendpoint" name="fendpoint" value="https://geoportal.saarland.de/"
+                        class="form-control">
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+            <div>
+                <?php if ($request->method === 'POST') : ?>
+                <hr>
+                <?php if (sizeof($context) === 0) : ?>
+                <p>No WMS found associated with the given endpoint.</p>
+                <?php else : ?>
+                <p>The following end point was effectively searched for: <code><?= $context["effective_uri"]; ?></code>
+                </p>
+                <p>The following
+                    <?= sizeof($context["object_list"]); ?> WMS have been found:
+                </p>
+                <ul>
+                    <?php foreach ($context["object_list"] as $object) : ?>
+                    <li>
+                        <?= $object["wms_id"] . " - \"" . $object["wms_title"] . "\""; ?>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+                <?php endif; ?>
+                <?php endif; ?>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <nav class="footer-navigation">
+            <ul>
+                <li><a href="/article/Kontakt">Kontakt</a></li>
+                <li><a href="/article/Impressum">Impressum</a></li>
+                <li><a href="/article/Datenschutz">Datenschutz</a></li>
+                <li><a href="/feedback">Feedback</a></li>
+            </ul>
+        </nav>
+    </footer>
+</body>
