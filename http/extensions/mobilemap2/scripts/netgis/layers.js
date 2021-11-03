@@ -150,7 +150,7 @@ netgis.layers =
 		
 		var createService = function( serviceData, prepend )
 		{
-			var serviceEntity = netgis.entities.create
+			return netgis.entities.create
 			(
 				[
 					new netgis.component.Service( serviceData.id ),
@@ -159,8 +159,6 @@ netgis.layers =
 				],
 				prepend
 			);
-	
-			return serviceEntity;
 		};
 		
 		// Event Handlers
