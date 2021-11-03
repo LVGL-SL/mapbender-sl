@@ -64,41 +64,33 @@ class Crs {
 	    } else {
 	        return false;
 	    }
-	    //$e = new mb_exception("classes/class_crs.php: " . php_sapi_name());
-	    //return (!isset($_SERVER[‘SERVER_SOFTWARE’]) && (php_sapi_name() == ‘cli’ || (is_numeric($_SERVER[‘argc’]) && $_SERVER[‘argc’] > 0)));
 	}
 	
-/**
- * A public function whith a parameter for {owstype}_{version}. If the ows needs a swap of the crs axis order true is returned,
- * otherwise - if the axis are handled as they are defined in the epsg registry - the function returns false
- */
-	//handles ows identifier: wms_1.0.0, wms_1.1.1, wms_1.3.0, wfs_1.0.0, wfs_1.1.0, wfs_2.0.0, wfs_2.0.2
+	/**
+	 * A public function whith a parameter for {owstype}_{version}. If the ows needs a swap of the crs axis order true is returned,
+	 * otherwise - if the axis are handled as they are defined in the epsg registry - the function returns false
+	 * 
+	 * handles ows identifier: wms_1.0.0, wms_1.1.1, wms_1.3.0, wfs_1.0.0, wfs_1.1.0, wfs_2.0.0, wfs_2.0.2
+	 */
 	public function alterAxisOrder ($targetOws) {
 		$owsWithSpecialOrder = array("wms_1.0.0","wms_1.1.1","wfs_1.0.0","gml_2.0.0","gml_2.1.0","gml_3.1.1","geojson");//lon/lat,east/north 
 		$owsWithOrderAsDefined = array("wms_1.3.0","wfs_1.1.0","wfs_2.0.0","wfs_2.0.2","gml_3.2.0");
-		//$owsWithOrderAsDefined = array("wms_1.3.0","wfs_2.0.0","wfs_2.0.2");
 		$order = "east,north"; //dummy postgis/oracle spatial order
 		if (in_array($targetOws, $owsWithSpecialOrder) && $this->axisOrder !== $order) {
-		//if (in_array($targetOws, $owsWithSpecialOrder) && $this->identifierType == 'epsg' && $this->axisOrder !== $order) {
-			//return false; //cause it is hardcoded in the specs to user lon/lat as this is so in postgis
-			return false;
-		} else {
-			if (in_array($targetOws, $owsWithOrderAsDefined) && $this->axisOrder !== $order) {
-				return true;
-			}
 			return false;
 		}
+		if (in_array($targetOws, $owsWithOrderAsDefined) && $this->axisOrder !== $order) {
+			return true;
+		}
+		return false;
 	}
 
 	private function extractIdentifierType ($identifier) {
-		//$e = new mb_exception("http/classes/class_crs.php - extract identifier: *".$identifier."*");
 		//check for type
 		if (substr(strtoupper($identifier), 0, 5) === "EPSG:") {
-			//$e = new mb_exception("http/classes/class_crs.php - found EPSG: identifier!");
 			$this->identifier = $identifier;
 			$this->identifierType = 'epsg';
 			$this->identifierCode = explode(':',$identifier)[1];
-			//$e = new mb_exception("http/classes/class_crs.php - found code: *".$this->identifierCode."*");
 			return;
 		} else {
 			//check for urn based version - example: urn:ogc:def:crs:EPSG:
@@ -106,7 +98,6 @@ class Crs {
 				//delete this part from original identifier
 				$identifierNew = str_replace('URN:OGC:DEF:CRS:EPSG:','',strtoupper($identifier));			
 				$this->identifier = $identifier;
-				//$e = new mb_exception("http/classes/class_crs.php - urn identifier new: ".$identifierNew);
 				$this->identifierType = 'urn';
 				if (substr($identifierNew, 0, 1 ) === ":") {
 				    $this->identifierCode = ltrim($identifierNew, ':');
@@ -116,13 +107,11 @@ class Crs {
 				    } else {
 						$this->identifierCode = $identifierNew;
 				    }
-				    //$e = new mb_exception("http/classes/class_crs.php - code: ".$this->identifierCode);
 				}	
-				//$e = new mb_exception("http/classes/class_crs.php - urn identifier code: *".$this->identifierCode."*");
 				return;
 			} else {
 				//case urn:x-ogc:def:crs:EPSG:25832?? - geoserver
-                		if (substr(strtoupper($identifier), 0, 23) === "URN:X-OGC:DEF:CRS:EPSG:") {
+                	if (substr(strtoupper($identifier), 0, 23) === "URN:X-OGC:DEF:CRS:EPSG:") {
 					//delete this part from original identifier
 					$identifierNew = str_replace('URN:X-OGC:DEF:CRS:EPSG:','',strtoupper($identifier));	
 					$this->identifier = $identifier;
@@ -187,7 +176,6 @@ class Crs {
     		    $e = new mb_exception("http/classes/class_crs.php - no variable cache found - try to resolve crs info remote!");
     		}
 		}
-		//$e = new mb_exception("http/classes/class_crs.php - type: ".$this->identifierType." - code: ".$this->identifierCode);
 		//built urls to get information from registries
 		switch ($this->identifierType) {
 			case "epsg1":
@@ -197,21 +185,16 @@ class Crs {
 			case "urn1":
 				$registryBaseUrl = "http://www.epsg-registry.org/export.htm?gml=";
 				$registryUrl = $registryBaseUrl.urlencode($this->identifier);
-				/*$xpathCrsType = "";
-				$xpathAxis = "";*/
 				break;
 			case "url1":
 				$registryBaseUrl = "http://www.epsg-registry.org/export.htm?gml=";
 				$registryUrl = $registryBaseUrl.urlencode("urn:ogc:def:crs:EPSG::".$this->identifierCode);
-				/*$xpathCrsType = "";
-				$xpathAxis = "";*/
 				break;
 			default:
 				$registryBaseUrl = "https://apps.epsg.org/api/v1/CoordRefSystem/{CRS_IDENTIFIER}/export/?format=gml";
 				$registryUrl = str_replace("{CRS_IDENTIFIER}", $this->identifierCode,$registryBaseUrl);
 				break;
 		}
-		//$e = new mb_exception("registry url: ".$registryUrl);
 		$crsConnector = new connector();
 		$crsConnector->set("timeOut", "2");
 		//New Oct 2020
@@ -241,21 +224,16 @@ class Crs {
 		}
 		//if parsing was successful
 		if ($crsXml !== false) {
-			//$crsXml->registerXPathNamespace("epsg", "urn:x-ogp:spec:schema-xsd:EPSG:1.0:dataset");
 			$crsXml->registerXPathNamespace("epsg", "urn:x-ogp:spec:schema-xsd:EPSG:2.2:dataset");
 			$crsXml->registerXPathNamespace("gml", "http://www.opengis.net/gml/3.2");
 			$crsXml->registerXPathNamespace("xlink", "http://www.w3.org/1999/xlink");
 			//switch for type of cs - distinguish between ellipsoidalCS and CartesianCS (begin with lowercase character in crs document)
 			$this->epsgType = $crsXml->xpath('//gml:metaDataProperty/epsg:CommonMetaData/epsg:type');
 			$this->epsgType = $this->epsgType[0];
-			//$e = new mb_exception("http/classes/class_crs.php - epsgType: ".$this->epsgType);
 			$this->name = $crsXml->xpath('//gml:name');
 			$this->name = $this->name[0];
-			//$e = new mb_exception("http/classes/class_crs.php - name of crs: ".$this->name);
 			$jsonCrsInfo->name = (string)$this->name;
 			$jsonCrsInfo->epsgType = (string)$this->epsgType;
-			//echo $this->name;
-			//echo $this->epsgType;
 			//get attribute for specific system
 			switch ($this->epsgType) {
 				case "projected":
@@ -296,23 +274,11 @@ class Crs {
 				return false;
 			}		
 			if ($csXml !== false) {
-				//$csXml->registerXPathNamespace("epsg", "urn:x-ogp:spec:schema-xsd:EPSG:1.0:dataset");
 				$csXml->registerXPathNamespace("epsg", "urn:x-ogp:spec:schema-xsd:EPSG:2.2:dataset");
 				$csXml->registerXPathNamespace("gml", "http://www.opengis.net/gml/3.2");
 				$csXml->registerXPathNamespace("xlink", "http://www.w3.org/1999/xlink");
 				//switch for type of cs - distinguish between ellipsoidalCS and CartesianCS (begin with lowercase character in crs document)
 				$axis = $csXml->xpath('//gml:axis/gml:CoordinateSystemAxis/gml:axisDirection');
-				//TODO - think about it? switch for crs lookup table of crs which axis order was swapped from earlier ogc standards to newer - identify them by the usage og EPSG:XXXX notation - no good idea 
-				/*if (DEFINED("OLD_EPSG_AXIS_ORDER_ALTERED") && OLD_EPSG_AXIS_ORDER_ALTERED !== "") {
-					$old_epsg_axis_order_altered = explode(",", OLD_EPSG_AXIS_ORDER_ALTERED);
-				} else {
-					$old_epsg_axis_order_altered = array();
-				}
-				if ($this->identifierType == 'epsg' && in_array($this->identifierCode, $old_epsg_axis_order_altered)) {
-					$this->axisOrder = $axis[1].",".$axis[0];
-				} else {
-					$this->axisOrder = $axis[0].",".$axis[1];
-				}*/
 				$this->axisOrder = $axis[0].",".$axis[1];
 				$jsonCrsInfo->axisOrder = $this->axisOrder;
 			}
@@ -334,9 +300,6 @@ class Crs {
 		        return true;
 		    }
 		}
-		
 		return true;
 	}
 }
-
-?>
