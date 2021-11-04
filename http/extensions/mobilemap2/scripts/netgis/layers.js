@@ -150,7 +150,7 @@ netgis.layers =
 		
 		var createService = function( serviceData, prepend )
 		{
-			var serviceEntity = netgis.entities.create
+			return netgis.entities.create
 			(
 				[
 					new netgis.component.Service( serviceData.id ),
@@ -159,8 +159,6 @@ netgis.layers =
 				],
 				prepend
 			);
-	
-			return serviceEntity;
 		};
 		
 		// Event Handlers
@@ -170,22 +168,11 @@ netgis.layers =
 		{
 			// WMC Extent
 			var bbox = data.wmc.bbox;
-			const wmc_crs = data.wmc.crs[0];
-
-			//old buggfy wmc_crs declaration, always results in "E"
-			//const wmc_crs = data.wmc.crs[0];
-			if (typeof(data.wmc.crs) == 'string') {
-				var wmc_crs_var = data.wmc.crs;
-			} else {
-				var wmc_crs_var = data.wmc.crs[0];
-			}	
-			const wmc_crs = wmc_crs_var;
+			const wmc_crs = (typeof data.wmc.crs === 'string' ? data.wmc.crs : data.wmc.crs[0]);
 			// If the coordinate reference system of the wmc is different to
 			// the one used in MobileMap2, zoom to full extent
 
-			//old if, this was always true because wmc.crs was buggy see above
 			if (wmc_crs != netgis.config.MAP_PROJECTION) {
-			//if (netgis.params.get( "bbox" ) == undefined ) {
 				netgis.map.viewFull();
 			} else if ( bbox )
 			{
