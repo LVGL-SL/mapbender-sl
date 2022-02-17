@@ -1,3 +1,4 @@
+# Mapbender
 *.mo
 conf/.env.php
 conf/linkedDataProxy.json
@@ -12,3 +13,6 @@ metadata/
 tools/tmp/
 tools/wms_extent/extents.map
 vendor/
+
+# IDE
+.dcignore
