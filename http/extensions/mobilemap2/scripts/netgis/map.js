@@ -524,8 +524,19 @@ netgis.map =
 			viewExtent( 174681, 5417732, 585042, 5654678 );
 		};
 		
-		var viewExtent = function( minx, miny, maxx, maxy )
+		var viewExtent = function( minx, miny, maxx, maxy, isLonLat )
 		{
+			if ( isLonLat )
+			{
+				var minLonLat = proj4( "EPSG:4326", netgis.config.MAP_PROJECTION, [ minx, miny ] );
+				var maxLonLat = proj4( "EPSG:4326", netgis.config.MAP_PROJECTION, [ maxx, maxy ] );
+				
+				minx = minLonLat[ 0 ];
+				miny = minLonLat[ 1 ];
+				maxx = maxLonLat[ 0 ];
+				maxy = maxLonLat[ 1 ];
+			}
+			
 			view.fit( [ minx, miny, maxx, maxy ] );
 			
 			addHistory( view.getCenter(), view.getZoom() );
