@@ -370,7 +370,7 @@ netgis.map =
 			map.updateSize();
 			
 			// Additional Size Update, just to be sure
-			setTimeout( function() { map.updateSize(); }, 200 );
+			setTimeout( function() { map.updateSize(); }, 50 );
 			
 			// Parameters
 			var center = getCenter();

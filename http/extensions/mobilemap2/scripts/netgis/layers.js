@@ -271,6 +271,17 @@ netgis.layers =
 			{
 				var service = services[ s ];
 				
+				// Bounds
+				var bbox = service.bbox;
+				
+				if ( bbox )
+				{
+					bbox = bbox.split( "," );
+					for ( var b = 0; b < bbox.length; b++ ) bbox[ b ] = parseFloat( bbox[ b ] );
+					
+					netgis.map.viewExtent( bbox );
+				}
+				
 				// Service Group Layer
 				var serviceEntity = createService( service );
 		
