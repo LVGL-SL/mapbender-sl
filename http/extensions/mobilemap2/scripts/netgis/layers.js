@@ -203,18 +203,24 @@ netgis.layers =
 		{
 			// WMC Extent
 			var bbox = data.wmc.bbox;
-			const wmc_crs = data.wmc.crs[ 0 ];
-
-			// If the coordinate reference system of the wmc is different to 
-			// the one used in MobileMap2, zoom to full extent
-			if ( wmc_crs != netgis.config.MAP_PROJECTION )
-			{
-				netgis.map.viewFull();
-			}
-			else if ( bbox )
+			
+			if ( bbox )
 			{
 				bbox = bbox.split( "," );
 				for ( var b = 0; b < bbox.length; b++ ) bbox[ b ] = parseFloat( bbox[ b ] );
+				
+				// BBox CRS
+				if ( data.wmc.crs && data.wmc.crs !== netgis.config.MAP_PROJECTION )
+				{
+					var min = proj4( data.wmc.crs, netgis.config.MAP_PROJECTION, [ bbox[ 0 ], bbox[ 1 ] ] );
+					var max = proj4( data.wmc.crs, netgis.config.MAP_PROJECTION, [ bbox[ 2 ], bbox[ 3 ] ] );
+
+					bbox[ 0 ] = min[ 0 ];
+					bbox[ 1 ] = min[ 1 ];
+					bbox[ 2 ] = max[ 0 ];
+					bbox[ 3 ] = max[ 1 ];
+				}
+				
 				netgis.map.viewExtent( bbox[ 0 ], bbox[ 1 ], bbox[ 2 ], bbox[ 3 ] );
 			}
 			
