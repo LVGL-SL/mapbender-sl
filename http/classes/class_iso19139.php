@@ -291,10 +291,19 @@ XML;
 			$e = new mb_notice("Parsing of xml metadata file was successfull"); 
 			$this->fileIdentifier = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:fileIdentifier/gco:CharacterString');
 			$this->fileIdentifier = $this->fileIdentifier[0];
+			//extract createDate - maybe Date or DateTime format
+			//http://www.datypic.com/sc/niem21/e-gco_DateTime.html
 			$this->createDate = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:dateStamp/gco:Date');
-			$this->createDate = $this->createDate[0];
-			$this->changeDate = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:dateStamp/gco:Date');
-			$this->changeDate = $this->changeDate[0];
+			$tmpCreateDate = $this->createDate[0];
+			if ($tmpCreateDate == "" || !isset($tmpCreateDate)) {
+			    //try to find DateTime instead
+			    $this->createDate = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:dateStamp/gco:DateTime');
+			    $tmpCreateDate = $this->createDate[0];
+			}
+			//default changeDate to createDate
+			$this->createDate = $tmpCreateDate;
+			$this->changeDate = $tmpCreateDate;
+						
 			$this->hierarchyLevel = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:hierarchyLevel/gmd:MD_ScopeCode/@codeListValue');
 			$this->hierarchyLevel = $this->hierarchyLevel[0];
 			if ($this->hierarchyLevel == 'service') {				
@@ -369,7 +378,7 @@ XML;
 							$this->inspireDownload = 0;
 						}
 						break;
-			                case "mapbender.2.noCswExport":
+			        case "mapbender.2.noCswExport":
 						if ($keyword == "1") {
 							$this->export2Csw = 'f';
 						} else {
