@@ -666,7 +666,7 @@ CREATE TABLE oaf_proxy_log
   log_count bigint,
   CONSTRAINT oaf_proxy_logc_fkey_wfs_id_fkey FOREIGN KEY (fkey_wfs_id)
       REFERENCES wfs (wfs_id) MATCH SIMPLE
-      ON UPDATE CASCADE ON DELETE CASCADE
+      ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT oaf_proxy_logc_fkey_wfs_featuretype_id_fkey FOREIGN KEY (fkey_wfs_featuretype_id)
       REFERENCES wfs_featuretype (featuretype_id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE CASCADE
@@ -699,3 +699,8 @@ CREATE TRIGGER update_oaf_proxy_log_lastchanged
 GRANT ALL ON TABLE oaf_proxy_log TO mapbenderdbuser;
 GRANT ALL ON SEQUENCE oaf_proxy_log_log_id_seq TO mapbenderdbuser;
 
+-- Column: mb_group_ckan_api_key_text
+
+-- ALTER TABLE mb_group DROP COLUMN mb_group_ckan_api_key_text;
+
+ALTER TABLE mb_group ADD COLUMN mb_group_ckan_api_key_text text;
