@@ -180,8 +180,6 @@ netgis.map =
 				}
 			);
 	
-			//createBackgroundLayers();
-	
 			// Geolocation
 			positionOverlay = new ol.Overlay
 			(
@@ -291,8 +289,6 @@ netgis.map =
 			interactions.featureInfo = new ol.interaction.Pointer
 			(
 				{
-					//handleDownEvent:	function( event ) { /*this.dispatchEvent( event ); return true;*/ },
-					//handleUpEvent:		function( event ) { onMapClick( event ); return false; }
 					handleEvent: function( event ) { if ( event.type === "singleclick" ) { onMapClick( event ); } return true; }
 				}
 			);
@@ -708,85 +704,35 @@ netgis.map =
 		
 		var createLayerWms = function( url, layerName, index, opacity )
 		{
-			//var type = ol.source.TileWMS;
-			
 			var source;
 			
-			if ( url.search( /wmts/i ) > -1 && false )
-			{
-				/*
-				var projection = view.getProjection(); //ol.proj.get('EPSG:25832'); //3857 //4326 //900913 EPSG:25832
-				var projectionExtent = projection.getExtent();
-				var size = ol.extent.getWidth(projectionExtent) / 256;
-				var resolutions = new Array(14);
-				var matrixIds = new Array(14);
-				for (var z = 0; z < 14; ++z) {
-				  // generate resolutions and matrixIds arrays for this WMTS
-				  resolutions[z] = size / Math.pow(2, z);
-				  matrixIds[z] = z;
+			source = new ol.source.ImageWMS
+			(
+				{
+					url: url,
+					params:
+					{
+						"LAYERS":		layerName,
+						"FORMAT":		"image/png",
+						"TRANSPARENT":	"true",
+						"VERSION":		"1.1.1"
+					},
+					serverType: "mapserver"
 				}
-	  
-				source = new ol.source.WMTS
-				(
-					{
-						url: url,
-						params:
-						{
-							"LAYER":		layerName,
-							"FORMAT":		"image/png",
-							"TRANSPARENT":	"true",
-							"VERSION":		"1.1.1"
-						},
-						layer: layerName,
-						format: 'image/png',
-						matrixSet: "UTM32", //'g',
-						tileGrid: new ol.tilegrid.WMTS({
-							origin: ol.extent.getTopLeft(projectionExtent),
-							resolutions: resolutions,
-							matrixIds: matrixIds
-						  })
-					}
-				);
-				*/
-			}
-			else
-			{
-				//source = new ol.source.TileWMS
-				source = new ol.source.ImageWMS
-				(
-					{
-						url: url,
-						params:
-						{
-							"LAYERS":		layerName,
-							"FORMAT":		"image/png",
-							"TRANSPARENT":	"true",
-							"VERSION":		"1.1.1"
-						},
-						serverType: "mapserver"
-					}
-				);
-			}
+			);
 	
-			//var layer = new ol.layer.Tile
-			var layer = new ol.layer.Image
+			return new ol.layer.Image
 			(
 				{
 					source:	source,
 					zIndex: index,
 					opacity: opacity ? opacity : netgis.config.MAP_DEFAULT_OPACITY //NOTE: should be obsolete, default passed in anyway
 				}
-			);
-
-			return layer;
+			);;
 		};
 		
 		var setBackgroundLayer = function( url, layerName )
 		{
-			//TODO: remove old background layer if exists
-			
-			//console.info( "BG:", url, layerName );
-			
 			map.addLayer( createLayerWms( url, layerName, 0, netgis.config.MAP_DEFAULT_OPACITY ) );
 		};
 		
@@ -819,7 +765,6 @@ netgis.map =
 		
 		var formatLength = function( lineGeom )
 		{
-			//var length = ol.Sphere.getLength( lineGeom );
 			var length = lineGeom.getLength();
 			var output;
 			
@@ -833,7 +778,6 @@ netgis.map =
 		
 		var formatArea = function( polyGeom )
 		{
-			//var area = ol.Sphere.getArea( polyGeom );
 			var area = polyGeom.getArea();
 			var output;
 			
@@ -851,7 +795,6 @@ netgis.map =
 			measureElement.hide();
 		};
 		
-		//TODO: testing
 		var update = function()
 		{
 			// Clear
@@ -1015,8 +958,6 @@ netgis.map =
 			{
 				var feature = features[ f ];
 				
-				//TODO: use html template
-							
 				var panelId = "popup-panel-feature-" + f;
 
 				var content = "<p></p>";
@@ -1040,14 +981,11 @@ netgis.map =
 				var element = $( content );
 				element.find( ".panel-heading" ).click( function() { element.find( "#" + panelId ).collapse( "toggle" ); } );
 
-				//popupContent.append( element );
 				netgis.menu.addSideContent( element );
 			}
 			
 			// WMS Feature Info
 			var layers = netgis.entities.get( [ netgis.component.Layer, netgis.component.Active, netgis.component.Queryable ] );
-			
-			//console.info( "QUERY:", layers );
 			
 			$.each
 			(
@@ -1071,14 +1009,10 @@ netgis.map =
 				
 						if ( url )
 						{
-							//TODO: use html template
-							
 							var panelId = "popup-panel-" + key;
 							
 							var content = "<p></p>";
-							
 							content += "<div class='panel panel-primary'>";
-
 							content += "<div class='panel-heading clickable' data-toggle='collapse' data-target='#" + panelId + "'>";
 							content += "<h4 class='panel-title'>" + layer.components.title.value + "<span class='pull-right glyphicon glyphicon-share' title='In neuem Tab öffnen'></span></h4>";
 							content += "</div>";
@@ -1090,13 +1024,10 @@ netgis.map =
 
 							content += "<div id='" + panelId + "' class='panel-collapse collapse'>";
 							content += "<div class='panel-body'>";
-							//content += "<iframe seamless width='280' height='100' src='" + frame_url + "'></iframe>";
 							content += "<iframe seamless width='280' src='" + frame_url + "'></iframe>";
 							content += "</div>";
 							content += "</div>";
-
 							content += "</div>";
-							
 							content += "</div>";
 							
 							var element = $( content );
@@ -1112,7 +1043,6 @@ netgis.map =
 								}
 							);
 							
-							//popupContent.append( element );
 							netgis.menu.addSideContent( element );
 						}
 					}
@@ -1137,25 +1067,20 @@ netgis.map =
 					var content = "<p></p>";
 
 					content += "<div class='panel panel-primary'>";
-
 					content += "<div class='panel-heading clickable' data-toggle='collapse' data-target='#" + panelId + "'>";
 					content += "<h4 class='panel-title'>" + "Digitales Höhenmodell" + "</h4>";
 					content += "</div>";
-
 					content += "<div id='" + panelId + "' class='panel-collapse collapse'>";
 					content += "<div class='panel-body'>";
 					content += data;
 					content += "</div>";
 					content += "</div>";
-
 					content += "</div>";
-
 					content += "</div>";
 
 					var element = $( content );
 					element.find( ".panel-heading" ).click( function() { element.find( "#" + panelId ).collapse( "toggle" ); } );
 
-					//popupContent.append( element );
 					netgis.menu.addSideContent( element );
 				}
 			);
@@ -1163,11 +1088,6 @@ netgis.map =
 			// Show Popup
 			popupContainer.fadeIn( 200 );
 			popupOverlay.setPosition( event.coordinate );
-			
-			//TODO: use showPopup method
-			
-			// Go back to pan mode
-			//if ( ! netgis.sidebar.isVisible() ) pan();
 		};
 		
 		var onDigitizeClick = function( evt )
@@ -1205,8 +1125,6 @@ netgis.map =
 		
 		var onFeatureInfoResponse = function( data, layer )
 		{
-			//console.info( "FEATURE INFO:", data );
-			
 			popupContent.append( data );
 		};
 		
@@ -1348,12 +1266,6 @@ netgis.map =
 						}
 					);
 			
-					/*features = mapLayer.getSource().getFeatures();
-					for ( var f = 0; f < features.length; f++ )
-					{
-						features[ f ].set( "title", "GeoRSS-Objekt" );
-					}*/
-			
 					georss.set( new netgis.component.MapLayer( mapLayer ) );
 				}
 				
@@ -1411,8 +1323,6 @@ netgis.map =
 						var parent = null;
 						var url = layer.components.url ? layer.components.url.value : null; //null;
 						
-						//if ( url ) console.info( "URL LAYER:", layer );
-
 						do
 						{
 							parent = child.components.parent ? child.components.parent.value : null;
@@ -1430,10 +1340,8 @@ netgis.map =
 						
 						var opacity = layer.components.opacity ? layer.components.opacity.value : netgis.config.MAP_DEFAULT_OPACITY;
 
-						//TODO: layer list deprecated because of map layer component?
 						var mapLayer = layerList[ layer.id ] = createLayerWms( url, name, index, opacity );
 
-						//TODO: create only layers without children (non-groups)
 						layer.set( new netgis.component.MapLayer( mapLayer ) );
 					}
 				}
@@ -1443,8 +1351,6 @@ netgis.map =
 		var onLayerToggle = function( params )
 		{		   
 			var layer = netgis.entities.get( params.id );
-			
-			//console.info( "LAYER:", layer, layer.get( netgis.component.MapLayer ) );
 			
 			var mapLayer = layer.get( netgis.component.MapLayer ); //.value; //layerList[ layer.id ]
 			
@@ -1467,10 +1373,6 @@ netgis.map =
 		
 		var onLayerRemove = function( event )
 		{
-			//var exists = map.getLayers().getArray().indexOf( layerList[ event.id ] ) > -1 ? true : false;
-			
-			//if ( exists === true ) map.removeLayer( layerList[ event.id ] );
-			
 			var mapLayer = netgis.entities.get( event.id ).components.maplayer;
 			
 			if ( mapLayer ) map.removeLayer( mapLayer.value );
@@ -1543,8 +1445,6 @@ netgis.map =
 			{
 				mapLayer.setZIndex( targetIndex );
 				targetLayer.setZIndex( index );
-
-				//console.info( "MOVE DOWN:", index, targetIndex );
 			}
 		};
 		
@@ -1574,8 +1474,6 @@ netgis.map =
 				map.addOverlay( positionOverlay );
 			else
 				map.removeOverlay( positionOverlay );
-			
-			//geolocation.setTracking( positionActive );
 			
 			if ( positionActive )
 			{
@@ -1636,11 +1534,7 @@ netgis.map =
 		var onMeasureEnd = function( event )
 		{
 			measureFeature = null;
-			
 			ol.Observable.unByKey( measureListener );
-			
-			//measureOverlay.setOffset( [ 0, 0 ] );
-			//measureElement.hide();
 			measureClose.show();
 		};
 		
