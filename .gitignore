@@ -3,7 +3,6 @@
 conf/.env.php
 conf/linkedDataProxy.json
 conf/mobilemap2.conf
-composer.json
 http/geoportal/preview/*.jpg
 http/img/altitude_profile/
 http/tmp/
