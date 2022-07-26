@@ -517,7 +517,12 @@ netgis.map =
 		
 		var viewFull = function()
 		{
-			viewExtent( 174681, 5417732, 585042, 5654678 );
+			const full_extend = netgis.config.MAP_EXTENT;
+			const full_extend_minx = full_extend[0];
+			const full_extend_miny = full_extend[1];
+			const full_extend_maxx = full_extend[2];
+			const full_extend_maxy = full_extend[3];
+			viewExtent(full_extend_minx, full_extend_miny, full_extend_maxx, full_extend_maxy);
 		};
 		
 		var viewExtent = function( minx, miny, maxx, maxy, isLonLat )
