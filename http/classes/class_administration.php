@@ -2155,10 +2155,18 @@ SQL;
 				}
 				break;
 			case "file":
-				return unlink($filename);
+			    if ($hashLocalFilename){
+			        return unlink(md5($filename));
+			    } else {
+			        return unlink($filename);
+			    }
 				break;
 			default:
-				return unlink($filename);
+			    if ($hashLocalFilename){
+			        return unlink(md5($filename));
+			    } else {
+			        return unlink($filename);
+			    }
 				break;
 		}
 	}
@@ -2214,10 +2222,18 @@ SQL;
 				}
 			break;
 			case "file":
-				file_put_contents($filename, $content);
+			    if ($hashLocalFilename){
+			        file_put_contents(md5($filename), $content);
+			    } else {
+			        file_put_contents($filename, $content);
+			    }
 			break;
 			default:
-				file_put_contents($filename, $content);
+			    if ($hashLocalFilename){
+			        file_put_contents(md5($filename), $content);
+			    } else {
+			        file_put_contents($filename, $content);
+			    }
 			break;
 		}
 	}
@@ -2248,7 +2264,6 @@ SQL;
 				}
 				new mb_notice("content via memcacheD");
 				$content = $memcached_obj->get($filename);
-				//$memcached_obj->quit();
 				return $content;
 			break;
 			case "cache":
@@ -2262,11 +2277,19 @@ SQL;
 				}
 			break;
 			case "file":
-				$content = file_get_contents($filename);
+			    if ($hashLocalFilename){
+			        $content = file_get_contents(md5($filename));
+			    } else {
+			        $content = file_get_contents($filename);
+			    }
 				return $content;
 			break;
 			default:
-				$content = file_get_contents($filename);
+			    if ($hashLocalFilename){
+			        $content = file_get_contents(md5($filename));
+			    } else {
+			        $content = file_get_contents($filename);
+			    }
 				return $content;
 			break;
 		}
