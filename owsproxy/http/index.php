@@ -138,7 +138,6 @@ if (defined("OWSPROXY_ALLOW_SESSION_GRABBING") && OWSPROXY_ALLOW_SESSION_GRABBIN
         if ($existSession && $currentSession !== $_REQUEST["sid"]) {
             //there is a current session for the requested url
             $e = new mb_notice("A current session exists for this url and will be used!");
-            //$oldsessionId = session_id();
             $tmpSession = session_id();
             //do the following only, if a user is in this session - maybe it is a session which was generated from an external application and therefor it is empty!
             //grab session, cause it is allowed
@@ -177,13 +176,6 @@ if (session_id() !== $_REQUEST["sid"]) {
 } else {
     $e = new mb_notice("Current session_id() identical to requested SID!");
 }
-//this is the request which may have been redirected
-//check for given user session with user_id which can be tested against the authorization
-/* $foundUserId = Mapbender::session()->get('mb_user_id');
-  $e = new mb_exception("Found user id: ".$foundUserId ." of type: ".gettype($foundUserId));
-  $foundUserId = (integer)$_SESSION['mb_user_id'];
-  $e = new mb_exception("Found user id: ".$foundUserId ." of type: ".gettype($foundUserId));
-  $foundUserId = getUserFromSession(); */
 
 if (getUserFromSession() == false || getUserFromSession() <= 0) {
     //Define the session to be temporary - it should be deleted afterwards, cause there is no user in it! This file can be deleted after the request was more or less successful. It will be generated every time again.
@@ -207,13 +199,6 @@ if (getUserFromSession() == false || getUserFromSession() <= 0) {
         unset($tmpSession);
         die();
     }
-} else {
-    /* $e = new mb_exception("mb_user_id found in session: ".getUserFromSession());
-      if (isset($tmpSession)) {
-      $e = new mb_exception("tmpSessionFile: exists! - It was set before grabbing!");
-      } else {
-      $e = new mb_exception("tmpSessionFile: does not exist!");
-      } */
 }
 //start the session to be able to write urls to it - for 
 session_start(); //maybe it was started by globalSettings.php
@@ -321,11 +306,6 @@ switch (strtolower($reqParams['request'])) {
             $log_id = $n->logWmsGFIProxyRequest($arrayOnlineresources['wms_id'], $userId, $request,
                 $price);
         }
-        /*if (isset($auth)) {
-            getFeatureInfo($log_id, $request, $auth);
-        } else {
-            getFeatureInfo($log_id, $request);
-        }*/
         if(!defined("SPATIAL_SECURITY") || (defined("SPATIAL_SECURITY") && SPATIAL_SECURITY == false) || $arrayOnlineresources["wms_spatial_security"] == "f") {
         	if(isset($auth)){
         		getFeatureInfo($log_id, $request, $auth);
@@ -374,7 +354,6 @@ switch (strtolower($reqParams['request'])) {
         //Following is only needed for high quality print and is vendor specific for mapservers mapfiles!
         if (defined("OWSPROXY_SUPPORT_HQ_PRINTING") && OWSPROXY_SUPPORT_HQ_PRINTING) {
             //if url has integrated mapfile - exchange it
-            //$e = new mb_notice("owsproxy/http/index.php: OWSPROXY_SUPPORT_HQ_PRINTING is set");
             if ($reqParams['mapbenderhighqualityprint'] === "true") {
                 //exchange mapfiles with high quality ones
                 $request = preg_replace("/\.map/", "_4.map", $query->getRequest());
@@ -384,18 +363,6 @@ switch (strtolower($reqParams['request'])) {
         } else {
             $request = $query->getRequest();
         }
-        // Ergaenzungen secured UMN Requests
-        /*//log proxy requests
-        if ($n->getWmsLogTag($arrayOnlineresources['wms_id']) == 1) {#do log to db
-            #get price out of db
-            $price = intval($n->getWmsPrice($arrayOnlineresources['wms_id']));
-            $log_id = $n->logFullWmsProxyRequest($arrayOnlineresources['wms_id'], $userId, $request, $price, 0);
-        }
-        if (isset($auth)) {
-            getImage($log_id, $request, $auth);
-        } else {
-            getImage($log_id, $request);
-        }*/
         if(!defined("SPATIAL_SECURITY") || (defined("SPATIAL_SECURITY") && SPATIAL_SECURITY == false) || $arrayOnlineresources["wms_spatial_security"] == "f") {
         	new mb_notice("dont restrict spatially!");
         	//log proxy requests
@@ -648,7 +615,6 @@ function responseImage($im)
         imagepng($im);
     } else {
         $format = $reqParams['format'];
-        //$format = "image/gif";
         if ($format == 'image/png') {
             header("Content-Type: image/png");
         }
@@ -931,9 +897,7 @@ function matchUrls($content)
 function setExternalRequest($id)
 {
     global $reqParams, $query;
-//	$extReq = "http://".$_SESSION['HTTP_HOST'] ."/owsproxy/". $reqParams['sid'] ."/".$id."?request=external";
-    $extReq = OWSPROXY . "/" . $reqParams['sid'] . "/" . $id . "?request=external";
-    return $extReq;
+    return OWSPROXY . "/" . $reqParams['sid'] . "/" . $id . "?request=external";
 }
 
 function getExternalRequest($id)
@@ -952,9 +916,7 @@ function getExternalRequest($id)
             		header('Pragma: private');
             		header('Cache-control: private, must-revalidate');
            		header("Content-Type: " . $metainfo['Content-Type']);
-            		//$content = getDocumentContent(false, $cUrl, headers_list());
 			$content = getDocumentContent(false, $cUrl, $metainfo);
-            		#$content = matchUrls($content);			
         	} else {
 			$e = new mb_exception("owsproxy/http/index.php: No key found for this URL in session!");
 		}
@@ -1361,18 +1323,13 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
 	    //check POST/GET
 	    if ($query->reqMethod !== 'POST') {
             if ($auth) { //new for HTTP Authentication
-                #$d = new connector($url, $auth);
                 $d->load($url, $auth);
             } else {
-                #$d = new connector($url);
                 $d->load($url);
             }
 	    } else {
-	        #$d = new connector();
 	        $d->set('httpType','POST');
-	        //$d->set('curlSendCustomHeaders',true);
 	        $d->set('httpPostData', $query->getPostQueryString());//as array
-	        //$d->set('httpContentType','text/xml');
 	        //TODO maybe delete some params from querystring which are already in post array
             if ($auth) { //new for HTTP Authentication
                 $d->load($url, $auth);
@@ -1395,7 +1352,7 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
         $content = $postInterfaceObject->file;
     }
     $endTime = microtime();
-    //$e = new mb_exception("owsproxy/http/index.php: Time for getting remote resource: ".(string)($endTime - $startTime));
+
     if (strtoupper($reqParams["request"]) == "GETMAP") { // getmap
         $pattern_exc = '~EXCEPTION~i';
         preg_match($pattern_exc, $content, $exception);
@@ -1414,8 +1371,6 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
         } else {
             $source = new Imagick();
             $source->readImageBlob($content);
-            /*header("Content-Type: " . $reqParams['format']);
-            echo $content;*/
             if ($mask !== null && $mask != false) {
             	new mb_notice("spatial security: applying mask");
             	$source->compositeImage($mask, Imagick::COMPOSITE_DSTIN, 0, 0, Imagick::CHANNEL_ALPHA);
@@ -1428,10 +1383,7 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
             echo $source->getImageBlob();
         }
         return true;
-    } else if (strtoupper($reqParams["request"]) == "GETFEATUREINFO") { // getmap
-//		header("Content-Type: ".$reqParams['info_format']);
-//		$content = matchUrls($content);
-//		echo $content;
+    } else if (strtoupper($reqParams["request"]) == "GETFEATUREINFO") {
         $pattern_exc = '~EXCEPTION~i';
         preg_match($pattern_exc, $content, $exception);
         if (!$content) {
@@ -1475,7 +1427,6 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
 		    //TODO give error message
 	    }
 	    if ($featureCollectionXml !== false) {
-		    //$featureCollectionXml->registerXPathNamespace("gmd", "http://www.isotc211.org/2005/gmd");
 		    $featureCollectionXml->registerXPathNamespace("ogc", "http://www.opengis.net/ogc");
 		    if ($reqParams["version"] == '2.0.0' || $reqParams["version"] == '2.0.2') {
 			    $featureCollectionXml->registerXPathNamespace("wfs", "http://www.opengis.net/wfs/2.0");
@@ -1521,7 +1472,6 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
 			    header($header);
 		    } else {
 	    	    //define header as requested outputFormat of wfs - only a workaround!
-	    		//$e = new mb_exception('http_auth/http/index.php: requested outputFormat: '.$reqParams['outputformat']);
 	    		if ($reqParams['outputformat'] != false) {
 	    	        header("Content-Type: ".$reqParams['outputformat']);
 	    	        switch($reqParams['outputformat']) {
@@ -1549,16 +1499,11 @@ function getUserFromSession()
     if (Mapbender::session()->get('mb_user_id')) {
         if ((integer) Mapbender::session()->get('mb_user_id') >= 0) {
             $foundUserId = (integer) Mapbender::session()->get('mb_user_id');
-            //$e = new mb_exception("user id: ".$foundUserId." found in session");
         } else {
             $foundUserId = false;
-            //$e = new mb_exception("user id not found or not casted to integer");
-            //$e = new mb_exception("Newly initialized session - no logged in mapbender user for this session!");
         }
     } else {
         $foundUserId = false;
-        //$e = new mb_exception("user id not found or not casted to integer");
-        //$e = new mb_exception("Newly initialized session - no logged in mapbender user for this session!");
     }
     return $foundUserId;
 }
@@ -1571,7 +1516,6 @@ function getVariableUsage($var) {
 
 //function to remove one complete get param out of the query
 function delTotalFromQuery($paramName,$queryString) {
-	//echo $paramName ."<br>";
 	$queryString = "&".$queryString;
 	if ($paramName == "searchText") {
 			$str2exchange = "searchText=*&";
