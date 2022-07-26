@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS mapbender.wms_search_table_tmp;
 SELECT * INTO mapbender.wms_search_table_tmp FROM mapbender.search_wms_view;
 DROP TABLE IF EXISTS mapbender.wms_search_table;
 ALTER TABLE mapbender.wms_search_table_tmp RENAME TO wms_search_table;
+UPDATE wms_search_table SET load_count=0 WHERE load_count is NULL;
 CREATE INDEX gist_wst_the_geom ON wms_search_table USING gist (the_geom);
 CREATE INDEX idx_wst_department ON wms_search_table USING btree (department);
 CREATE INDEX idx_wst_md_topic_cats ON wms_search_table USING btree (md_topic_cats);
