@@ -183,11 +183,16 @@ select service_id, resource_id, resource_name, service_uuid, resource_type, fkey
 			switch ($row['resource_type']) {		
 				case "wfs":
 					$serviceIdIndex = false;
+					$wfsRequestObjectExists = false;
 					//check existing options - maybe some option for a wfs already exists 
 					for ($k = 0; $k < count($downloadOptions->{$idList[$i]}->option); $k++) {
 						if ($row['service_id'] == $downloadOptions->{$idList[$i]}->option[$k]->serviceId && $downloadOptions->{$idList[$i]}->option[$k]->serviceSubType != "REST") {
 							$serviceIdIndex = $k;
 						} 
+						if ($downloadOptions->{$idList[$i]}->option[$k]->type === "wfsrequest")
+						{
+							$wfsRequestObjectExists = true;
+						}
 					}
 					if ($serviceIdIndex !== false) {
 						//echo "Add featuretype to given service: ".$serviceIdIndex."<br>";
@@ -196,7 +201,9 @@ select service_id, resource_id, resource_name, service_uuid, resource_type, fkey
 						$m = count($downloadOptions->{$idList[$i]}->option[$serviceIdIndex]->featureType);
 						$downloadOptions->{$idList[$i]}->option[$serviceIdIndex]->featureType[$m] = $row['resource_id'];
 						$downloadOptions->{$idList[$i]}->option[$serviceIdIndex]->featureType[$m]->name = $row['resource_name'];
-					} else {
+					} 
+					if (!$wfsRequestObjectExists) 
+					{
 						$downloadOptions->{$idList[$i]}->option[$j]->type = "wfsrequest";
 						$downloadOptions->{$idList[$i]}->option[$j]->serviceId = $row['service_id'];
 						$downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = $row['service_uuid'];
@@ -214,7 +221,7 @@ select service_id, resource_id, resource_name, service_uuid, resource_type, fkey
 					}
 					$downloadOptions->{$idList[$i]}->title = $row['title'];
 					$downloadOptions->{$idList[$i]}->uuid = $idList[$i];
-				break;
+					break;
 				case "layer":
 					if (!isset($row['datalink'] ) || $row['datalink'] == '') {
 						$downloadOptions->{$idList[$i]}->option[$j]->type = "wmslayergetmap";
