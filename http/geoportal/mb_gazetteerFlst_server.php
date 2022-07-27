@@ -34,12 +34,12 @@ if (!in_array($command, $checkCommand)) {
 
 $json = new Mapbender_JSON();
 
-function getGeoJson($featureType, $filter, $srs)
+function getGeoJson($featureType, $filter, $srs = null)
 {
     global $wfsUrl, $nameSpace, $authUserName, $authUserPassword;
     $admin = new administration();
 
-    if ($srs == NULL) {
+    if ($srs == null) {
         $wfsUrl = $wfsUrl . "&NAMESPACE=" . $nameSpace . "&username=" . $authUserName . "&password=" . $authUserPassword . "&typeName=" . $featureType . "&filter=";
     } else {
         $wfsUrl = $wfsUrl . "&NAMESPACE=" . $nameSpace . "&username=" . $authUserName . "&password=" . $authUserPassword . "&typeName=" . $featureType . "&srsName=" . $srs . "&filter=";
@@ -50,7 +50,6 @@ function getGeoJson($featureType, $filter, $srs)
 
     header("Content-type:application/x-json; charset=utf-8");
     $geoJson = $mygml->toGeoJSON();
-
     $jsonObj = json_decode($geoJson);
     return $jsonObj;
 }
