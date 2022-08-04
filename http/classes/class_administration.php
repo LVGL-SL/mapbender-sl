@@ -2115,7 +2115,7 @@ SQL;
 		}
 	}
 
-	function delFromStorage($filename, $cacheType) {
+	function delFromStorage($filename, $cacheType, $hashLocalFilename=false) {
 		switch ($cacheType) {
 			case "memcache":
 				$filename = md5($filename);
@@ -2170,7 +2170,7 @@ SQL;
 				break;
 		}
 	}
-	function putToStorage($filename, $content, $cacheType, $maxAge) {
+	function putToStorage($filename, $content, $cacheType, $maxAge, $hashLocalFilename=false) {
 		switch ($cacheType) {
 			case "memcache":
 				$filename = md5($filename);
@@ -2238,7 +2238,7 @@ SQL;
 		}
 	}
 
-	function getFromStorage($filename, $cacheType) {
+	function getFromStorage($filename, $cacheType, $hashLocalFilename=false) {
 		switch ($cacheType) {
 			case "memcache":
 				$filename = md5($filename);
