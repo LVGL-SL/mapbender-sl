@@ -170,7 +170,7 @@ $.widget("mapbender.mb_hohe", {
 		Es liegen neue Punkte vom Server vor.
 		die werden an pointadded ( -> updateJsonArray, mb_widget_hohe) übergeben
 		
-		Wenn die Message kommt "Bitte zum Anzeigen über die Karte fahren",
+		Wenn die Message kommt "Bitte zum Anzeigen Anzeigen über die Karte fahren",
 		wird durch die Mausbewegung dieses if ausgeführt
 		
 		*/
@@ -286,30 +286,70 @@ $.widget("mapbender.mb_hohe", {
 				alert('Es ist ein Fehler aufgetreten. Bitte Zeichnen Sie die Strecke neu.');
 		}
 
-		var myJsonString = JSON.stringify(sende);
-		// actual save request
-		var req = new Mapbender.Ajax.Request({
-			url: "../plugins/mb_hohe_weiterleitung.php",
-			method: "getheigth",
-			parameters: {
-				stringxyz: myJsonString
-			},
-			callback: this._mycallback
-		});
-		req.send();
-	},
+		var myJsonString = JSON.stringify(sende);	
+		
+		
+		
+	
+var div = document.createElement('div');
+div.setAttribute('style', 'z-index: 100;position: absolute;');
+var img = document.createElement('img');
+img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg width="'+document.body.clientWidth +'" height="'+document.body.clientHeight +'" viewBox="'+ (- document.body.clientWidth/2) +' '+ 60 +' '+document.body.clientWidth +' '+document.body.clientHeight +'" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="40" width="60" height="80" opacity="1"><animate id="a" begin="0;b.end-0.25s" attributeName="opacity" dur="0.75s" values="1;.2" fill="freeze"/></rect><rect x="90" y="40" width="60" height="80" opacity=".4"><animate begin="a.begin+0.15s" attributeName="opacity" dur="0.75s" values="1;.2" fill="freeze"/></rect><rect x="170" y="40" width="60" height="80" opacity=".3"><animate id="b" begin="a.begin+0.3s" attributeName="opacity" dur="0.75s" values="1;.2" fill="freeze"/></rect></svg>');
+div.append(img);
+document.body.append(div);	
+	
+var data = new FormData()
+data.append('action', 'getheigth')
+data.append('stringxyz', myJsonString )
 
-	_mycallback: function (result, status, message) {
-		var arr = JSON.parse(message);
+this._fetchdata(data,div);	
+		
+		
+		
+},
+	
+
+ _fetchdata : async function (data,div)  { 
+ 
+	
+ const response = await fetch('../plugins/mb_hohe_weiterleitung.php',{
+	 method : 'POST',	
+	 body: data, 
+	  
+ });
+ 
+
+ 
+const re = await response.text();
+
+ 
+ var arr = JSON.parse(re);
 		var s = JSON.stringify(arr);
 
 		for (var i = 0; i < jsonPoints.length; i++) {
 			jsonPoints[i].hoehe = arr[(3 * i) + 2];
 		}
+		
 		paintPoints = true;
-		alert('Diagramm erstellt.\nZum Anzeigen, die Maus ueber das Kartenfenster bewegen');
-	},
-
+		div.remove();
+		
+		uebergeben = true;
+        var l = jsonPoints.length;
+		
+			for (var i = 0; i < l; i++)
+				this._trigger("pointadded", null, jsonPoints[i]);
+			this._trigger("update", null, -1);
+			
+			
+			this._draw(undefined, {
+			not_clicked: true
+		});
+ 
+ 
+  return  re;
+},
+		
+	
 	/*
 	Diese Funktion fügt Punkte zwischen zwei Stuetzpunkten (geklickten) p1 und p2 ein.
 	p1 gehört dazu.
@@ -514,8 +554,24 @@ $.widget("mapbender.mb_hohe", {
 			"z-index": 1000,
 			"position": "absolute"
 		}).appendTo(this.element);
+		
+		
+		
+	
+		
+		
+
+
+	
 		this._canvas = Raphael(this._$canvas.get(0), this._map.getWidth(), this._map.getHeight());
 		mb_registerPanSubElement($(this._canvas.canvas).parent().get(0));
+		
+		
+ 		
+				
+
+
+
 	},
 
 	// the measured geometry will be available, the events will be deleted

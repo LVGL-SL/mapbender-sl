@@ -14,6 +14,7 @@ var MeasureApi = function (o) {
 			?></div></div>",
 		informationHtml =
                         "<canvas id='can' width='630' height='250'></canvas>";
+	
 
 	var jsonarray = [];		  
         
@@ -86,12 +87,15 @@ var MeasureApi = function (o) {
                  
                  if(data == -1)
                  {
+	
+				   ctx.clearRect(0, 0, 630, 250);
                    prep_json(jsonarray);
                    
                    draw_lineII();
                    draw_Points(data);
                    draw_stuetzpunkte();
                    koordinaten_system_zeichnen(hoehe_min,hoehe_max,gesamt_laenge);
+				   				
                  }
                  else if (data == -2)
                  {
@@ -150,7 +154,9 @@ var MeasureApi = function (o) {
 		}
 
 		measureDialog.dialog("open");
-                setText("Sie koennen mit Klicken eine Strecke in die Kartei zeichnen. Beim letzten Punkt bitte ein Doppelklick.");
+                setText();
+				
+				
 	};
 
 	this.destroy = function () {
@@ -210,7 +216,6 @@ var color_coord_garnicht = '#A3ABA7';
 var line_100 = '#333333';
 var c = document.getElementById("can");
 var ctx = c.getContext("2d");
-
 
 
 
@@ -381,6 +386,7 @@ sie werden hier hervorgehoben gezeicnet.
 
     var draw_stuetzpunkte = function() {
 
+
         ctx.fillStyle = "#888888";
         for(var i = 0;i< points_count; i++)
            if(points[i].stuetzpunkt)
@@ -443,6 +449,8 @@ am Schluss zur Grundlinie hinunterheichnen und mit 0 Punkt verbinden -> cosePath
         ctx.lineWidth = 0.1;
         ctx.strokeStyle = color_coord;
         ctx.stroke(); 
+		
+		
 }
 /*
 neu 27.01.2020
@@ -514,13 +522,24 @@ er wird farblich gezeichnet je nach dem ob die zwei Punkte in der BBox sind oder
 
     }
 
-    var setText = function(t) {
+    var setText = function() {	
+		
+		
+		
+
+
+
+
         ctx.font = "12px Arial";
 
         ctx.clearRect(0, 0, 600, 250);
-        ctx.fillText(t,9,15);
+        ctx.fillText("Sie koennen mit Klicken eine Strecke in die Kartei zeichnen. Beim letzten Punkt bitte ein Doppelklick.",9,15);
+		ctx.fillText("Nach dem Erstellen koennen Sie ueber die Strecke fahren und bekommen die Hoehe angezeigt.",9,30);
         draw_stuetzpunkte();
-    }
+    	
+		
+		
+	}
 
 };
 $measure.mapbender(new MeasureApi(options));
