@@ -1143,6 +1143,10 @@ netgis.map =
 				
 				map.addLayer( markerLayer );
 				map.addLayer( measureLayer );
+				
+				// Background Layers (new)
+                createBackgroundLayers();
+				
 			}
 			else
 			{
