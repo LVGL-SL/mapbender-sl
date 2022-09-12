@@ -132,7 +132,7 @@ netgis.map =
 						{
 							extent: extent,
 							origin: [ extent[ 0 ], extent[ 1 ] ],
-							resolutions: resolutions
+							resolutions: netgis.config.HYBRID_RESOLUTIONS
 						}
 					),
 					tileUrlFunction: function( zxy )

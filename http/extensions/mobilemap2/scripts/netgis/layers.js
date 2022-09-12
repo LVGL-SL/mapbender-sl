@@ -193,6 +193,8 @@ netgis.layers =
 		{
 			// WMC Extent
 			var bbox = data.wmc.bbox;
+			// if reset Modern Client and call Mobile Client no BBox is given
+			if (bbox === ",,,") bbox = netgis.config.MAP_EXTENT_STRING;
 			
 			if ( bbox )
 			{

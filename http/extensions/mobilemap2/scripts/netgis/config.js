@@ -41,6 +41,9 @@ netgis.config =
 	/** Map extent (min x, min y, max x, max y). */
 	MAP_EXTENT:				[ 296000, 5440000, 387000, 5500000 ],
 	
+	/** if reset Modern Client and call Mobile Client no BBox is given */
+	MAP_EXTENT_STRING: "273299.735097,5440730.0440917,419078.264903,5502339.9559083",
+	
 	/** Default map layer opacity (0.0 - 1.0). */
 	MAP_DEFAULT_OPACITY:	0.8,
 	
