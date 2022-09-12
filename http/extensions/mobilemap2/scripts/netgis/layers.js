@@ -241,28 +241,31 @@ netgis.layers =
 			// Map Layers
 			var ids = [];
 
-			for ( var l = 0; l < data.layerList.length; l++ )
+			if ('layerList' in data)
 			{
-				var layer = data.layerList[ l ];
-				
-				ids.push( layer.layerId );
-				
-				// Layer Entity
-				var entity = netgis.entities.create
-				(
-					[
-						new netgis.component.Layer( parseInt( layer.layerId ) ), //NOTE: assuming layer id as integer
-						new netgis.component.Position( layer.layerPos )
-					]
-				);
-		
-				// Set active from WMC
-				if ( layer.active === true )
-					entity.set( new netgis.component.Active() );
-				
-				if ( layer.opacity )
-					entity.set( new netgis.component.Opacity( parseFloat( layer.opacity ) * 0.01 ) );
-				
+				for ( var l = 0; l < data.layerList.length; l++ )
+				{
+					var layer = data.layerList[ l ];
+					
+					ids.push( layer.layerId );
+					
+					// Layer Entity
+					var entity = netgis.entities.create
+					(
+						[
+							new netgis.component.Layer( parseInt( layer.layerId ) ), //NOTE: assuming layer id as integer
+							new netgis.component.Position( layer.layerPos )
+						]
+					);
+			
+					// Set active from WMC
+					if ( layer.active === true )
+						entity.set( new netgis.component.Active() );
+					
+					if ( layer.opacity )
+						entity.set( new netgis.component.Opacity( parseFloat( layer.opacity ) * 0.01 ) );
+					
+				}
 			}
 			
 			requestLayers( ids );

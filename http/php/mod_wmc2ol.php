@@ -17,6 +17,8 @@ require_once(dirname(__FILE__)."/../../core/globalSettings.php");
 require_once(dirname(__FILE__)."/../classes/class_user.php");
 require_once(dirname(__FILE__)."/../classes/class_administration.php");
 
+DEFINE("OPEN_LAYER_NAMESPACE", "http://www.mapbender.org/context");
+
 $user = new User();
 $admin = new administration();
 $userId = $user->id;
@@ -238,7 +240,7 @@ function createOlFromWMC_id($wmc_id, $pointRadius, $fillColor){
 	$someLayerQueryable=false;
 	for ($i=0; $i<count($layer_array); $i++) {
 		$html.="var layer".$i.";\n";
-		$mb_extensions=$xml->LayerList->Layer[$i]->Extension->children('https://geoportal.saarland.de');
+		$mb_extensions=$xml->LayerList->Layer[$i]->Extension->children(OPEN_LAYER_NAMESPACE);
 		$layer_array_queryable[$i]=$mb_extensions->querylayer;
 		if (($layer_array_queryable[$i]=='1') and ($xml->LayerList->Layer[$i]->attributes()->hidden=='0') and ($mb_extensions->layer_parent!='')){
 			$someLayerQueryable=true;
@@ -373,7 +375,7 @@ function createOlFromWMC_id($wmc_id, $pointRadius, $fillColor){
 		}
 		$i = $firstLayerId;
 		$html.="	layer0 = new OpenLayers.Layer.WMS( \"".str_replace("'","",str_replace('"','',$xml->LayerList->Layer[$i]->Title))."\",\n";
-		$extensions=$xml->LayerList->Layer[$i]->Extension->children('https://geoportal.saarland.de');
+		$extensions=$xml->LayerList->Layer[$i]->Extension->children(OPEN_LAYER_NAMESPACE);
 		$layer_id=dom_import_simplexml($extensions->layer_id)->nodeValue;
 		$layer_name=$xml->LayerList->Layer[$i]->Name;
 		$wms_id=dom_import_simplexml($extensions->wms_id)->nodeValue;
@@ -441,7 +443,7 @@ function createOlFromWMC_id($wmc_id, $pointRadius, $fillColor){
 	//create the overlay layers for which the user guest has permissions
 	$startLayerId = $firstLayerId+1;
 	for ($i=$startLayerId; $i<count($layer_array); $i++) {
-		$extensions=$xml->LayerList->Layer[$i]->Extension->children('https://geoportal.saarland.de');
+		$extensions=$xml->LayerList->Layer[$i]->Extension->children(OPEN_LAYER_NAMESPACE);
 		$wms_id=$extensions->wms_id;
 		$layer_id=dom_import_simplexml($extensions->layer_id)->nodeValue;
 		$layer_opacity=((double)dom_import_simplexml($extensions->gui_wms_opacity)->nodeValue)/100;
