@@ -13,7 +13,10 @@ mapserver/spatial_security.map
 metadata/
 tools/tmp/
 tools/wms_extent/extents.map
+
+# Composer
 vendor/
+composer.lock
 
 # IDE
 .dcignore
