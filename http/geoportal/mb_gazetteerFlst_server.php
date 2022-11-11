@@ -240,7 +240,13 @@ if ($command == "getGeomForFlst") {
             		<PropertyName>' . $flnAttr . '</PropertyName>
                     <Literal>' . $fln . '</Literal>
                 </PropertyIsEqualTo>';
-    }
+    }  
+	else if ($fln == "") {
+		 $flnFilter = '<PropertyIsNull>
+            		<PropertyName>' . $flnAttr . '</PropertyName>                    
+                </PropertyIsNull>';
+		
+	} 
 
     $searchFeaturetype = $featuretypeFln;
     $filter = '<Filter xmlns="http://www.opengis.net/ogc" xmlns:app="http://www.deegree.org/app"><And>
