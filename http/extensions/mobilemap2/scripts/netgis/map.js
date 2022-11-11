@@ -720,7 +720,7 @@ netgis.map =
 						"LAYERS":		layerName,
 						"FORMAT":		"image/png",
 						"TRANSPARENT":	"true",
-						"VERSION":		"1.1.1"
+						"VERSION":		"1.1.!"
 					},
 					serverType: "mapserver"
 				}
@@ -1008,7 +1008,9 @@ netgis.map =
 							view.getResolution(),
 							netgis.config.MAP_PROJECTION,
 							{
-								"INFO_FORMAT": "text/html" //"text/plain" //"text/javascript" //"application/json" //"text/html",
+								"INFO_FORMAT": "text/html", //"text/plain" //"text/javascript" //"application/json" //"text/html",
+								"FEATURE_COUNT" : "100"
+								
 							}
 						);
 				
