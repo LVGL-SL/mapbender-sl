@@ -1,7 +1,7 @@
 <?php
 
 require_once dirname(__FILE__) . "/../../core/globalSettings.php";
-
+ini_set("memory_limit","512M");
 $LIMIT_INT = OWS_LOG_EXPORT_LIMIT;
 
 if(isset($_REQUEST['userGuiId'])) {
