@@ -1704,6 +1704,7 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
                     }
                 } else {
                     $e = new mb_exception("http_auth/http/index.php: Could not cache new TIFF image to add GeoTIFF header, cause ABSOLUTE_TMPDIR is not defined in mapbender.conf and/or libgeotiff is not available!");
+					echo $source->getImageBlob();
                 }
             } else {
                 //default give back image without special headers
