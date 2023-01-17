@@ -2115,10 +2115,10 @@ SQL;
 		}
 	}
 
-	function delFromStorage($filename, $cacheType, $hashLocalFilename=false) {
+	function delFromStorage($filename, $cacheType, $hashLocalFilename=False) {
 		switch ($cacheType) {
 			case "memcache":
-				$filename = md5($filename);
+			    $filename = "mapbender:" . md5($filename);
 				$memcache_obj = new Memcache;
 				if (defined("MEMCACHED_IP") && MEMCACHED_IP != "" && defined("MEMCACHED_PORT") && MEMCACHED_PORT != "") {
 					$memcache_obj->connect(MEMCACHED_IP, MEMCACHED_PORT);
@@ -2131,7 +2131,7 @@ SQL;
 				return $result;
 				break;
 			case "memcached":
-				$filename = md5($filename);
+			    $filename = "mapbender:" . md5($filename);
 				$memcached_obj = new Memcached;
 				if (defined("MEMCACHED_IP") && MEMCACHED_IP != "" && defined("MEMCACHED_PORT") && MEMCACHED_PORT != "") {
 					$memcached_obj->addServer(MEMCACHED_IP, MEMCACHED_PORT);
@@ -2145,7 +2145,7 @@ SQL;
 				return $result;
 				break;
 			case "cache":
-				$filename = md5($filename);
+			    $filename = "mapbender:" . md5($filename);
 				$cache = new Cache();
 				if ($cache->isActive && $cache->cachedVariableExists($filename)) {
 					$result = $cache->cachedVariableDelete($filename);
@@ -2170,10 +2170,10 @@ SQL;
 				break;
 		}
 	}
-	function putToStorage($filename, $content, $cacheType, $maxAge, $hashLocalFilename=false) {
+	function putToStorage($filename, $content, $cacheType, $maxAge, $hashLocalFilename=False) {
 		switch ($cacheType) {
 			case "memcache":
-				$filename = md5($filename);
+			    $filename = "mapbender:" . md5($filename);
 				$memcache_obj = new Memcache;
 				if (defined("MEMCACHED_IP") && MEMCACHED_IP != "" && defined("MEMCACHED_PORT") && MEMCACHED_PORT != "") {
 					$memcache_obj->connect(MEMCACHED_IP, MEMCACHED_PORT);
@@ -2195,7 +2195,7 @@ SQL;
 				return true;
 			break;
 			case "memcached":
-				$filename = md5($filename);
+			    $filename = "mapbender:" . md5($filename);
 				$memcached_obj = new Memcached;
 				if (defined("MEMCACHED_IP") && MEMCACHED_IP != "" && defined("MEMCACHED_PORT") && MEMCACHED_PORT != "") {
 					$memcached_obj->addServer(MEMCACHED_IP, MEMCACHED_PORT);
@@ -2210,7 +2210,7 @@ SQL;
 				return true;
 			break;
 			case "cache":
-				$filename = md5($filename);
+			    $filename = "mapbender:" . md5($filename);
 				$cache = new Cache();
 				if ($cache->isActive) {
 					if ($cache->cachedVariableExists($filename)) {
@@ -2238,10 +2238,10 @@ SQL;
 		}
 	}
 
-	function getFromStorage($filename, $cacheType, $hashLocalFilename=false) {
+	function getFromStorage($filename, $cacheType, $hashLocalFilename=False) {
 		switch ($cacheType) {
 			case "memcache":
-				$filename = md5($filename);
+				$filename = "mapbender:" . md5($filename);
 				$memcache_obj = new Memcache;
 				if (defined("MEMCACHED_IP") && MEMCACHED_IP != "" && defined("MEMCACHED_PORT") && MEMCACHED_PORT != "") {
 					$memcache_obj->connect(MEMCACHED_IP, MEMCACHED_PORT);
@@ -2254,7 +2254,7 @@ SQL;
 				return $content;
 			break;
 			case "memcached":
-				$filename = md5($filename);
+			    $filename = "mapbender:" . md5($filename);
 				$memcached_obj = new Memcached;
 				if (defined("MEMCACHED_IP") && MEMCACHED_IP != "" && defined("MEMCACHED_PORT") && MEMCACHED_PORT != "") {
 					$memcached_obj->addServer(MEMCACHED_IP, MEMCACHED_PORT);
@@ -2267,7 +2267,7 @@ SQL;
 				return $content;
 			break;
 			case "cache":
-				$filename = md5($filename);
+			    $filename = "mapbender:" . md5($filename);
 				$cache = new Cache();
 				if ($cache->isActive && $cache->cachedVariableExists($filename)) {
 					$content = $cache->cachedVariableFetch($filename);
@@ -2294,7 +2294,6 @@ SQL;
 			break;
 		}
 	}
-
 
 
 	function is_utf8_string($string) {

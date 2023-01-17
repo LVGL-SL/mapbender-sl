@@ -76,6 +76,7 @@ class Crs {
 		$owsWithSpecialOrder = array("wms_1.0.0","wms_1.1.1","wfs_1.0.0","gml_2.0.0","gml_2.1.0","gml_3.1.1","geojson");//lon/lat,east/north 
 		$owsWithOrderAsDefined = array("wms_1.3.0","wfs_1.1.0","wfs_2.0.0","wfs_2.0.2","gml_3.2.0");
 		$order = "east,north"; //dummy postgis/oracle spatial order
+		$e = new mb_notice("classes/class_crs.php: extracted axis order from epsg: " . $this->axisOrder . " target_ows: " . $targetOws);
 		if (in_array($targetOws, $owsWithSpecialOrder) && $this->axisOrder !== $order) {
 			return false;
 		}
@@ -128,10 +129,19 @@ class Crs {
 						$this->identifierCode = explode('/',$identifierNew)[2];
 						return;
 					} else {
-						$this->identifier = $identifier;
-						$this->identifierType = 'other';
-						$this->identifierCode = $identifier;
-						return;
+						if (substr($identifier, 0, 40) === 'http://www.opengis.net/gml/srs/epsg.xml#') {
+						    $identifierNew = str_replace('http://www.opengis.net/gml/srs/epsg.xml#','',$identifier);
+						    //remaining string: ({code})
+						    $this->identifier = $identifier;
+						    $this->identifierType = 'urlxml';
+						    $this->identifierCode = $identifierNew;
+						    return;
+					        } else {
+						    $this->identifier = $identifier;
+						    $this->identifierType = 'other';
+						    $this->identifierCode = $identifier;
+						    return;
+						}
 					}
 				}
 			}
@@ -164,8 +174,8 @@ class Crs {
 		    $e = new mb_notice("http/classes/class_crs.php - invoked from http!");
     		$cache = new Cache();
     		//try to read from cache if already exists
-    		if ($cache->isActive && $cache->cachedVariableExists(md5($this->identifier))) {
-    			$cachedObject = json_decode($cache->cachedVariableFetch(md5($this->identifier)));
+    		if ($cache->isActive && $cache->cachedVariableExists("mapbender:crs:" . md5($this->identifier))) {
+    		    $cachedObject = json_decode($cache->cachedVariableFetch("mapbender:crs:" . md5($this->identifier)));
     			$this->gmlRepresentation = $cachedObject->gmlRepresentation;	
     			$this->epsgType = $cachedObject->epsgType;
     			$this->axisOrder = $cachedObject->axisOrder;
@@ -286,7 +296,7 @@ class Crs {
 		//store information - maybe to cache, if it does not already exists!
 		if ($this->is_cli()) {
 		    $filename = "/tmp" . "/crsCache_" . md5($this->identifier) . ".cache";
-		    $e = new mb_exception("http/classes/class_crs.php - search for file: " . $filename);
+		    $e = new mb_notice("http/classes/class_crs.php - search for file: " . $filename);
 		    if (!file_exists($filename)) {
     		    $cachedObject = $admin->putToStorage($filename, json_encode($jsonCrsInfo), 'file', 86400);
     		    $e = new mb_notice("http/classes/class_crs.php - store crs info to file cache!");
@@ -294,8 +304,8 @@ class Crs {
 		        $e = new mb_notice("http/classes/class_crs.php - crs file already exists!");
 		    }
 		} else {
-		    if ($cache->isActive && $cache->cachedVariableExists(md5($this->identifier)) == false) {
-		        $cache->cachedVariableAdd(md5($this->identifier), json_encode($jsonCrsInfo), 86400);
+		    if ($cache->isActive && $cache->cachedVariableExists("mapbender:crs:" . md5($this->identifier)) == false) {
+		        $cache->cachedVariableAdd("mapbender:crs:" . md5($this->identifier), json_encode($jsonCrsInfo), 86400);
 		        $e = new mb_notice("http/classes/class_crs.php - store crs info to cache!");
 		        return true;
 		    }

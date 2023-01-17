@@ -435,9 +435,12 @@ var SaveWmcApi = function () {
 	});
 	Mapbender.events.afterInit.register(function(){
 		//check if wmc should be saved into session
+		
 		if (saveInSession === 1) {
+			
 			//if onbeforeunload should be supported use it!
 			if (browserCompatibilityMode === 0) {
+				
 				//options.$target.each(function () {
 				var supportsOnbeforeunload = true; //TODO: The problem is the time for a job on onunload - there is not much. Therefor only simple things work - not saving a huge amount of data thru ajax
 				/*for (var prop in window) {
@@ -481,12 +484,18 @@ var SaveWmcApi = function () {
 					});
 				}
 		} else {
+			
+			that.save({
+								session : true
+							});
+						
 			//alert("Your are in a browser compatibility mode - this make the application slow!");
 			// hack to attach the eventhandler after all initial wms have been added to the map
 			setTimeout(function(){
 				options.$target.each(function () {
 					$(this).mapbender().events.afterMapRequest.register(function () {
 						if (!window.resetSession) {
+							
 							//if (!prohibitSaveWmc) {
 								that.save({
 									session : true

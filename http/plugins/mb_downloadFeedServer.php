@@ -7,7 +7,19 @@
 	require_once(dirname(__FILE__)."/../classes/class_gml2.php");
 	require_once(dirname(__FILE__)."/../classes/class_georss_geometry.php");
 	require_once(dirname(__FILE__)."/../classes/class_Uuid.php");
+	require_once(dirname(__FILE__)."/../classes/class_iso19139.php");
 
+
+	
+	if (file_exists ( dirname ( __FILE__ ) . "/../../conf/excludeFromAtomFeedClient.json" )) {
+	    $configObject = json_decode ( file_get_contents ( "../../conf/excludeFromAtomFeedClient.json" ) );
+	}
+	if (isset ( $configObject ) && isset ( $configObject->urls )) {
+	    $urlsBlacklist = $configObject->urls;
+	} else {
+	    $urlsBlacklist = false;
+	}	
+	
 /*	$ajaxResponse = new AjaxResponse($_POST);
 
 	function abort ($message) {
@@ -172,6 +184,16 @@ function DOMNodeListObjectAttributes($domNodeList) {
 switch ($_REQUEST['method']) {
 	case "getServiceFeedObjectFromUrl" :
 		$serviceFeedUrl = htmlspecialchars_decode($_REQUEST['url']);//htmlspecialchars_decode is done to prohibit xss vulnerability of the client, which allows url as a get parameter
+        //secure client by use of blacklist
+        //TODO: give back clean json - so that the client can generate a usefull message!
+		if ($urlsBlacklist != false) {
+		    foreach ($urlsBlacklist as $urlPart) {
+		        if (strpos($serviceFeedUrl, $urlPart) !== false) {
+		            $e = new mb_exception("http/plugins/mb_downloadFeedServer.php:".'Found blacklist entry in downloadfeed url!');
+		            return false;
+		        }
+		    }
+		}	
 		$logUrl = date("F j, Y, g:i a",time())." - ".$serviceFeedUrl;
 		#$e = new mb_exception("inspire: ".$logUrl);
 		logit($logUrl);
@@ -263,6 +285,9 @@ switch ($_REQUEST['method']) {
 				$feature->properties["date"] = $dateArray[$i];
 				$feature->properties["code"] = $codeArray[$i];
 				$feature->properties["namespace"] = $namespaceArray[$i];
+				$metadataObject = new Iso19139();
+				$metadataObject->createFromUrl($metadataLinkArray[$i]);
+				$feature->properties["fileIdentifier"] = (string)$metadataObject->fileIdentifier;
 				$feature->properties["metadataLink"] = $metadataLinkArray[$i];
 				$feature->properties["capabilitiesLink"] = $capLinkArray[0];
 				$feature->properties["datasetFeedLink"] = $datasetFeedLinkArray[$i];
