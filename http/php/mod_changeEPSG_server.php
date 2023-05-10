@@ -49,19 +49,36 @@ switch ($ajaxResponse->getMethod()) {
 			
 			
 				$con = db_connect($DBSERVER,$OWNER,$PW);
-				$sqlMinx = "SELECT X(transform(GeometryFromText('POINT(".$extArray[0]." ".$extArray[1].")',".$oldEPSG."),".$newEPSG.")) as minx";
+				
+				
+				db_select_db(DB,$con);
+				$sql = "SELECT proj4text FROM public.spatial_ref_sys where auth_srid = $1";
+				$v = array($oldEPSG);
+				$t = array('i');
+				$res = db_prep_query($sql,$v,$t);
+				$p = db_fetch_row($res);
+
+	 
+	
+	
+				
+
+				//$e = new mb_exception($p[0]);
+				
+				$sqlMinx = "SELECT st_X(st_transform(st_GeometryFromText('POINT(".$extArray[0]." ".$extArray[1].")',".$oldEPSG."),'".$p[0]."',".$newEPSG.")) as minx";
+				$e = new mb_exception($sqlMinx);
 				$resMinx = db_query($sqlMinx);
 				$minx = floatval(db_result($resMinx,0,"minx"));
 				
-				$sqlMiny = "SELECT Y(transform(GeometryFromText('POINT(".$extArray[0]." ".$extArray[1].")',".$oldEPSG."),".$newEPSG.")) as miny";
+				$sqlMiny = "SELECT st_Y(st_transform(st_GeometryFromText('POINT(".$extArray[0]." ".$extArray[1].")',".$oldEPSG."),'".$p[0]."',".$newEPSG.")) as miny";
 				$resMiny = db_query($sqlMiny);
 				$miny = floatval(db_result($resMiny,0,"miny"));
 				
-				$sqlMaxx = "SELECT X(transform(GeometryFromText('POINT(".$extArray[2]." ".$extArray[3].")',".$oldEPSG."),".$newEPSG.")) as maxx";
+				$sqlMaxx = "SELECT st_X(st_transform(st_GeometryFromText('POINT(".$extArray[2]." ".$extArray[3].")',".$oldEPSG."),'".$p[0]."',".$newEPSG."))  as maxx";
 				$resMaxx = db_query($sqlMaxx);
 				$maxx = floatval(db_result($resMaxx,0,"maxx"));
 				
-				$sqlMaxy = "SELECT Y(transform(GeometryFromText('POINT(".$extArray[2]." ".$extArray[3].")',".$oldEPSG."),".$newEPSG.")) as maxy";
+				$sqlMaxy = "SELECT st_Y(st_transform(st_GeometryFromText('POINT(".$extArray[2]." ".$extArray[3].")',".$oldEPSG."),'".$p[0]."',".$newEPSG."))  as maxy";
 				$resMaxy = db_query($sqlMaxy);
 				$maxy = floatval(db_result($resMaxy,0,"maxy"));
 
