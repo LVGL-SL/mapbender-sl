@@ -21,3 +21,5 @@ composer.lock
 
 # IDE
 .dcignore
+#Config File (Flurstuecksuche, temporaerer Kommentar, wegen UMN Testserver Verbindung hinzugefuegt
+conf/gazetteerFlst.conf
