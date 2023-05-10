@@ -324,7 +324,7 @@ class searchMetadata
 			}
 			if (isset($this->searchResources) & strtolower($this->searchResources) === "wmc") {
 				//$this->searchView = 'search_wmc_view';
-				$this->searchView = 'wmc_search_table';
+				$this->searchView = 'mapbender.wmc_search_table';
 				$this->databaseIdColumnName = 'wmc_serial_id';
 				$this->databaseTableName = 'wmc';
 				//the following is needed to give a special filter to the custom cat table!
