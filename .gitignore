@@ -21,5 +21,9 @@ composer.lock
 
 # IDE
 .dcignore
-#Config File (Flurstuecksuche, temporaerer Kommentar, wegen UMN Testserver Verbindung hinzugefuegt
-conf/gazetteerFlst.conf
+#in all 3 Systems we exclude files from tracking -> assume--unchanged
+#
+# http/tmp/ReadMe.txt
+# composer.lock
+# conf/gazetteerFlst.conf
+#
