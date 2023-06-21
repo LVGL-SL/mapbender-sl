@@ -21,3 +21,9 @@ composer.lock
 
 # IDE
 .dcignore
+#in all 3 Systems we exclude files from tracking -> assume--unchanged
+#
+# http/tmp/ReadMe.txt
+# composer.lock
+# conf/gazetteerFlst.conf
+#

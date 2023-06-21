@@ -2124,7 +2124,8 @@ SQL;
 		    $info = pathinfo($filename);
 		    // get the extension of the file
 		    $ext = $info['extension'];
-		    $new_image = dirname(__FILE__)."/".PREVIEW_DIR."/".$new_name;
+		    //$new_image = dirname(__FILE__)."/".PREVIEW_DIR."/".$new_name;
+			$new_image = PREVIEW_DIR."/".$new_name;
 		    // get the ímage
 		    $image = $filename;
 		    //resize the image to 200px * 200px
