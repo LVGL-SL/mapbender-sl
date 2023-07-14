@@ -14,6 +14,7 @@ metadata/
 tools/tmp/
 tools/wms_extent/extents.map
 libgeotiff/
+.vscode
 
 # Composer
 vendor/
