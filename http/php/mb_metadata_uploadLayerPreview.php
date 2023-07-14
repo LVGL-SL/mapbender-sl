@@ -36,8 +36,9 @@ if ($type == 'wmc') {
 else {
     $new_name = $source_id."_layer_map_preview.jpg";//.$ext;
 }
-
-$new_image = dirname(__FILE__)."/../geoportal/preview/".$new_name;
+#6260: Changed path declaration to access current storage folder /var/opt/geoportal/media/preview
+#      Also see etc/apache2/apache.cfg -- /var/opt.. Directory specification
+$new_image = PREVIEW_DIR.$new_name;
 
 if ($_POST["upload_action"] === "upload") {
     // get the ímage
@@ -108,7 +109,9 @@ if ($_POST["upload_action"] === "upload") {
         // free space
         ImageDestroy($images_orig);
         ImageDestroy($images_target);
-        echo "<img src=\""."../geoportal/preview/".$new_name."\">";
+        #6260: Changed path declaration to access current storage folder /var/opt/geoportal/media/preview
+        #      Also see etc/apache2/apache.cfg -- /var/opt.. Directory specification
+        echo "<img src=\"".PREVIEW_DIR.$new_name."\">";
     } // if image-width and height are to small
     else if($size[0] < 200 && $size[1] < 200){
         //set the new image width
@@ -136,15 +139,26 @@ if ($_POST["upload_action"] === "upload") {
         // free space
         ImageDestroy($images_orig);
         ImageDestroy($images_target);
-        echo "<img src=\""."../geoportal/preview/".$new_name."\">";
+        #6260: Changed path declaration to access current storage folder /var/opt/geoportal/media/preview
+        #      Also see etc/apache2/apache.cfg -- /var/opt.. Directory specification
+        echo "<img src=\"".PREVIEW_DIR.$new_name."\">";
     }
 } else if ($_POST["upload_action"] === "delete") {
     unlink($new_image);
-    echo "<img class=\"defaultPreview\" src=\"../geoportal/preview/keinevorschau.jpg\">";
+    #6260: Changed path declaration to access current storage folder /var/opt/geoportal/media/preview
+    #      Also see etc/apache2/apache.cfg -- /var/opt.. Directory specification
+    echo "<img class=\"defaultPreview\" src=\"".PREVIEW_DIR."keinevorschau.jpg\">";
 } else if ($_POST["upload_action"] === "getImage") {
     if(!file_exists($new_image)) {
-      echo "<img class=\"defaultPreview\" src=\"../geoportal/preview/keinevorschau.jpg\">";
+        #6260: Changed path declaration to access current storage folder /var/opt/geoportal/media/preview
+        #      Also see etc/apache2/apache.cfg -- /var/opt.. Directory specification
+        echo "<img class=\"defaultPreview\" src=\"".PREVIEW_DIR."keinevorschau.jpg\">";
     } else {
-      echo "<img src=\"../geoportal/preview/" . $new_name . "?nocache=" . time() . "\">";
+        #6260: Changed path declaration to access current storage folder /var/opt/geoportal/media/preview
+        #      Also see etc/apache2/apache.cfg -- /var/opt.. Directory specification
+        echo "Vorschaubild : ".$new_name;
+	  
+	  
+	  
     }    
 }
