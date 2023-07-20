@@ -81,5 +81,5 @@ netgis.config =
 
 	URL_HEIGHT_PROXY:		null,
 	URL_HEIGHT_REQUEST:		"scripts/heightRequest.php?&lang=de",
-	URL_USAGE_TERMS:		"/article/Datenschutz/"
+	URL_USAGE_TERMS:		"https://www.saarland.de/SharedDocs/Downloads/DE/LVGL/Datenschutz/datenschutz_geoportal.html"
 };

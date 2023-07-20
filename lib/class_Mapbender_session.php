@@ -112,6 +112,15 @@
 			session_id($this->id);
 			new mb_notice("session.sessionStart.changeId to: ". session_id());
 		}
+
+		//#6327 Fix cookie params for chrome issues in case of owsproxy execution
+		if (strpos($_SERVER["SCRIPT_URI"], "owsproxy")){
+			session_set_cookie_params([
+				'secure' => 1,
+				'samesite' => "None"
+			]);
+		}
+
 		session_start();
 		new mb_notice("session.sessionStart.id: ". session_id());
 	}

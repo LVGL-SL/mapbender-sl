@@ -453,13 +453,28 @@ XML;
 					$this->polygonalExtentExterior[0] = $this->parsePolygon($iso19139Xml, '//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_BoundingPolygon/gmd:polygon/');
 				}
 			}
-			$this->tmpExtentBegin = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod/gml:beginPosition');
-			$this->tmpExtentBegin = $this->tmpExtentBegin[0];
+			#6646 For some reason the old version below didn't work -> Yet not clear why. Most likely due to multiple extend nodes but in theory this should have still worked
+				#-> Temporary workaround -> Loop All Extends -> Write date if found
+			//$this->tmpExtentBegin = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod/gml:beginPosition');
+			//$this->tmpExtentBegin = $this->tmpExtentBegin[0];
+			$extents = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent');
+			foreach($extents as $extent){
+				$tmpExtentBeginLoop = $extent->xpath('gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod/gml:beginPosition');
+				if ($tmpExtentBeginLoop != false){
+					$this->tmpExtentBegin = $tmpExtentBeginLoop[0];
+				}
+				$tmpExtentEndLoop = $extent->xpath('gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod/gml:endPosition');
+				if ($tmpExtentEndLoop != false){
+					$this->tmpExtentEnd = $tmpExtentEndLoop[0];
+				}
+			}
+
 			if ($this->tmpExtentBegin == "") {
 				$this->tmpExtentBegin = "1900-01-01";
 			}
-			$this->tmpExtentEnd = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod/gml:endPosition');		
-			$this->tmpExtentEnd = $this->tmpExtentEnd[0];
+			//#6646 -> Same for endate as above for begin
+			//$this->tmpExtentEnd = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod/gml:endPosition');		
+			//$this->tmpExtentEnd = $this->tmpExtentEnd[0];
 			if ($this->tmpExtentEnd == "") {
 				$this->tmpExtentEnd = "1900-01-01";
 			}
@@ -535,13 +550,22 @@ XML;
 			$this->resourceContactEmail = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:pointOfContact/gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:CI_Contact/gmd:address/gmd:CI_Address/gmd:electronicMailAddress/gco:CharacterString');
 			$this->resourceContactEmail = $this->resourceContactEmail[0];
 			//parse extension for gmd:resourceMaintenance
-			$updateFrequency = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:resourceMaintenance/gmd:MD_MaintenanceInformation/gmd:maintenanceAndUpdateFrequency/gmd:MD_MaintenanceFrequencyCode[@codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_MaintenanceFrequencyCode"]/@codeListValue');
+			//#6646: Change of path to include newer version of codelists by just checking against the url ending as it was in 2 example codelists
+			//old:$updateFrequency = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:resourceMaintenance/gmd:MD_MaintenanceInformation/gmd:maintenanceAndUpdateFrequency/gmd:MD_MaintenanceFrequencyCode[@codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_MaintenanceFrequencyCode"]/@codeListValue');
+			//new:
+			$updateFrequency = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:resourceMaintenance/gmd:MD_MaintenanceInformation/gmd:maintenanceAndUpdateFrequency/gmd:MD_MaintenanceFrequencyCode[contains(@codeList,"/gmxCodelists.xml#MD_MaintenanceFrequencyCode")]/@codeListValue'); //[@codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_MaintenanceFrequencyCode"]
+			
 			$updateFrequency = $updateFrequency[0];
 			//TODO: push codelists into conf files !
 			//http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_MaintenanceFrequencyCode
+			// @codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_MaintenanceFrequencyCode"]
 			$codeListUpdateFrequencyArray = array('continual','daily','weekly','fortnightly','monthly','quarterly','biannually','annually','asNeeded','irregular','notPlanned','unknown');
 			if (in_array($updateFrequency, $codeListUpdateFrequencyArray)) {
 				$this->updateFrequency = $updateFrequency;
+			}else{
+				#6646 Setting this variable initial because of the value retrieval in mb_metadata_server.php,
+				#where this value is set based on the ajax Post parameters read from the form that can also be used for this case
+				$this->updateFrequency = '';
 			}
 			//check declaration of inspire conformity - only true if true for all relevant regulations is declared!
 			$this->inspireInteroperability = 't';

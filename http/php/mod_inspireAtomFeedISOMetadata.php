@@ -265,10 +265,14 @@ SQL;
 			$mapbenderMetadata ['mdOrigin'] = $mbMetadata ['origin'];
 			$mapbenderMetadata ['serviceUuid'] = $mbMetadata ['uuid'];
 			$mapbenderMetadata ['metadataId'] = $mbMetadata ['metadata_id'];
-			$mapbenderMetadata ['serviceTimestamp'] = strtotime ( $mbMetadata ['wms_timestamp'] );
-			$mapbenderMetadata ['serviceTimestampCreate'] = strtotime ( $mbMetadata ['wms_timestamp_create'] );
+			$mapbenderMetadata['serviceTimestamp'] = date("Y-m-d", strtotime($mbMetadata['lastchanged']));
+			$mapbenderMetadata['serviceTimestampCreate'] = date("Y-m-d", strtotime($mbMetadata['createdate']));
 			$mapbenderMetadata ['serviceDepartment'] = $mbMetadata ['responsible_party'];
-			$mapbenderMetadata ['serviceDepartmentMail'] = "kontakt@geoportal.rlp.de";
+			if ($mbMetadata ['responsible_party_email'] != '') {
+			    $mapbenderMetadata ['serviceDepartmentMail'] = $mbMetadata ['responsible_party_email'] ;
+			} else {
+			    $mapbenderMetadata ['serviceDepartmentMail'] = "kontakt@geoportal.rlp.de";
+			}
 			$mapbenderMetadata ['serviceGroupId'] = $mbMetadata ['fkey_mb_group_id'];
 			$mapbenderMetadata ['serviceOwnerId'] = $mbMetadata ['fkey_mb_user_id'];
 			$mapbenderMetadata ['serviceAccessConstraints'] = "Please ask the contact point!";
@@ -847,12 +851,19 @@ SQL;
 		$res = db_prep_query ( $sql, $v, $t );
 		$row = db_fetch_array ( $res );
 		// use the example version of bavaria
-		if (file_exists ( PREVIEW_DIR . "/" . $mapbenderMetadata ['layer_id'] . "_layer_map_preview.jpg" )) { // TODO
+		#6260: Changed path declaration to access current storage folder /var/opt/geoportal/media/preview
+		#      Also see etc/apache2/apache.cfg -- /var/opt.. Directory specification
+		# -> Changed layer_id -> resourceID, because layer_id didn't exist here and never worked
+		if (file_exists ( PREVIEW_DIR . $mapbenderMetadata ['resourceId'] . "_layer_map_preview.jpg" )) { // TODO
 			$graphicOverview = $iso19139->createElement ( "gmd:graphicOverview" );
 			$MD_BrowseGraphic = $iso19139->createElement ( "gmd:MD_BrowseGraphic" );
 			$fileName = $iso19139->createElement ( "gmd:fileName" );
 			$fileName_cs = $iso19139->createElement ( "gco:CharacterString" );
-			$previewFilenameText = $iso19139->createTextNode ( $mapbenderPath . "php/geoportal/preview/" . $mapbenderMetadata ['layer_id'] . "_layer_map_preview.jpg" ); // TODO use constant for absolute path
+			//$previewFilenameText = $iso19139->createTextNode ( $mapbenderPath . "php/geoportal/preview/" . $mapbenderMetadata ['layer_id'] . "_layer_map_preview.jpg" ); // TODO use constant for absolute path
+			#6260: Changed path declaration to access current storage folder /var/opt/geoportal/media/preview
+			#      Also see etc/apache2/apache.cfg -- /var/opt.. Directory specification
+		# -> Changed layer_id -> resourceID, because layer_id didn't exist here and never worked
+			$previewFilenameText = $iso19139->createTextNode ( PREVIEW_DIR . $mapbenderMetadata ['resourceId'] . "_layer_map_preview.jpg" ); // TODO use constant for absolute path
 			$fileName_cs->appendChild ( $previewFilenameText );
 			$fileName->appendChild ( $fileName_cs );
 			

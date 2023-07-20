@@ -1,4 +1,3 @@
-
 DROP TABLE IF EXISTS wfs_search_table_tmp;
 select * into wfs_search_table_tmp from search_wfs_view;
 
@@ -54,7 +53,7 @@ CREATE INDEX idx_wst_wfs_timestamp
 --vacuum analyze;
 --VACUUM ANALYZE wfs_search_table;
 
-GRANT ALL ON TABLE wfs_search_table TO mapbenderdbuser;
-ALTER TABLE wfs_search_table OWNER TO mapbenderdbuser;
+GRANT ALL ON TABLE wfs_search_table TO u_mapbender;
+ALTER TABLE wfs_search_table OWNER TO u_mapbender;
 
 

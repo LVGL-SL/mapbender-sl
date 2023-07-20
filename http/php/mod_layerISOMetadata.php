@@ -489,7 +489,9 @@ function fillISO19139($iso19139, $recordId) {
 	 * }
 	 */
 	// use the example version of bavaria
-	if (file_exists ( PREVIEW_DIR . "/" . $mapbenderMetadata ['layer_id'] . "_layer_map_preview.jpg" )) { // TODO
+	#6260: Changed path declaration to access current storage folder /var/opt/geoportal/media/preview
+	#      Also see etc/apache2/apache.cfg -- /var/opt.. Directory specification
+	if (file_exists ( PREVIEW_DIR . $mapbenderMetadata ['layer_id'] . "_layer_map_preview.jpg" )) { // TODO
 		$graphicOverview = $iso19139->createElement ( "gmd:graphicOverview" );
 		$MD_BrowseGraphic = $iso19139->createElement ( "gmd:MD_BrowseGraphic" );
 		$fileName = $iso19139->createElement ( "gmd:fileName" );
@@ -501,7 +503,10 @@ function fillISO19139($iso19139, $recordId) {
 		 * $mapbenderUrl = "http://www.geoportal.rlp.de/mapbender";
 		 * }
 		 */
-		$previewFilenameText = $iso19139->createTextNode ( $mapbenderUrl . "/geoportal/preview/" . $mapbenderMetadata ['layer_id'] . "_layer_map_preview.jpg" ); // TODO use constant for absolute path
+		#6260: Changed path declaration to access current storage folder /var/opt/geoportal/media/preview
+		#      Also see etc/apache2/apache.cfg -- /var/opt.. Directory specification
+		//$previewFilenameText = $iso19139->createTextNode ( $mapbenderUrl . "/geoportal/preview/" . $mapbenderMetadata ['layer_id'] . "_layer_map_preview.jpg" ); // TODO use constant for absolute path
+		$previewFilenameText = $iso19139->createTextNode ( 	'https://' . FULLY_QUALIFIED_DOMAIN_NAME . PREVIEW_DIR . $mapbenderMetadata ['layer_id'] . "_layer_map_preview.jpg" ); // TODO use constant for absolute path
 		$fileName_cs->appendChild ( $previewFilenameText );
 		$fileName->appendChild ( $fileName_cs );
 		
