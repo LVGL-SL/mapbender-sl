@@ -265,8 +265,9 @@ SQL;
 			$mapbenderMetadata ['mdOrigin'] = $mbMetadata ['origin'];
 			$mapbenderMetadata ['serviceUuid'] = $mbMetadata ['uuid'];
 			$mapbenderMetadata ['metadataId'] = $mbMetadata ['metadata_id'];
-			$mapbenderMetadata['serviceTimestamp'] = date("Y-m-d", strtotime($mbMetadata['lastchanged']));
-			$mapbenderMetadata['serviceTimestampCreate'] = date("Y-m-d", strtotime($mbMetadata['createdate']));
+			//Ticket #6423: Deleted date conversion since it's happening in a later step again and would lead to wrong results
+			$mapbenderMetadata['serviceTimestamp'] =  strtotime($mbMetadata['lastchanged']);
+			$mapbenderMetadata['serviceTimestampCreate'] =  strtotime($mbMetadata['createdate']);
 			$mapbenderMetadata ['serviceDepartment'] = $mbMetadata ['responsible_party'];
 			if ($mbMetadata ['responsible_party_email'] != '') {
 			    $mapbenderMetadata ['serviceDepartmentMail'] = $mbMetadata ['responsible_party_email'] ;
@@ -678,7 +679,7 @@ SQL;
 	$dateStamp = $iso19139->createElement ( "gmd:dateStamp" );
 	$mddate = $iso19139->createElement ( "gco:Date" );
 	if (isset ( $mapbenderMetadata ['serviceTimestamp'] )) {
-		$mddateText = $iso19139->createTextNode ( date ( "Y-m-d", $mapbenderMetadata ['serviceTimestamp'] ) );
+		$mddateText = $iso19139->createTextNode ( date("Y-m-d",  $mapbenderMetadata ['serviceTimestamp'] ) );
 	} else {
 		$mddateText = $iso19139->createTextNode ( "2000-01-01" );
 	}
