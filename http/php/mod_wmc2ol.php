@@ -234,7 +234,7 @@ function createOlFromWMC_id($wmc_id, $pointRadius, $fillColor){
 			$html.="var logo = \"<a href = 'mod_getWmcDisclaimer.php?&id=".$wmcId."&languageCode=de&withHeader=true&hostName=".$hostName."' target='_blank'>"._mb('Terms of use')."</a>\";\n";
 		}
 	} else {
-		$html.="var logo = \"<a href = 'https://geoportal.saarland.de/' target='_blank'><img src='../img/logo_geoportal_neu.png' height='20' width='120' alt='Geoportal Logo'/></a><br><a href = 'mod_getWmcDisclaimer.php?&id=".$wmcId."&languageCode=de&withHeader=true&hostName=".$hostName."' target='_blank'>"._mb('Terms of use')."</a>\";\n";
+		$html.="var logo = \"<a href = 'https://geoportal.saarland.de/' target='_blank'><img src='../img/logo_geoportal_neu.png' height='64' width='71' alt='Geoportal Logo'/></a><br><a href = 'mod_getWmcDisclaimer.php?&id=".$wmcId."&languageCode=de&withHeader=true&hostName=".$hostName."' target='_blank'>"._mb('Terms of use')."</a>\";\n";
 	}
 	//check for some queryable layer in web map context document
 	$someLayerQueryable=false;
