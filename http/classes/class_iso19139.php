@@ -777,6 +777,20 @@ XML;
 			include(dirname(__FILE__)."/../../conf/isoMetadata.conf");
 			for($a = 0; $a < count($iso19139Hash); $a++) {
 				$resultOfXpath = $iso19139Xml->xpath("/".$iso19139Hash[$a]['iso19139']);#
+				#6649 Workaround like in #6646 to populate temporal extent if xPath expression isn't working without looping the extent nodes one by one
+				if (empty($resultOfXpath) && ($iso19139Hash[$a]['inspire'] === 'temporal extent begin' || $iso19139Hash[$a]['inspire'] === 'temporal extent end')){ //if for some reason check against path neccesary:&& strpos($iso19139Hash[$a]['iso19139'],"gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod"
+					$extents = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/*/gmd:extent');
+					foreach($extents as $extent){
+						if ($iso19139Hash[$a]['inspire'] === 'temporal extent begin'){
+							$resultOfXpath = $extent->xpath('gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod/gml:beginPosition');	
+						}else{
+							$resultOfXpath= $extent->xpath('gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod/gml:endPosition');
+						}
+						if(!empty($resultOfXpath)){
+							break;
+						}
+					}
+				}
 				//if array should not be handled as array - handle it as string!
 				if ($iso19139Hash[$a]['iso19139explode'] != "true") {
 					for ($i = 0; $i < count($resultOfXpath); $i++) {
