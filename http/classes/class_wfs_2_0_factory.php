@@ -162,9 +162,10 @@ class Wfs_2_0_Factory extends WfsFactory {
 		$namespaceList = $xpath->query("//namespace::*");
 		$targetNamespace = $doc->documentElement->getAttribute("targetNamespace");
 		$targetNamespaceNode = null;
-
+		$namespaceLookupList = [];
 		foreach($namespaceList as $namespaceNode){
 			$namespaces[$namespaceNode->nodeValue] = $namespaceNode->localName;
+			$namespaceLookupList[] = $namespaceNode->localName;
 			if($namespaceNode->nodeValue == $targetNamespace){
 				$targetNamespaceNode = $namespaceNode;
 			}
