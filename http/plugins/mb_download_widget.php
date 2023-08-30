@@ -379,13 +379,13 @@
     		if (typeof data[dataset_id]['title'] != "undefined") {
         		datasetLink = $(document.createElement('a')).appendTo(columnContainer);
         		datasetLink.attr({'target':'_blank'});
-        		datasetLink.attr({'href':'https://www.geoportal.rlp.de/mapbender/php/mod_iso19139ToHtml.php?url=https%3A%2F%2Fwww.geoportal.rlp.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D' + data[dataset_id]['fileidentifier']});
+        		datasetLink.attr({'href':'https://www.geoportal.saarland.de/mapbender/php/mod_iso19139ToHtml.php?url=https%3A%2F%2Fwww.geoportal.saarland.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D' + data[dataset_id]['fileidentifier']});
         		datasetTitle = $(document.createElement('b')).appendTo(datasetLink);
         		datasetTitle.append(data[dataset_id]['title']);
     		} else {
     			datasetInfo = $(document.createElement('div')).appendTo(columnContainer);
         		datasetInfo.attr({'style':'color: red;'});
-        		//datasetInfo.attr({'href':'https://www.geoportal.rlp.de/mapbender/php/mod_iso19139ToHtml.php?url=https%3A%2F%2Fwww.geoportal.rlp.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D' + data[dataset_id]['fileidentifier']});
+        		//datasetInfo.attr({'href':'https://www.geoportal.saarland.de/mapbender/php/mod_iso19139ToHtml.php?url=https%3A%2F%2Fwww.geoportal.saarland.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D' + data[dataset_id]['fileidentifier']});
         		datasetInfoTitle = $(document.createElement('i')).appendTo(datasetInfo);
         		datasetInfoTitle.attr({'title':'<?php echo _mb("Dataset not found in catalogue!");?>'});
         		datasetInfoTitle.append(data[dataset_id]['spatial_dataset_identifier']);

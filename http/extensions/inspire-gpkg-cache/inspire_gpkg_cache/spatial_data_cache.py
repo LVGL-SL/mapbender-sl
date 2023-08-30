@@ -1,5 +1,5 @@
 import json
-import logging
+import logging as log
 import math
 import os
 import shutil
@@ -7,6 +7,8 @@ import time
 import uuid
 import xml.etree.ElementTree as ET
 from datetime import datetime
+
+from xml.etree.ElementTree import ParseError
 
 import requests
 from osgeo import gdal, ogr
@@ -20,9 +22,19 @@ from shapely import (bounds, box, from_geojson, geometrycollections,
 from slugify import slugify
 
 from inspire_gpkg_cache.gpkg import Gpkg
+import urllib3
 
-logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
-log = logging.getLogger("SpatialDataCache")
+def get_env_variable_from_geoportal_sl(variable_name:str, default_value= None)->str:
+    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','..','..','..','GeoPortal.sl','Geoportal','.env')
+    with open(env_path, 'r') as env_file:
+        for line in env_file:
+            try:
+                key,value = line.strip().split('=')
+            except ValueError:
+                continue
+            os.environ[key.replace(" ","")] = value.replace(" ","").replace("\"","")
+    return os.getenv(variable_name, default_value)
+
 
 class SpatialDataCache():
     """This is a central class for caching spatial datasets from remote services.
@@ -41,6 +53,10 @@ class SpatialDataCache():
         self.data_configuration = data_configuration
         self.area_of_interest_geojson = area_of_interest_geojson
         self.catalogue_uri = catalogue_uri
+        proxy_url = get_env_variable_from_geoportal_sl("PROXY_HTTP")
+        #http = urllib3.HTTPConnectionPool('http://lprxdutm04.saarland.de',8080)
+        os.environ["HTTP_PROXY"] = proxy_url
+        os.environ["HTTPS_PROXY"] = proxy_url
         self.csw = CatalogueServiceWeb(self.catalogue_uri)
         self.supported_formats = ["GeoTIFF", "GML", "Database", "shapefile", ]
         self.max_pixels = 3000
@@ -175,7 +191,10 @@ class SpatialDataCache():
         log.info("Spatial Dataset Identifier from metadata record: " + metadata_info['spatial_dataset_identifier'])
         if len(metadata.identification.distance) >= 1:
             if metadata.identification.uom[0] and metadata.identification.distance[0]:
-                uom = metadata.identification.uom[0].split("#")[1]
+                if "#" in metadata.identification.uom[0]: 
+                    uom = metadata.identification.uom[0].split("#")[1]
+                else:
+                    uom = metadata.identification.uom[0]
                 ground_resolution = float(metadata.identification.distance[0].replace('m', ''))
                 metadata_info['spatial_res_type'] = "groundResolution"
                 metadata_info['spatial_res_value'] = ground_resolution
@@ -257,7 +276,10 @@ class SpatialDataCache():
                 # log.info(str(online_resource.name) + " : " + str(online_resource.function) + " : " + str(online_resource.url))
                 if online_resource.url:
                     r = requests.get(online_resource.url)
-                    tree = ET.fromstring(r.text)
+                    try:
+                        tree = ET.fromstring(r.text)
+                    except ParseError as e:
+                        continue
                     # check for tiff format
                     formats = tree.findall(".//GetMap/Format")
                     supports_png = False
@@ -345,7 +367,10 @@ class SpatialDataCache():
                         access_uri = online_resource.url
                         r = requests.get(online_resource.url)
                         # TODO: check for http 401
-                        tree = ET.fromstring(r.text)
+                        try:
+                            tree = ET.fromstring(r.text)
+                        except ParseError as e:
+                            continue
                         # TODO: set namespace for wms 1.3.0 !
                         if tree.tag in ['WMS_Capabilities', 'WMT_MS_Capabilities']:
                             # some wms found
@@ -609,7 +634,10 @@ class SpatialDataCache():
                 inc_bboxes = inc_bboxes + 1
                 log.info("json saved!")
         if download_service_type == 'raster_atom' or download_service_type == 'vector_atom':
+            log.info("CSTEST: downloadservice distribution online:" + str(download_service.distribution.online))
+            log.info("CSTEST: actual url from online distr.:" + download_service.distribution.online[0].url)
             r = requests.get(download_service.distribution.online[0].url)
+            log.info("CSTEST: requesttext: " + str(r.text))
             # parse inspire service feed
             tree = ET.fromstring(r.text)
             # extract code and codespace from spatial_dataset_identifier - should be separated by / as demanded from inpsire
@@ -634,6 +662,7 @@ class SpatialDataCache():
                 # find entry with format and crs from metadata (original crs)
                 # http://www.opengis.net/def/crs/EPSG/25832 or ...
                 entry = tree.findall("./{http://www.w3.org/2005/Atom}entry/{http://www.w3.org/2005/Atom}category[@term='http://www.opengis.net/def/crs/EPSG/" + str(metadata_info['epsg_id']) + "']/../{http://www.w3.org/2005/Atom}link[@type='" +  format_mimetype + "']")
+                #log.info("CSTEST: Entry result: " + str(entry))
                 if len(entry) > 0:
                     inc_bboxes = 0 
                     for link in entry:
@@ -757,12 +786,16 @@ class SpatialDataCache():
         tree = ET.fromstring(orig_metadata_xml)
         # extract metadata date
         md_date = tree.findall("./{http://www.isotc211.org/2005/gmd}dateStamp/{http://www.isotc211.org/2005/gco}Date")
+        if len(md_date) < 1:
+            md_date = tree.findall("./{http://www.isotc211.org/2005/gmd}dateStamp/{http://www.isotc211.org/2005/gco}DateTime")
         # set new metadata date
         current_date = datetime.now()
         md_date[0].text = current_date.strftime('%Y-%m-%d')
         md_identifier = tree.findall("./{http://www.isotc211.org/2005/gmd}fileIdentifier/{http://www.isotc211.org/2005/gco}CharacterString")
         md_identifier[0].text = str(uuid.uuid4())
         crs_code = tree.findall("./{http://www.isotc211.org/2005/gmd}referenceSystemInfo/{http://www.isotc211.org/2005/gmd}MD_ReferenceSystem/{http://www.isotc211.org/2005/gmd}referenceSystemIdentifier/{http://www.isotc211.org/2005/gmd}RS_Identifier/{http://www.isotc211.org/2005/gmd}code/{http://www.isotc211.org/2005/gco}CharacterString")
+        if len(crs_code)<1:
+            crs_code = tree.findall("./{http://www.isotc211.org/2005/gmd}referenceSystemInfo/{http://www.isotc211.org/2005/gmd}MD_ReferenceSystem/{http://www.isotc211.org/2005/gmd}referenceSystemIdentifier/{http://www.isotc211.org/2005/gmd}RS_Identifier/{http://www.isotc211.org/2005/gmd}code/{http://www.isotc211.org/2005/gmx}Anchor")    
         crs_code[0].text = "urn:ogc:def:crs:EPSG:4326"
         md_format = tree.findall("./{http://www.isotc211.org/2005/gmd}distributionInfo/{http://www.isotc211.org/2005/gmd}MD_Distribution/{http://www.isotc211.org/2005/gmd}distributionFormat/{http://www.isotc211.org/2005/gmd}MD_Format/{http://www.isotc211.org/2005/gmd}name/{http://www.isotc211.org/2005/gco}CharacterString")
         if type == 'vector':
@@ -923,7 +956,10 @@ class SpatialDataCache():
                             start_aggregation_time = time.time()
                             # when datasets are downloaded via atom feeds, they are in the crs which was given in the dataset metadata
                             if download_service.serviceidentification.version == 'predefined ATOM':
-                                gdal.Warp(self.tmp_output_folder + dataset_aggregate_filename, dataset_file_array, format="GTiff", srcSRS="EPSG:" + str(metadata_info['epsg_id']), dstSRS="EPSG:4326",
+                                log.info("CSTEST: tmp outputput folder dest:" + str(os.path.join(self.tmp_output_folder + dataset_aggregate_filename)))
+                                log.info("CSTEST: dataset_file_array: " + str(dataset_file_array))
+                                log.info("CSTEST: epsg info" + str(metadata_info['epsg_id']))
+                                gdal.Warp(os.path.join(self.tmp_output_folder + dataset_aggregate_filename), dataset_file_array, format="GTiff", srcSRS="EPSG:" + str(metadata_info['epsg_id']), dstSRS="EPSG:4326",
                             options=["COMPRESS=LZW", "TILED=YES"])
                             else:
                                 gdal.Warp(self.tmp_output_folder + dataset_aggregate_filename, dataset_file_array, format="GTiff",
