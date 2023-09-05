@@ -174,7 +174,9 @@ if ($command == "getWmsData") {
 			}
 
 			$replyto = $admin->getEmailByUserId(Mapbender::session()->get("mb_user_id"));
-			$from = $replyto;
+			//Ticket 6716: Changed sender to global system environment variable
+			//$from = $replyto;
+			$from = $mailUsername;
 			$rootLayerId = getRootLayerId($myWMS);
 			//$e = new mb_exception(MAPBENDER_PATH);
 			if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != '') {
