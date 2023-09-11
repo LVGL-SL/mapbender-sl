@@ -73,8 +73,11 @@ netgis.manager =
 		{
 			layerResultsList.empty();
 			layerResultsCount.text( "0" );
-			
-			query = encodeURIComponent( $.trim( query ) );
+			//Ticket 6705: Search Result of mobile client doesn't match the geoportal search - changed by replacing spaces with commas
+			query = $.trim( query );
+			query = query.replace(" ", ",");
+			query = encodeURIComponent( query );
+			//query = encodeURIComponent( $.trim( query ) );
 			
 			if ( query.length < 2 ) return;
 			

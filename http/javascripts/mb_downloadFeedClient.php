@@ -675,27 +675,54 @@ function sendtodjango(){
   data: data,
   statusCode: {
     200: function(responseObject, textStatus, jqXHR) {
+		document.getElementById("loading_image_dataset").style.display = "None";
       	alert("<?php echo _mb("Download finished!");?>")
     },
     403: function(responseObject, textStatus, jqXHR) {
+		document.getElementById("loading_image_dataset").style.display = "None"
       	alert("<?php echo _mb("Unauthorized!");?>")
     },
     400: function(responseObject, textStatus, jqXHR) {
+		document.getElementById("loading_image_dataset").style.display = "None"
       	alert("<?php echo _mb("No space left, please try again later!!");?>")
     },
     409: function(responseObject, textStatus, jqXHR) {
+		document.getElementById("loading_image_dataset").style.display = "None"
      	alert("<?php echo _mb("Maximum 20 tiles allowed!");?>")
     },
     418: function(responseObject, textStatus, jqXHR) {
+		document.getElementById("loading_image_dataset").style.display = "None"
      	alert("<?php echo _mb("Host not in whitelist, please contact an Administrator!");?>")
     },
     500: function(responseObject, textStatus, jqXHR) {
+		document.getElementById("loading_image_dataset").style.display = "None"
      	alert("<?php echo _mb("Something went wrong, please contact an Administrator!");?>")
     }
 }});
 
-sf.square.unselectAll();
-alert("<?php echo _mb("Download started, email will be send to ");?>".concat(DlSet.user_email))
+	sf.square.unselectAll();
+	//check for change to english
+	let lang = '';
+	let cookies = document.cookie;
+	let cookiesArray = cookies.split(";");
+	for(let i = 0; i < cookiesArray.length; i++){
+		let cookie = cookiesArray[i];
+		if (cookie.includes("=")){
+			let cookieArray = cookie.split("=");
+			if (cookieArray[0].includes("django_language")){
+				lang = cookieArray[1];
+			}
+		}
+	}
+	let loadingImg = document.getElementById("loading_image_dataset");
+	loadingImg.style.display = "";
+
+
+	if (lang == "en"){
+		alert("<?php echo _mb("Download started in the background. Depending on your selection, this can take some minutes. An email will be send to: ");?>".concat(DlSet.user_email))
+	}else{
+		alert("<?php echo _mb("Der Download wurde im Hintergrund gestartet. Dieser Vorgang kann einige Minuten dauern. Ihre Daten werden nach Abschluss an die folgende E-Mail-Adresse gesendet: ");?>".concat(DlSet.user_email))	
+	}
 }
 
 

@@ -720,7 +720,7 @@ netgis.map =
 						"LAYERS":		layerName,
 						"FORMAT":		"image/png",
 						"TRANSPARENT":	"true",
-						"VERSION":		"1.1.!"
+						"VERSION":		"1.1.1"
 					},
 					serverType: "mapserver"
 				}

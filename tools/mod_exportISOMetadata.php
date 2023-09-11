@@ -247,7 +247,9 @@ while ($row_app = db_fetch_array($res_app)) {
 }
 //export rest interfaces for wfs2.0.0+ based wfs featuretypes which are searchable and opendata classified
 
-$sql_rest = "select wfs_featuretype.featuretype_id from wfs_featuretype where fkey_wfs_id in (select wfs_id from wfs where wfs_id in (select fkey_wfs_id from wfs_termsofuse inner join termsofuse on fkey_termsofuse_id = termsofuse_id where termsofuse.isopen = 1) and wfs_version = '2.0.0') and featuretype_searchable = 1";
+//Ticket #6671: Change to also include WFS without OpenData license in export
+//$sql_rest = "select wfs_featuretype.featuretype_id from wfs_featuretype where fkey_wfs_id in (select wfs_id from wfs where wfs_id in (select fkey_wfs_id from wfs_termsofuse inner join termsofuse on fkey_termsofuse_id = termsofuse_id where termsofuse.isopen = 1) and wfs_version = '2.0.0') and featuretype_searchable = 1";
+$sql_rest = "select wfs_featuretype.featuretype_id from wfs_featuretype where fkey_wfs_id in (select wfs_id from wfs WHERE wfs_version = '2.0.0' OR wfs_version = '1.1.0' ) and featuretype_searchable = 1"; 
 
 $v = array();
 $t = array();

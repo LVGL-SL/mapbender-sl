@@ -1852,8 +1852,9 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
                      $numberOfObjects = $ogr->ogrCountFeatures($content, urldecode($reqParams['outputformat']), $reqParams[$typeParameterName], true);
                      if ($numberOfObjects == false) {
                          $n->updateWfsLog(0, 'Could not count objects for requested format: ' . urldecode($reqParams['outputformat']), '', 0, $log_id);
-                         header("Content-Type: application/json");
-                         echo '{"error": true, "message": "Objects should be counted, but requested format could not be parsed by proxy. Please use another format, e.g. GML, Shape or GeoJSON!"}';
+                         header("Content-Type: application/xml");
+                         //echo '{"error": true, "message": "Objects should be counted, but requested format could not be parsed by proxy. Please use another format, e.g. GML, Shape or GeoJSON!"}';
+                         echo $content;
                          die();
                      } else {
                         $n->updateWfsLog(1, '', '', $numberOfObjects, $log_id);
