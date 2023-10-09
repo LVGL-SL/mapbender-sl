@@ -273,8 +273,14 @@ wms_const.prototype.getFeatureInfoRequest = function(mapObj, clickPoint){
 	rq += "&FORMAT=" + this.gui_wms_mapformat;
 	rq += "&INFO_FORMAT=" + this.gui_wms_featureinfoformat;
 	rq += "&EXCEPTIONS=" + this.gui_wms_exceptionformat;
-	rq += "&X=" + Math.round(clickPoint.x);
-	rq += "&Y=" + Math.round(clickPoint.y);
+	//Ticket 4538 - For WMS 1.3.0 the clickPoint-Parameters in the URL must be I,J instead of X,Y
+	if(this.wms_version === "1.3.0"){ 		
+		rq += "&I=" + Math.round(clickPoint.x);
+		rq += "&J=" + Math.round(clickPoint.y);
+	}else{
+		rq += "&X=" + Math.round(clickPoint.x);
+		rq += "&Y=" + Math.round(clickPoint.y);
+	}
 	if(mb_feature_count > 0){             
 		rq += "&FEATURE_COUNT="+mb_feature_count;
 	}
