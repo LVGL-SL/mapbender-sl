@@ -527,7 +527,7 @@ switch ($ajaxResponse->getMethod()) {
 	        $configuration->output_folder = $outputFolder;
 	        $configuration->output_filename = $outputFilename;
 	        $configuration->notification->email_address = $user->email;
-	        $configuration->notification->subject = _mb("Your GeoPortal.rlp geopackage download has been processed");
+	        $configuration->notification->subject = _mb("Your GeoPortal.sl geopackage download has been processed");
 	        if (defined("GPKG_ABSOLUTE_DOWNLOAD_URI") && GPKG_ABSOLUTE_DOWNLOAD_URI != "") {
 	            $configuration->notification->text = 'Downloadlink: ';
 	            $configuration->notification->text .= GPKG_ABSOLUTE_DOWNLOAD_URI . $outputFilename . ".gpkg";
@@ -536,7 +536,7 @@ switch ($ajaxResponse->getMethod()) {
 	            $configuration->notification->text .= 'https://ngageoint.github.io/geopackage-viewer-js/?gpkg=' . urlencode(GPKG_ABSOLUTE_DOWNLOAD_URI . $outputFilename . ".gpkg");
 	            //https://ngageoint.github.io/geopackage-viewer-js/?gpkg=
 	        } else {
-	           $configuration->notification->text = "https://www.geoportal.rlp.de/metadata/" . $outputFilename . ".gpkg";
+	           $configuration->notification->text = "https://geoportal.saarland.de/inspiredownloads/" . $outputFilename . ".gpkg";
 	        }
 	        //check values
 	        //invoke python script
