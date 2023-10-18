@@ -2256,7 +2256,8 @@ SQL;
 		$metadataId = $ajaxResponse->getParameter("metadataId");
 		if (defined('PREVIEW_DIR') && PREVIEW_DIR != '') {
 		    $previewName = $metadataId."_metadata_preview.jpg";
-		    $previewPath =  dirname(__FILE__)."/".PREVIEW_DIR."/".$previewName;
+		    //$previewPath =  dirname(__FILE__)."/".PREVIEW_DIR."/".$previewName;
+			$previewPath = PREVIEW_DIR."/".$previewName;
 		    if (file_exists($previewPath)) {
 		        unlink($previewPath);
 			//delete {localstorage} from mb_metadata.preview_image
