@@ -156,8 +156,8 @@ if ($_POST["upload_action"] === "upload") {
     } else {
         #6260: Changed path declaration to access current storage folder /var/opt/geoportal/media/preview
         #      Also see etc/apache2/apache.cfg -- /var/opt.. Directory specification
-        echo "Vorschaubild : ".$new_name;
-	  
+        //echo "Vorschaubild : ".$new_name;	  
+        echo "<img src=\"".PREVIEW_DIR . $new_name . "\">";
 	  
 	  
     }    
