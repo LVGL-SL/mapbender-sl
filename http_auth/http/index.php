@@ -193,8 +193,20 @@ switch (strtolower($reqParams['service'])) {
         $owsproxyString = $n->getWFSOWSstring($wfsId);
         $auth = $n->getAuthInfoOfWFS($wfsId);
         break;
+	default :  
+	    //throwE(array("Required Parameter 'service' not set."));
+		header("Content-type: application/xhtml+xml; charset=UTF-8");
+		echo createExceptionXml("", "Parameter SERVICE invalid");
+	    die;
+	  
 }
-
+switch (strtolower($reqParams['request'])) {
+	case '':  
+	    header("Content-type: application/xhtml+xml; charset=UTF-8");
+	    echo createExceptionXml("", "Parameter REQUEST invalid");
+	    die;
+		
+}
 //check if proxy is activated
 
 if (isset($owsproxyString) && $owsproxyString != "" && $owsproxyString != false) {
@@ -1155,7 +1167,7 @@ function getWfsCapabilities($request, $extraParameter, $auth = false)
     switch ($reqParams['version']) {
         case "2.0.0":
             $urlsToChange[] = '/wfs:WFS_Capabilities/ows:ServiceProvider/ows:ServiceContact/ows:ContactInfo/ows:OnlineResource/@xlink:href';
-            $operations = array("GetCapabilities", "DescribeFeatureType", "GetFeature", "Transaction", "GetPropertyValue", "ListStoredQueries", "DescribeStoredQueries", "CreateStoredQuery", "DropStoredQuery");
+            $operations = array("GetCapabilities", "DescribeFeatureType", "GetFeature", "GetGmlObject", "Transaction", "GetPropertyValue", "ListStoredQueries", "DescribeStoredQueries", "CreateStoredQuery", "DropStoredQuery");
             foreach ($operations as $operation) {
                 $urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="' . $operation . '"]/ows:DCP/ows:HTTP/ows:Get/@xlink:href';
                 $urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="' . $operation . '"]/ows:DCP/ows:HTTP/ows:Post/@xlink:href';
@@ -1946,4 +1958,24 @@ function delTotalFromQuery($paramName, $queryString)
     $queryStringNew = ltrim($queryStringNew, '&');
     $queryStringNew = rtrim($queryStringNew, '&');
     return $queryStringNew;
+}
+//Ticket #4677: Error message exchange in case of missing URL-parameters
+function createExceptionXml ($errorCode, $errorMessage) {
+	// see http://de2.php.net/manual/de/domimplementation.createdocumenttype.php
+	$imp = new DOMImplementation;
+	$dtd = $imp->createDocumentType("ServiceExceptionReport", "", "http://schemas.opengis.net/wms/1.1.1/exception_1_1_1.dtd");
+	
+	$doc = $imp->createDocument("", "", $dtd);
+	$doc->encoding = 'UTF-8';
+	$doc->standalone = false;
+	
+	$el = $doc->createElement("ServiceExceptionReport");
+	$exc = $doc->createElement("ServiceException", $errorMessage);
+	if ($errorCode) {
+		$exc->setAttribute("code", $errorCode);
+	}
+	$el->appendChild($exc);
+	$doc->appendChild($el);
+	
+	return $doc->saveXML();
 }
