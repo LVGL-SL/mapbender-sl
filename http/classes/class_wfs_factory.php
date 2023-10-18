@@ -76,13 +76,18 @@ abstract class WfsFactory extends OwsFactory {
 		$t = array("i");
 		$res = db_prep_query($sql, $v, $t);
 		$cnt = 0;
+		
 		while(db_fetch_row($res)){
 			$hasOwsproxyUrl = false;
+			//Ticket #6827: Added the additional variable "proxy" to save the information that the proxy flag is set for this wfs
+			//Is lateron used in mod_linkedDataProxy to hide original internal url in ogc root layer overview (datasource/datenquelle)
+			$aWfs->proxy = false;
 			$e = new mb_notice("class_wfs_factory: wfs_owsproxy: ".db_result($res, $cnt, "wfs_owsproxy"));
 			if(db_result($res, $cnt, "wfs_owsproxy") != ''){
 				$owsproxyUrl = OWSPROXY."/".session_id()."/".db_result($res, $cnt, "wfs_owsproxy")."?";
 				$e = new mb_notice("class_wfs_factory: owsproxyURl: ".$owsproxyUrl);
 				$hasOwsproxyUrl = true;
+				$aWfs->proxy = true;
 			}
 	
 			$aWfs->id = db_result($res, $cnt, "wfs_id");
