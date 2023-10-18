@@ -332,7 +332,7 @@ const re = await response.text();
 		
 		paintPoints = true;
 		div.remove();
-		
+		this._trigger("new",null,null);
 		uebergeben = true;
         var l = jsonPoints.length;
 		
@@ -579,6 +579,7 @@ const re = await response.text();
 		this.element
 			.unbind("mousedown", this._addPoint)
 			.css("cursor", "default");
+			
 	},
 
 	// delete everything

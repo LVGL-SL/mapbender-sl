@@ -28,9 +28,10 @@ var MeasureApi = function (o) {
 	};
 
 	var changeDialogContent = function () {
+		
 		measureDialog.html(informationHtml);
 		hideMeasureData();
-
+        
 		o.$target.unbind("click", changeDialogContent);
 	};
 
@@ -110,6 +111,7 @@ var MeasureApi = function (o) {
                  }
                  else
                  {
+					
                    if(data == -5) data = 0;
                    ctx.clearRect(0, 0, 630, 250);
                    draw_lineII();
@@ -123,17 +125,84 @@ var MeasureApi = function (o) {
 	};
 
 	var finishMeasure = function () {
+		
 		inProgress = false;
 		that.deactivate();
 	};
 
 	var reinitializeMeasure = function () {
+		
 		inProgress = false;
 		that.deactivate();
 		that.activate();
 	};
+    var reset = function () {
+		
+		
+		if (o.$target.size() > 0) {
+			o.$target
+				.mb_hohe(o).mousedown(function(event) {
+			
+			
+    switch (event.which) {
+        case 1:
+            //alert('Left Mouse button pressed.');
+			resetII();
+            break;
+        case 2:
+		    
+            //alert('Middle Mouse button pressed.');
+            break;
+        case 3:if (o.$target.size() > 0) {
+			
+            //alert('Right Mouse button pressed.');
+		}
+            break;
+        default:
+           // alert('You have a strange Mouse!');
+    }
+});
 
+		}
+	};
+	
+	
+	var resetII = function () {
+	
+		if (o.$target.size() > 0) {
+			o.$target.mb_hohe("destroy")
+                                .unbind("mb_hohepointadded", updateJsonArray)
+                                .unbind("mb_hohecleardia", clearJsonArray)
+								.unbind("mb_hoheupdate", updateView)
+                                .unbind("mb_measurelastpointadded", finishMeasure)
+								.unbind("mb_hohenew", reset)
+								.unbind("mousedown")
+								.unbind("mb_measurereinitialize", reinitializeMeasure);
+		}
+                ctx.clearRect(0, 0, 600, 250);
+                points = [];
+                jsonarray = [];
+				hideMeasureData();
+                ctx.fillText(t,9,15);
+                hoehe_min = 700;
+                hoehe_max = 100;
+                gesamt_laenge = 0;
+
+		measureDialog.html(defaultHtml);
+
+                //remove measured x and y values from print dialog
+                $('input[name="measured_x_values"]').val("");
+                $('input[name="measured_y_values"]').val("");
+	
+		
+	
+		that.activate();
+			
+		
+	};
 	this.activate = function () {
+		
+		//o.$target.mb_hohe("activate").unbind("mousedown");
                 //remove measured x and y values from print dialog
                 $('input[name="measured_x_values"]').val("");
                 $('input[name="measured_y_values"]').val("");
@@ -142,11 +211,12 @@ var MeasureApi = function (o) {
 			o.$target
 				.mb_hohe(o)
                                 .bind("mb_hohecleardia", clearJsonArray)
-                                .bind("mb_hohepointadded", updateJsonArray)                                
-				.bind("mb_hoheupdate", updateView)				
-				.bind("mb_hohelastpointadded", finishMeasure)
-				.bind("mb_hohereinitialize", reinitializeMeasure)
-				.bind("click", changeDialogContent);
+                                .bind("mb_hohepointadded", updateJsonArray)
+								.bind("mb_hoheupdate", updateView)				
+								.bind("mb_hohelastpointadded", finishMeasure)
+								.bind("mb_hohereinitialize", reinitializeMeasure)
+								.bind("click", changeDialogContent)
+								.bind("mb_hohenew", reset);
 		}
 		if (!inProgress) {
 			inProgress = true;
@@ -164,14 +234,16 @@ var MeasureApi = function (o) {
 			o.$target.mb_hohe("destroy")
                                 .unbind("mb_hohepointadded", updateJsonArray)
                                 .unbind("mb_hohecleardia", clearJsonArray)
-				.unbind("mb_hoheupdate", updateView)
+								.unbind("mb_hoheupdate", updateView)
                                 .unbind("mb_measurelastpointadded", finishMeasure)
-				.unbind("mb_measurereinitialize", reinitializeMeasure);
+								.unbind("mb_hohenew", reset)
+								.unbind("mousedown")
+								.unbind("mb_measurereinitialize", reinitializeMeasure);
 		}
                 ctx.clearRect(0, 0, 600, 250);
                 points = [];
                 jsonarray = [];
-		hideMeasureData();
+		//hideMeasureData();
                 ctx.fillText(t,9,15);
                 hoehe_min = 700;
                 hoehe_max = 100;
@@ -187,9 +259,13 @@ var MeasureApi = function (o) {
 	};
 	
 	this.deactivate = function () {
+		
 		if (o.$target.size() > 0) {
-			o.$target.mb_hohe("deactivate");
+			
+			o.$target.mb_hohe("deactivate").unbind("mousedown");
+			
 		}
+	
 	};
 
 
@@ -535,6 +611,7 @@ er wird farblich gezeichnet je nach dem ob die zwei Punkte in der BBox sind oder
         ctx.clearRect(0, 0, 600, 250);
         ctx.fillText("Sie koennen mit Klicken eine Strecke in die Kartei zeichnen. Beim letzten Punkt bitte ein Doppelklick.",9,15);
 		ctx.fillText("Nach dem Erstellen koennen Sie ueber die Strecke fahren und bekommen die Hoehe angezeigt.",9,30);
+		ctx.fillText("Nach dem Erstellen können Sie mit einenm Click in die Karte das Diagramm zurücksetzen.",9,60);
         draw_stuetzpunkte();
     	
 		
