@@ -762,6 +762,7 @@ function wms_add_data_type_format(datatype,dataformat){
 }
 
 function wms_addSRS(epsg,minx,miny,maxx,maxy){
+	
 	wms[wms.length-1].gui_epsg[wms[wms.length-1].gui_epsg.length] = epsg;
 	wms[wms.length-1].gui_epsg_supported[wms[wms.length-1].gui_epsg_supported.length] = true;
 	wms[wms.length-1].gui_minx[wms[wms.length-1].gui_minx.length] = minx;
