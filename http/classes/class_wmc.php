@@ -2390,7 +2390,8 @@ SQL;
 							$currentLayer["abstract"] = $value;
 						}
 						if ($tag == "SRS") {
-							$currentLayer["epsg"] = explode(" ", $value);
+							//Ticket #4897 Added check whether EPSG for currently chosen service is supported
+							$currentLayer["epsg"] = "";//explode(" ", $value);
 						}
 						if ($tag == "EXTENSION" && $type == "close") {
 							$extension = false;

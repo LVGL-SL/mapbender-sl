@@ -102,10 +102,12 @@ function paramterbuild(url) {
     return url;
 }
 var mod_addWms_general = function (js, param) {
+	
     var ind = getMapObjIndexByName('mapframe1');
     var map = mb_mapObj[ind];
     var success = false;
     if (js) {
+		
         var oldWmsCount = wms.length;
         eval(js);
         if (errorcall) {
@@ -150,6 +152,7 @@ var mod_addWms_general = function (js, param) {
                         if (bbox_minx === null || bbox_miny === null || bbox_maxx === null || bbox_maxy === null) {
                             continue;
                         }
+						
                         map.calculateExtent(new Mapbender.Extent(bbox_minx, bbox_miny, bbox_maxx, bbox_maxy));
                         map.setMapRequest();
                         break;
@@ -165,6 +168,10 @@ var mod_addWms_general = function (js, param) {
         param.options.success = success;
         param.callback(param.options);
     }
+	
+	
+	map.checkSupportedWms2(map.epsg );//map.wms.length - 1
+    
     mb_execloadWmsSubFunctions({
         wms: map.wms.length > 0 ? map.wms[map.wms.length - 1] : null
     });

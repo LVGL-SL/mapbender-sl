@@ -407,8 +407,29 @@ Mapbender.Map = function (options) {
             }
         }
     }; 
-    
-    
+        //Ticket #4897: Added check whether EPSG for currently chosen service is supported
+        this.checkSupportedWms2 = function (srs) {
+
+	
+        
+    	//check which WMS support the new SRS
+        undoIgnoreWms();
+        for (var i = 0; i < that.wms.length; i++) {
+            var found = false;
+            for (var j = 0; j < that.wms[i].gui_epsg.length; j++) {
+                if ((srs === that.wms[i].gui_epsg[j]) && that.wms[i].gui_epsg_supported[j]) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+				alert("ig: "+ that.wms[i].wms_title);
+                ignoreWms(that.wms[i]);
+            }
+        }
+	};
+
+	
     // If options.wmsIndexOverview is set (=map is overview), only this
     // WMS is being pointed to.
     this.setWms = function (options) {
@@ -465,6 +486,7 @@ Mapbender.Map = function (options) {
             this.styles[i] = styles;
             this.querylayers[i] = querylayers;
         }
+
     };
     /**
      * get the extent of the mapObj
@@ -1395,7 +1417,7 @@ Mapbender.Map = function (options) {
 			}
 			
             try {
-                if (that.skipWmsIfSrsNotSupported && isIgnoredWms(currentWms)) {
+                if (that.skipWmsIfSrsNotSupported && isIgnoredWms(currentWms)) {						
                     new Mb_notice(currentWms.wms_title + " is ignored.");
                     continue;
                 }
