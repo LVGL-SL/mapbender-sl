@@ -358,7 +358,6 @@ class SpatialDataCache():
         error_messages = []
         return_object = {}
         # classify type of service (wms/wfs/oaf/atom/...) from the information in the service metadata
-        log.info("CSTEST: Entered check download options")
         if service.serviceidentification.type in ['view']:
             if service.serviceidentification.version in ['OGC:WMS 1.1.1', 'OGC:WMS 1.3.0']:
                 service_type = 'wms'
@@ -369,8 +368,6 @@ class SpatialDataCache():
                         # TODO: sanitize access url - add params if not already given 
                         access_uri = online_resource.url
                         r = requests.get(online_resource.url)
-                        log.info("CSTEST: request -view-: " + str(r))
-                        log.info("CSTEST: request -view- url: " + str(access_uri))
                         # TODO: check for http 401
                         try:
                             tree = ET.fromstring(r.text)
@@ -406,7 +403,6 @@ class SpatialDataCache():
                         # TODO: sanitize access url - add params if not already given 
                         access_uri = online_resource.url
                         r = requests.get(online_resource.url) # TODO: set header to json - maybe html is the default returned format
-                        log.info("CSTEST: request - response - download - oaf: " + str(r))
                         # check if collection or api or s.th. else was given back!
                         possible_dataset_type = 'vector'
             if service.serviceidentification.version in ['2.0.0', 'OGC:WFS 2.0.0', 'OGC:WFS 1.1.0', 'OGC:WFS 2.0']:
@@ -418,8 +414,6 @@ class SpatialDataCache():
                         # TODO: sanitize access url - add params if not already given 
                         access_uri = online_resource.url
                         r = requests.get(online_resource.url)
-                        log.info("CSTEST: request - response - download - wfs - url: " + str(access_uri))
-                        log.info("CSTEST: request - response - download - wfs: " + str(r))
                         # TODO: check for http 401
                         tree = ET.fromstring(r.text)
                         if str(tree.tag) in ['{http://www.opengis.net/wfs}WFS_Capabilities', '{http://www.opengis.net/wfs/2.0}WFS_Capabilities']:
@@ -453,16 +447,11 @@ class SpatialDataCache():
                             for i in range(len(spatial_dataset_identifiers)): 
                                 spatial_dataset_identifier_code = spatial_dataset_identifiers[i].find("./{http://inspire.ec.europa.eu/schemas/common/1.0}Code")
                                 spatial_dataset_identifier_codespace = spatial_dataset_identifiers[i].find("./{http://inspire.ec.europa.eu/schemas/common/1.0}Namespace")
-                                log.info("CSTEST: code in loop: " + str(spatial_dataset_identifier_code))
-                                log.info("CSTEST: codespace in loop: " + str(spatial_dataset_identifier_codespace))
-                                log.info("CSTEST: full xml node spatialdataset:" + str(ET.tostring(spatial_dataset_identifiers[i])))
                                 if spatial_dataset_identifier_code is not None and spatial_dataset_identifier_code != -1 and spatial_dataset_identifier_codespace is not None and spatial_dataset_identifier_codespace != -1:
                                     spatial_dataset_identifier_codes.append(spatial_dataset_identifier_code)
                                     spatial_dataset_identifier_codespaces.append(spatial_dataset_identifier_codespace)
 
                             
-                            log.info("CSTEST: len of codes: " + str(len(spatial_dataset_identifier_codes)))
-                            log.info("CSTEST: len of codespaces: " + str(len(spatial_dataset_identifier_codespaces)))
                             spatial_dataset_identifier_array = []
                             for i in range(len(spatial_dataset_identifier_codes)):
                                 spatial_dataset_identifier_array.append(str(spatial_dataset_identifier_codespaces[i].text) + str(spatial_dataset_identifier_codes[i].text))
@@ -491,9 +480,6 @@ class SpatialDataCache():
                 service_type = 'download'
                 service_version = 'predefined ATOM'
                 r = requests.get(service.distribution.online[0].url)
-                log.info("CSTEST: request - download - atom - url: " + str(service.distribution.online[0].url))
-                log.info("CSTEST: request - response - download - atom: " + str(r))
-                log.info("CSTEST: request - response - download - atom: " + r.text)
                 # parse inspire service feed
                 tree = ET.fromstring(r.text)
                 # extract code and codespace from spatial_dataset_identifier - should be separated by / as demanded from inpsire
@@ -506,15 +492,12 @@ class SpatialDataCache():
                     #log.info(entry[0].attrib['href'])
                     # get dataset feed
                     r = requests.get(entry[0].attrib['href'])
-                    log.info("CSTEST: entry attrib href:" + str(entry[0].attrib['href']))
-                    #log.info("CSTEST: href request based on "+ r.text)
                     tree = ET.fromstring(r.text)
                     access_uri = entry[0].attrib['href']
                     # find entry with format and crs from metadata (original crs)
                     # http://www.opengis.net/def/crs/EPSG/25832 or ...
                     # 1. look for entry with mimetype image/tiff
                     entry = tree.find("./{http://www.w3.org/2005/Atom}entry/{http://www.w3.org/2005/Atom}category[@term='http://www.opengis.net/def/crs/EPSG/" + str(epsg_id) + "']/../{http://www.w3.org/2005/Atom}link[@type='image/tiff']")
-                    #log.info("CSTEST: entry check for raster: " + str(ET.tostring(entry)))
                     if entry is not None:
                         if 'http_auth' in entry.attrib['href']:
                             log.info("User tried downloading a secured service.")
@@ -547,7 +530,6 @@ class SpatialDataCache():
     def get_appropriate_service(self, dataset_type:str, spatial_dataset_identifier:str, services, epsg_id):
         if dataset_type == 'raster':
             log.info("check services for raster download")
-            log.info("CSTEST: List of services: " + str(services))
             for service in services:
                 # option 1: wms with output_format image/png
                 found_service, found_layer = self.check_wms(services[service], spatial_dataset_identifier)
@@ -643,7 +625,6 @@ class SpatialDataCache():
             # add bbox value, limit, and format
             # first get only 10 objects to check the number of objects in the bbox of the area of interest
             download_url = ogc_api_features_base_url + "?f=json&limit=10&bbox=" + str(polygon_box[0]) + "," + str(polygon_box[1]) + "," + str(polygon_box[2]) + "," + str(polygon_box[3])
-            log.info("CSTEST - download url vector oaf : " + download_url)
             r = requests.get(download_url)
             json_result = json.loads(r.text)
             if 'numberMatched' in json_result.keys():
@@ -672,11 +653,7 @@ class SpatialDataCache():
                 inc_bboxes = inc_bboxes + 1
                 log.info("json saved!")
         if download_service_type == 'raster_atom' or download_service_type == 'vector_atom':
-            log.info("CSTEST: downloadservice distribution online:" + str(download_service.distribution.online))
-            log.info("CSTEST: actual url from online distr.:" + download_service.distribution.online[0].url)
-            #log.info("CSTEST: maybe another possible url:" + download_service.distribution.online[1].url)
             r = requests.get(download_service.distribution.online[0].url)
-            log.info("CSTEST: requesttext: " + str(r.text))
             # parse inspire service feed
             tree = ET.fromstring(r.text)
             # extract code and codespace from spatial_dataset_identifier - should be separated by / as demanded from inpsire
@@ -701,7 +678,6 @@ class SpatialDataCache():
                 # find entry with format and crs from metadata (original crs)
                 # http://www.opengis.net/def/crs/EPSG/25832 or ...
                 entry = tree.findall("./{http://www.w3.org/2005/Atom}entry/{http://www.w3.org/2005/Atom}category[@term='http://www.opengis.net/def/crs/EPSG/" + str(metadata_info['epsg_id']) + "']/../{http://www.w3.org/2005/Atom}link[@type='" +  format_mimetype + "']")
-                #log.info("CSTEST: Entry result: " + str(entry))
                 if len(entry) > 0:
                     inc_bboxes = 0 
                     for link in entry:
@@ -729,14 +705,15 @@ class SpatialDataCache():
         """
         returns an array of shapely box objects
         """
-        log.info("CSTEST: area of interest: " + str(self.area_of_interest_geojson))
         polygon = from_geojson(self.area_of_interest_geojson)
         polygon_box = polygon.bounds
         # calculate delta lon in meter (lon is first value x)
         middle_phi = polygon_box[1] + (polygon_box[3] - polygon_box[1]) / 2
         delta_lon_deg = polygon_box[2] - polygon_box[0]
         delta_lat_deg = polygon_box[3] - polygon_box[1]
-        delta_lon_m = 2 * math.pi * 6378137.0 * math.cos(360 / middle_phi * 2 * math.pi) / 360 * delta_lon_deg
+        #Changed to deviding the term in cosinus /360 because the degree to radiant calculation was wrong
+        #delta_lon_m = 2 * math.pi * 6378137.0 * math.cos(360 / middle_phi * 2 * math.pi) / 360 * delta_lon_deg
+        delta_lon_m = 2 * math.pi * 6378137.0 * math.cos((middle_phi * 2 * math.pi)/360) / 360 * delta_lon_deg
         delta_lat_m = 2 * math.pi * 6378137.0 / 360 * delta_lat_deg
         # calculate groundResolution from scale
         # dpi = 150
@@ -765,7 +742,6 @@ class SpatialDataCache():
                 geom_box = box(bbox_miny, bbox_minx, bbox_maxy, bbox_maxx)
                 bboxes.append(geom_box)
         # for debugging purposes store geojson of boxes to file  
-        log.info("CSTEST: bboxes: " + str(bboxes))
         geom_boxes_multipolygon = multipolygons(bboxes)
         geojson_boxes = to_geojson(geom_boxes_multipolygon)
         # log.info(geojson_boxes)  
@@ -980,15 +956,11 @@ class SpatialDataCache():
                 services = self.get_coupled_services(str(metadata_info['spatial_dataset_identifier']))
                 downloadable_dataset['time_to_resolve_services'] = str(time.time() - start_time_services_metadata)
                 log.info("number of found services: " + str(len(services)))
-                log.info("CSTEST: services to string: " + str(services))
-                log.info("CSTEST: check services.items: " + str(type(services.items)) +  str(services.items))
                 services_to_delete = []
                 # debug - show service information
                 #Ticket 6686: Add check for secured services in early logic to remove them early and already unset the checkbox for download attempt
                 for service in services:
                     log.info(services[service].serviceidentification.type + ' - ' + services[service].serviceidentification.version + ' : ' + services[service].distribution.online[0].url)
-                    log.info("CSTEST: " + str(type(service)))
-                    log.info("CSTEST: " + service)
                     if('http_auth' in services[service].distribution.online[0].url):
                         services_to_delete.append(service)
 
@@ -996,7 +968,6 @@ class SpatialDataCache():
                     del services[service]
 
                     
-                log.info("CSTEST:" + str(type(services)))
                 #services = filter(lambda key, service: 'http_auth' not in service.distribution.online[0].url, services.items())
                 for service in services:
                     log.info(services[service].serviceidentification.type + ' - ' + services[service].serviceidentification.version + ' : ' + services[service].distribution.online[0].url)
@@ -1021,9 +992,6 @@ class SpatialDataCache():
                             start_aggregation_time = time.time()
                             # when datasets are downloaded via atom feeds, they are in the crs which was given in the dataset metadata
                             if download_service.serviceidentification.version == 'predefined ATOM':
-                                log.info("CSTEST: tmp outputput folder dest:" + str(os.path.join(self.tmp_output_folder + dataset_aggregate_filename)))
-                                log.info("CSTEST: dataset_file_array: " + str(dataset_file_array))
-                                log.info("CSTEST: epsg info" + str(metadata_info['epsg_id']))
                                 gdal.Warp(os.path.join(self.tmp_output_folder + dataset_aggregate_filename), dataset_file_array, format="GTiff", srcSRS="EPSG:" + str(metadata_info['epsg_id']), dstSRS="EPSG:4326",
                             options=["COMPRESS=LZW", "TILED=YES"])
                             else:

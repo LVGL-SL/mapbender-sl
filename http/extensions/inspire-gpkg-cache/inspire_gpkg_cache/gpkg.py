@@ -46,7 +46,8 @@ class Gpkg:
         result = cursor.fetchall()
         for row in result: 
             metadata_info = self.get_info_from_iso_xml(row[0])
-            log.info(row[1] + " - " + metadata_info['title'] + " - " + row[3] + " - " + metadata_info['date'])
+            #Ticket #6686: Log had to be removed because accessing metadata['date'] is no reliable
+            #log.info(row[1] + " - " + metadata_info['title'] + " - " + row[3] + " - " + metadata_info['date'])
         conn.close()
 
     def get_info_from_iso_xml(self, iso_xml):
