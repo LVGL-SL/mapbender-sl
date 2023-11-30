@@ -1539,6 +1539,8 @@ if ($resource == 'wms' or $resource == 'layer'){
 		$securedLinkWithChilds = HTTP_AUTH_PROXY."/".$layerId."?REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS&withChilds=1";
 		$html .= $t_a;
 		$html .= $translation['securedCapabilities'];
+		//Ticket #5514: Manual for secured services added to interface description page
+		$html .= "<br/><a class='linkjs' href = \"https://geoportal.saarland.de/article/Abgesicherte_Dienste/#Einladen_eines_abgesicherten_Dienstes\" target=_blank><br/><i>(Hier</i></a> zum Hilfedokument <br/> \"Abgesicherte Dienste\")";
 		$html .= $t_b;
 		$html .= "<table class='lesscsstable'>";
 		$html .= $t_a1.$translation['mapbenderCapabilitiesSingleLayer'].$t_b1."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a onclick='' class='linkjs' href = '" . $securedLink . "' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"". $securedLink . "\",\"".$translation['mapbenderCapabilitiesSingleLayer']."\");'>" . $translation['showLink'] . "</a>" . $t_c;
