@@ -193,7 +193,9 @@ class SpatialDataCache():
         log.info("Spatial Dataset Identifier from metadata record: " + metadata_info['spatial_dataset_identifier'])
         if len(metadata.identification.distance) >= 1:
             if metadata.identification.uom[0] and metadata.identification.distance[0]:
-                if "#" in metadata.identification.uom[0]: 
+                #log.info("uom: " + str(metadata.identification.uom[0]))
+                '''implement two different ways'''
+                if '#' in metadata.identification.uom[0]:
                     uom = metadata.identification.uom[0].split("#")[1]
                 else:
                     uom = metadata.identification.uom[0]
@@ -807,13 +809,41 @@ class SpatialDataCache():
             md_date = tree.findall("./{http://www.isotc211.org/2005/gmd}dateStamp/{http://www.isotc211.org/2005/gco}DateTime")
         # set new metadata date
         current_date = datetime.now()
-        md_date[0].text = current_date.strftime('%Y-%m-%d')
+        if not md_date:
+            '''
+            <gmd:dateStamp>
+                <gco:DateTime>2023-11-06T07:18:10</gco:DateTime>
+            </gmd:dateStamp> 
+            '''
+            #try to find DateTime instead
+            md_date = tree.findall("./{http://www.isotc211.org/2005/gmd}dateStamp/{http://www.isotc211.org/2005/gco}DateTime")
+            # set new metadata dateTime
+            md_date[0].text = current_date.strftime('%Y-%m-%dT%H:%M:%S')
+        else:
+            # set new metadata date
+            md_date[0].text = current_date.strftime('%Y-%m-%d')
         md_identifier = tree.findall("./{http://www.isotc211.org/2005/gmd}fileIdentifier/{http://www.isotc211.org/2005/gco}CharacterString")
         md_identifier[0].text = str(uuid.uuid4())
         crs_code = tree.findall("./{http://www.isotc211.org/2005/gmd}referenceSystemInfo/{http://www.isotc211.org/2005/gmd}MD_ReferenceSystem/{http://www.isotc211.org/2005/gmd}referenceSystemIdentifier/{http://www.isotc211.org/2005/gmd}RS_Identifier/{http://www.isotc211.org/2005/gmd}code/{http://www.isotc211.org/2005/gco}CharacterString")
-        if len(crs_code)<1:
-            crs_code = tree.findall("./{http://www.isotc211.org/2005/gmd}referenceSystemInfo/{http://www.isotc211.org/2005/gmd}MD_ReferenceSystem/{http://www.isotc211.org/2005/gmd}referenceSystemIdentifier/{http://www.isotc211.org/2005/gmd}RS_Identifier/{http://www.isotc211.org/2005/gmd}code/{http://www.isotc211.org/2005/gmx}Anchor")    
-        crs_code[0].text = "urn:ogc:def:crs:EPSG:4326"
+        if not crs_code:
+            '''
+            <gmd:referenceSystemInfo>
+            <gmd:MD_ReferenceSystem>
+            <gmd:referenceSystemIdentifier>
+            <gmd:RS_Identifier>
+            <gmd:code>
+            <gmx:Anchor xlink:title="DHDN / 3GK zone 2" xlink:href="http://www.opengis.net/def/crs/EPSG/0/31466">EPSG:31466</gmx:Anchor>
+            </gmd:code>
+            </gmd:RS_Identifier>
+            </gmd:referenceSystemIdentifier>
+            </gmd:MD_ReferenceSystem>
+            </gmd:referenceSystemInfo>
+            '''
+            crs_code = tree.findall("./{http://www.isotc211.org/2005/gmd}referenceSystemInfo/{http://www.isotc211.org/2005/gmd}MD_ReferenceSystem/{http://www.isotc211.org/2005/gmd}referenceSystemIdentifier/{http://www.isotc211.org/2005/gmd}RS_Identifier/{http://www.isotc211.org/2005/gmd}code/{http://www.isotc211.org/2005/gmx}Anchor")
+            crs_code[0].set('href', "http://www.opengis.net/def/crs/EPSG/0/4326")
+            crs_code[0].text = 'EPSG:4326'
+        else:
+            crs_code[0].text = "urn:ogc:def:crs:EPSG:4326"
         md_format = tree.findall("./{http://www.isotc211.org/2005/gmd}distributionInfo/{http://www.isotc211.org/2005/gmd}MD_Distribution/{http://www.isotc211.org/2005/gmd}distributionFormat/{http://www.isotc211.org/2005/gmd}MD_Format/{http://www.isotc211.org/2005/gmd}name/{http://www.isotc211.org/2005/gco}CharacterString")
         if type == 'vector':
             md_format[0].text = 'GeoJSON'
