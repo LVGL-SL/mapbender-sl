@@ -1751,6 +1751,21 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 
 						$feedEntry->appendChild($feedEntryLink);	
 					}
+					//Ticket 6421: Fix for not tiled download links didn't work 
+					if ($numberOfTiles == 0){
+						
+						$feedEntryLink = $feedDoc->createElement("link");
+						$feedEntryLink->setAttribute("rel", "alternate");						
+						$feedEntryLink->setAttribute("href", $mapbenderMetadata[$i]->datalink_url);
+						$feedEntryLink->setAttribute("type", "image/tiff");
+						$feedEntryLink->setAttribute("hreflang", "de");
+						$feedEntryLink->setAttribute("title", $ressourceTitle);
+						
+						
+
+						$feedEntry->appendChild($feedEntryLink);	
+						
+					}
 				break;
 				case "wfs":
 					//example:
