@@ -269,11 +269,11 @@ SQL;
 			$mapbenderMetadata ['metadataId'] = $mbMetadata ['metadata_id'];
 			//Ticket #6423: Deleted date conversion since it's happening in a later step again and would lead to wrong results
 			//At least temporarily removed due to change on rlp side
-			//$mapbenderMetadata['serviceTimestamp'] =  strtotime($mbMetadata['lastchanged']);
-			//$mapbenderMetadata['serviceTimestampCreate'] =  strtotime($mbMetadata['createdate']);
+			$mapbenderMetadata['serviceTimestamp'] =  strtotime($mbMetadata['lastchanged']);
+			$mapbenderMetadata['serviceTimestampCreate'] =  strtotime($mbMetadata['createdate']);
 			
-			$mapbenderMetadata ['serviceTimestamp'] = strtotime ( $mbMetadata ['wms_timestamp'] );
-			$mapbenderMetadata ['serviceTimestampCreate'] = strtotime ( $mbMetadata ['wms_timestamp_create'] );
+			//$mapbenderMetadata ['serviceTimestamp'] = strtotime ( $mbMetadata ['wms_timestamp'] );
+			//$mapbenderMetadata ['serviceTimestampCreate'] = strtotime ( $mbMetadata ['wms_timestamp_create'] );
 
 			$mapbenderMetadata ['serviceDepartment'] = $mbMetadata ['responsible_party'];
 			$mapbenderMetadata ['serviceDepartmentMail'] = "kontakt@geoportal.rlp.de";
