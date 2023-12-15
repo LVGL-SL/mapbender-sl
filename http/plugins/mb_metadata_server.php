@@ -2045,7 +2045,11 @@ SQL;
 				$e = new mb_exception("Problem while storing metadata to mb_metadata table!");
 				$e = new mb_exception($result['message']);
 				abort($result['message']);
-			} else {
+			} else {			   
+				//Ticket #4714: 
+			    //$result = array();
+				$result= array("alternate_title"=>"".$mbMetadata->alternate_title[0]);
+			    $ajaxResponse->setResult($result);
 				$ajaxResponse->setMessage("Stored metadata from external link to mapbender database!");
 				$ajaxResponse->setSuccess(true);
 				$e = new mb_notice("Stored metadata from external link to mapbender database!");

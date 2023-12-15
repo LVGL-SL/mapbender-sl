@@ -2744,6 +2744,14 @@ SQL;
 				$uuidArray[0] = $this->fileIdentifier;
 				$resultPropagation = $propagation->doPropagation("metadata", false, "push",  $uuidArray);
 				//********************************************************************************
+				//Ticket #4714 Sl specific adaption to populate alternate title to WMS and WFS tables based on dataset metadata url upload
+				if(!$this->updateRelatedResourceTable($resourceType, $resourceId)){
+					//db_rollback();
+					$e = new mb_exception("class_Iso19139:"._mb("Cannot update metadata dependant resource table (WMS/WFS)!"));
+					$result['message'] = "class_Iso19139:"._mb("Cannot update metadata dependant resource table (WMS/WFS)!");
+				}else{
+					//Successcase handling hier eigentlich nicht notwendig
+				}
 				//insert relations
 				$row = db_fetch_assoc($res);
 				$metadataId = $row['metadata_id'];
@@ -2802,5 +2810,59 @@ SQL;
 			$result['message'] = "Insert metadata successfully into database!";
 			return $result;
 		}	
+	}
+
+	//Ticket #4714 Sl specific adaption to populate alternate title to WMS and WFS tables based on dataset metadata url upload
+	private function updateRelatedResourceTable($resourceType, $resourceId){
+		//Update WMS/WFS table based on is upload data
+		//Currently only for alternate title (Ticket #4717)
+		//Check resource type in general
+		if(!($resourceType == "layer" || $resourceType == "featuretype")){
+			return false;
+		}
+
+		//Alternate title specific check on field/value existence
+		if (is_null($this->alternate_title) || !isset($this->alternate_title) || $this->alternate_title == false) {
+			return false;
+		}
+
+		//Search service (wms/wfs)
+		switch ($resourceType) {
+			case "layer":
+				$select_service_sql = "SELECT fkey_wms_id as service_id FROM mapbender.layer WHERE layer_id = $resourceId";
+				break;
+			case "featuretype":
+				$select_service_sql = "SELECT fkey_wfs_id as service_id FROM wfs_featuretype WHERE featuretype_id = $resourceId";
+				break;
+		}
+
+		//retrieve service id 
+		$res_service_sql = db_query($select_service_sql);
+		$service_row = db_fetch_assoc($res_service_sql);
+		$service_id = $service_row['service_id'];	
+
+		//check servoce od
+		if (is_null($service_id) || $service_id == ''){
+			return false;
+		}
+
+		//Prepare update statement based on resource type:
+		switch ($resourceType) {
+			case "layer":
+				$update_service_sql = "UPDATE mapbender.wms SET wms_alternate_title = $1 WHERE wms_id = $2";
+				break;
+			case "featuretype":
+				$update_service_sql = "UPDATE mapbender.wfs SET wfs_alternate_title = $1 WHERE wfs_id = $2";
+				break;
+		}
+		
+		//Execute update
+		$update_values = array($this->alternate_title[0], $service_id);
+		$value_types = array('s','i');
+		$res_update = db_prep_query($update_service_sql, $update_values, $value_types);
+
+		return $res_update;
+
+
 	}
 }

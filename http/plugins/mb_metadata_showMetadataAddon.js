@@ -231,6 +231,10 @@ var ShowMetadataAddonApi = function() {
 				} else {
 					Mapbender.modules.mb_metadata_manager_select.initTable();
 				}
+				//Ticket #4714: Added the population of alternate title in ui form based on 
+				if(obj.hasOwnProperty("alternate_title") && obj.alternate_title !== ''){
+					$('#wms_alternate_title').val(obj.alternate_title);
+				}
 			}
 		});
 		req.send();	
