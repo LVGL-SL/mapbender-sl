@@ -233,7 +233,13 @@ var ShowMetadataAddonApi = function() {
 				}
 				//Ticket #4714: Added the population of alternate title in ui form based on 
 				if(obj.hasOwnProperty("alternate_title") && obj.alternate_title !== ''){
-					$('#wms_alternate_title').val(obj.alternate_title);
+					//if(resourceType) $resourceType == "layer" || $resourceType == "featuretype"
+					if(resourceType === 'layer'){
+						$('#wms_alternate_title').val(obj.alternate_title);
+					}else if(resourceType === 'featuretype'){
+						$('#alternate_title').val(obj.alternate_title);
+					}
+
 				}
 			}
 		});
