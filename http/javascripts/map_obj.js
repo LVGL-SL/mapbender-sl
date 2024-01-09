@@ -423,7 +423,6 @@ Mapbender.Map = function (options) {
                 }
             }
             if (!found) {
-				alert("ig: "+ that.wms[i].wms_title);
                 ignoreWms(that.wms[i]);
             }
         }

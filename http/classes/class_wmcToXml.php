@@ -492,7 +492,8 @@ class WmcToXml {
 		$layerExtensionData["layer_featuretype_coupling"] = $currentLayer->layer_featuretype_coupling;
 		$layerExtensionData["layer_identifier"] = $currentLayer->layer_identifier; //json_string
         //add epsg part
-		for ($i = 0; $i < count($currentWms->gui_epsg); $i++) {
+		//Ticket 4897: limit the EPSG's and Extents to those of the layer.
+		/*for ($i = 0; $i < count($currentWms->gui_epsg); $i++) {
 			$found = false;
 			for ($j = 0; $j < count($layerExtensionData["layer_epsg"]); $j++) {
 				if ($layerExtensionData["layer_epsg"][$j]["epsg"] == $currentWms->gui_epsg[$i]) {
@@ -500,6 +501,7 @@ class WmcToXml {
 					break;
 				}
 			}
+
 			if (!$found) {
 				$layerExtensionData["layer_epsg"][]= array(
 					"epsg" => $currentWms->gui_epsg[$i],
@@ -510,7 +512,7 @@ class WmcToXml {
 				);
 			}
 		}
-
+*/
 		if ($currentLayer->gui_layer_wfs_featuretype !== "") {
 			$layerExtensionData["wfsFeatureType"] = $currentLayer->gui_layer_wfs_featuretype;
 		}

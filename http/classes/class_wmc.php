@@ -1824,6 +1824,8 @@ SQL;
 		array_push($wmcJsArray, "lock_maprequest = true;");
 		array_push($wmcJsArray, "eventAfterLoadWMS.trigger();"); //TODO: Why? Reload tree? Other way to do this?
 		array_push($wmcJsArray, "lock_maprequest = false;");
+// Ticket 4897: make a check of valid EPSG's		
+		array_push($wmcJsArray, "Mapbender.modules['".$this->mainMap->getFrameName()."'].checkSupportedWms2(\"".$this->mainMap->getEpsg()."\");");
 		array_push($wmcJsArray, "Mapbender.modules['".$this->mainMap->getFrameName().
 			"'].setMapRequest();");
 		if ($this->overviewMap !== null) {
