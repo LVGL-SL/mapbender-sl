@@ -47,12 +47,14 @@ class SpatialDataCache():
     :type catalogue_uri: str
     """
 
-    def __init__(self, data_configuration:dict, area_of_interest_geojson:str, catalogue_uri:str, output_filename:str = False, output_folder:str = False):
+    def __init__(self, data_configuration:dict, area_of_interest_geojson:str, catalogue_uris:list, output_filename:str = False, output_folder:str = False):
         """Constructor method
         """
         self.data_configuration = data_configuration
         self.area_of_interest_geojson = area_of_interest_geojson
-        self.catalogue_uri = catalogue_uri
+        # initially use first entry of catalogue list
+        self.catalogue_uris = catalogue_uris
+        self.catalogue_uri = self.catalogue_uris[0]
         proxy_url = get_env_variable_from_geoportal_sl("PROXY_HTTP")
         #http = urllib3.HTTPConnectionPool('http://lprxdutm04.saarland.de',8080)
         os.environ["HTTP_PROXY"] = proxy_url
@@ -142,7 +144,7 @@ class SpatialDataCache():
         operation. The invocation is done via owslib.
 
         :param fileidentifier: MD_Metadata fileidentifier of an ISO metadata record. Fileidentifiers are often uuids.
-        They identify teh metadata record itself and not the described dataset! TODO: identify the dataset by the usage
+        They identify the metadata record itself and not the described dataset! TODO: identify the dataset by the usage
         of spatial datataset identifier - they identify the dataset itself!
 
         :type fileidentifier: str
@@ -191,7 +193,9 @@ class SpatialDataCache():
         log.info("Spatial Dataset Identifier from metadata record: " + metadata_info['spatial_dataset_identifier'])
         if len(metadata.identification.distance) >= 1:
             if metadata.identification.uom[0] and metadata.identification.distance[0]:
-                if "#" in metadata.identification.uom[0]: 
+                #log.info("uom: " + str(metadata.identification.uom[0]))
+                '''implement two different ways'''
+                if '#' in metadata.identification.uom[0]:
                     uom = metadata.identification.uom[0].split("#")[1]
                 else:
                     uom = metadata.identification.uom[0]
@@ -433,14 +437,32 @@ class SpatialDataCache():
                             else:
                                 error_messages.append('WFS ' + str(tree.attrib['version']) + ' : outputFormat application/json; subtype=geojson not supported')
                             # check for inspire spatial dataset identifier
-                            spatial_dataset_identifier_codes = tree.findall(".//{http://inspire.ec.europa.eu/schemas/inspire_dls/1.0}ExtendedCapabilities/{http://inspire.ec.europa.eu/schemas/inspire_dls/1.0}SpatialDataSetIdentifier/{http://inspire.ec.europa.eu/schemas/common/1.0}Code")
-                            spatial_dataset_identifier_codespaces = tree.findall(".//{http://inspire.ec.europa.eu/schemas/inspire_dls/1.0}ExtendedCapabilities/{http://inspire.ec.europa.eu/schemas/inspire_dls/1.0}SpatialDataSetIdentifier/{http://inspire.ec.europa.eu/schemas/common/1.0}Namespace")
+                            #spatial_dataset_identifier_codes = tree.findall(".//{http://inspire.ec.europa.eu/schemas/inspire_dls/1.0}ExtendedCapabilities/{http://inspire.ec.europa.eu/schemas/inspire_dls/1.0}SpatialDataSetIdentifier/{http://inspire.ec.europa.eu/schemas/common/1.0}Code")
+                            #spatial_dataset_identifier_codespaces = tree.findall(".//{http://inspire.ec.europa.eu/schemas/inspire_dls/1.0}ExtendedCapabilities/{http://inspire.ec.europa.eu/schemas/inspire_dls/1.0}SpatialDataSetIdentifier/{http://inspire.ec.europa.eu/schemas/common/1.0}Namespace")
+                            spatial_dataset_identifier_codes = []
+                            spatial_dataset_identifier_codespaces = []
+
+                            #testchange: due to more codes than codespaces getting found:
+                            spatial_dataset_identifiers = tree.findall(".//{http://inspire.ec.europa.eu/schemas/inspire_dls/1.0}ExtendedCapabilities/{http://inspire.ec.europa.eu/schemas/inspire_dls/1.0}SpatialDataSetIdentifier")
+                            #CSCOMMENT: Actually it might make sense to check here whether there is an entry with the full like inthe code field
+                            #Might be a legit way to setup the metadata
+                            for i in range(len(spatial_dataset_identifiers)): 
+                                spatial_dataset_identifier_code = spatial_dataset_identifiers[i].find("./{http://inspire.ec.europa.eu/schemas/common/1.0}Code")
+                                spatial_dataset_identifier_codespace = spatial_dataset_identifiers[i].find("./{http://inspire.ec.europa.eu/schemas/common/1.0}Namespace")
+                                if spatial_dataset_identifier_code is not None and spatial_dataset_identifier_code != -1 and spatial_dataset_identifier_codespace is not None and spatial_dataset_identifier_codespace != -1:
+                                    spatial_dataset_identifier_codes.append(spatial_dataset_identifier_code)
+                                    spatial_dataset_identifier_codespaces.append(spatial_dataset_identifier_codespace)
+
+                            
                             spatial_dataset_identifier_array = []
                             for i in range(len(spatial_dataset_identifier_codes)):
                                 spatial_dataset_identifier_array.append(str(spatial_dataset_identifier_codespaces[i].text) + str(spatial_dataset_identifier_codes[i].text))
                                 log.info(str(spatial_dataset_identifier_codespaces[i].text) + str(spatial_dataset_identifier_codes[i].text))
                             # find 
-                            index_of_featuretype = spatial_dataset_identifier_array.index(spatial_dataset_identifier)
+                            try:
+                                index_of_featuretype = spatial_dataset_identifier_array.index(spatial_dataset_identifier)
+                            except:
+                                index_of_featuretype = False
                             # log.info("index of featuretype: " + str(index_of_featuretype))
                             if isinstance(index_of_featuretype, int):
                                 # get name of featuretype
@@ -475,7 +497,6 @@ class SpatialDataCache():
                     #log.info(entry[0].attrib['href'])
                     # get dataset feed
                     r = requests.get(entry[0].attrib['href'])
-                    # log.info(r.text)
                     tree = ET.fromstring(r.text)
                     access_uri = entry[0].attrib['href']
                     # find entry with format and crs from metadata (original crs)
@@ -483,7 +504,11 @@ class SpatialDataCache():
                     # 1. look for entry with mimetype image/tiff
                     entry = tree.find("./{http://www.w3.org/2005/Atom}entry/{http://www.w3.org/2005/Atom}category[@term='http://www.opengis.net/def/crs/EPSG/" + str(epsg_id) + "']/../{http://www.w3.org/2005/Atom}link[@type='image/tiff']")
                     if entry is not None:
-                        possible_dataset_type = 'raster'
+                        if 'http_auth' in entry.attrib['href']:
+                            log.info("User tried downloading a secured service.")
+                            error_messages.append('ATOM Feed: No access possible. Dataset is only availabe as a secured service.')
+                        else:
+                            possible_dataset_type = 'raster'
                     # 2. look for entries with mimetype application/json; subtype=geojson
                     entry = tree.find("./{http://www.w3.org/2005/Atom}entry/{http://www.w3.org/2005/Atom}category[@term='http://www.opengis.net/def/crs/EPSG/" + str(epsg_id) + "']/../{http://www.w3.org/2005/Atom}link[@type='application/json; subtype=geojson']")
                     if entry is not None:
@@ -605,7 +630,6 @@ class SpatialDataCache():
             # add bbox value, limit, and format
             # first get only 10 objects to check the number of objects in the bbox of the area of interest
             download_url = ogc_api_features_base_url + "?f=json&limit=10&bbox=" + str(polygon_box[0]) + "," + str(polygon_box[1]) + "," + str(polygon_box[2]) + "," + str(polygon_box[3])
-            # log.info(download_url)
             r = requests.get(download_url)
             json_result = json.loads(r.text)
             if 'numberMatched' in json_result.keys():
@@ -634,10 +658,7 @@ class SpatialDataCache():
                 inc_bboxes = inc_bboxes + 1
                 log.info("json saved!")
         if download_service_type == 'raster_atom' or download_service_type == 'vector_atom':
-            log.info("CSTEST: downloadservice distribution online:" + str(download_service.distribution.online))
-            log.info("CSTEST: actual url from online distr.:" + download_service.distribution.online[0].url)
             r = requests.get(download_service.distribution.online[0].url)
-            log.info("CSTEST: requesttext: " + str(r.text))
             # parse inspire service feed
             tree = ET.fromstring(r.text)
             # extract code and codespace from spatial_dataset_identifier - should be separated by / as demanded from inpsire
@@ -662,7 +683,6 @@ class SpatialDataCache():
                 # find entry with format and crs from metadata (original crs)
                 # http://www.opengis.net/def/crs/EPSG/25832 or ...
                 entry = tree.findall("./{http://www.w3.org/2005/Atom}entry/{http://www.w3.org/2005/Atom}category[@term='http://www.opengis.net/def/crs/EPSG/" + str(metadata_info['epsg_id']) + "']/../{http://www.w3.org/2005/Atom}link[@type='" +  format_mimetype + "']")
-                #log.info("CSTEST: Entry result: " + str(entry))
                 if len(entry) > 0:
                     inc_bboxes = 0 
                     for link in entry:
@@ -696,7 +716,9 @@ class SpatialDataCache():
         middle_phi = polygon_box[1] + (polygon_box[3] - polygon_box[1]) / 2
         delta_lon_deg = polygon_box[2] - polygon_box[0]
         delta_lat_deg = polygon_box[3] - polygon_box[1]
-        delta_lon_m = 2 * math.pi * 6378137.0 * math.cos(360 / middle_phi * 2 * math.pi) / 360 * delta_lon_deg
+        #Changed to deviding the term in cosinus /360 because the degree to radiant calculation was wrong
+        #delta_lon_m = 2 * math.pi * 6378137.0 * math.cos(360 / middle_phi * 2 * math.pi) / 360 * delta_lon_deg
+        delta_lon_m = 2 * math.pi * 6378137.0 * math.cos((middle_phi * 2 * math.pi)/360) / 360 * delta_lon_deg
         delta_lat_m = 2 * math.pi * 6378137.0 / 360 * delta_lat_deg
         # calculate groundResolution from scale
         # dpi = 150
@@ -790,13 +812,41 @@ class SpatialDataCache():
             md_date = tree.findall("./{http://www.isotc211.org/2005/gmd}dateStamp/{http://www.isotc211.org/2005/gco}DateTime")
         # set new metadata date
         current_date = datetime.now()
-        md_date[0].text = current_date.strftime('%Y-%m-%d')
+        if not md_date:
+            '''
+            <gmd:dateStamp>
+                <gco:DateTime>2023-11-06T07:18:10</gco:DateTime>
+            </gmd:dateStamp> 
+            '''
+            #try to find DateTime instead
+            md_date = tree.findall("./{http://www.isotc211.org/2005/gmd}dateStamp/{http://www.isotc211.org/2005/gco}DateTime")
+            # set new metadata dateTime
+            md_date[0].text = current_date.strftime('%Y-%m-%dT%H:%M:%S')
+        else:
+            # set new metadata date
+            md_date[0].text = current_date.strftime('%Y-%m-%d')
         md_identifier = tree.findall("./{http://www.isotc211.org/2005/gmd}fileIdentifier/{http://www.isotc211.org/2005/gco}CharacterString")
         md_identifier[0].text = str(uuid.uuid4())
         crs_code = tree.findall("./{http://www.isotc211.org/2005/gmd}referenceSystemInfo/{http://www.isotc211.org/2005/gmd}MD_ReferenceSystem/{http://www.isotc211.org/2005/gmd}referenceSystemIdentifier/{http://www.isotc211.org/2005/gmd}RS_Identifier/{http://www.isotc211.org/2005/gmd}code/{http://www.isotc211.org/2005/gco}CharacterString")
-        if len(crs_code)<1:
-            crs_code = tree.findall("./{http://www.isotc211.org/2005/gmd}referenceSystemInfo/{http://www.isotc211.org/2005/gmd}MD_ReferenceSystem/{http://www.isotc211.org/2005/gmd}referenceSystemIdentifier/{http://www.isotc211.org/2005/gmd}RS_Identifier/{http://www.isotc211.org/2005/gmd}code/{http://www.isotc211.org/2005/gmx}Anchor")    
-        crs_code[0].text = "urn:ogc:def:crs:EPSG:4326"
+        if not crs_code:
+            '''
+            <gmd:referenceSystemInfo>
+            <gmd:MD_ReferenceSystem>
+            <gmd:referenceSystemIdentifier>
+            <gmd:RS_Identifier>
+            <gmd:code>
+            <gmx:Anchor xlink:title="DHDN / 3GK zone 2" xlink:href="http://www.opengis.net/def/crs/EPSG/0/31466">EPSG:31466</gmx:Anchor>
+            </gmd:code>
+            </gmd:RS_Identifier>
+            </gmd:referenceSystemIdentifier>
+            </gmd:MD_ReferenceSystem>
+            </gmd:referenceSystemInfo>
+            '''
+            crs_code = tree.findall("./{http://www.isotc211.org/2005/gmd}referenceSystemInfo/{http://www.isotc211.org/2005/gmd}MD_ReferenceSystem/{http://www.isotc211.org/2005/gmd}referenceSystemIdentifier/{http://www.isotc211.org/2005/gmd}RS_Identifier/{http://www.isotc211.org/2005/gmd}code/{http://www.isotc211.org/2005/gmx}Anchor")
+            crs_code[0].set('href', "http://www.opengis.net/def/crs/EPSG/0/4326")
+            crs_code[0].text = 'EPSG:4326'
+        else:
+            crs_code[0].text = "urn:ogc:def:crs:EPSG:4326"
         md_format = tree.findall("./{http://www.isotc211.org/2005/gmd}distributionInfo/{http://www.isotc211.org/2005/gmd}MD_Distribution/{http://www.isotc211.org/2005/gmd}distributionFormat/{http://www.isotc211.org/2005/gmd}MD_Format/{http://www.isotc211.org/2005/gmd}name/{http://www.isotc211.org/2005/gco}CharacterString")
         if type == 'vector':
             md_format[0].text = 'GeoJSON'
@@ -826,13 +876,14 @@ class SpatialDataCache():
         downloadable_datasets = []
         start_time_check = time.time()
         for dataset in self.data_configuration['datasets']:
-            log.info(dataset['resourceidentifier'])
+            log.info('ResourceIdentifier: ' + dataset['resourceidentifier'])
             downloadable_dataset = {}
             start_time_dataset_metadata = time.time()
             metadata = self.get_metadata_by_resourceidentifier(dataset['resourceidentifier'])
             downloadable_dataset['spatial_dataset_identifier'] = dataset['resourceidentifier']
             downloadable_dataset['time_to_resolve_dataset'] = str(time.time() - start_time_dataset_metadata)
             downloadable_dataset['error_messages'] = []
+            downloadable_dataset['csw'] = self.catalogue_uri
             if metadata:
                 metadata_info = self.extract_info_from_dataset_metadata(metadata)
                 downloadable_dataset['title'] = metadata_info['title']
@@ -841,7 +892,6 @@ class SpatialDataCache():
                 downloadable_dataset['fileidentifier'] = metadata_info['fileidentifier']
                 downloadable_dataset['format'] = metadata_info['format']
                 downloadable_dataset['epsg_id'] = metadata_info['epsg_id']
-               
                 #if metadata_info['spatial_dataset_identifier'] is None:
                 #    downloadable_dataset['error_messages'].append('')
                 downloadable_dataset['services'] = []
@@ -849,19 +899,18 @@ class SpatialDataCache():
                 # check if bbox of metadata intersects the area_of_interest polygon 
                 polygon = from_geojson(self.area_of_interest_geojson)
                 bbox_geom = box(float(metadata_info['minx']), float(metadata_info['miny']), float(metadata_info['maxx']), float(metadata_info['maxy']))
+                services = []
                 if intersects(polygon, bbox_geom):
                     #log.info("Try to download " + metadata_info['title'] + " - type: " + dataset['type'] + " - sdi: " + str(metadata_info['spatial_dataset_identifier']))
                     services = self.get_coupled_services(str(metadata_info['spatial_dataset_identifier']))
                 else :
                     # unset fileidentifier because it does not make sense to download this dataset 
-                    downloadable_dataset['fileidentifier'] = ''
+                    # downloadable_dataset['fileidentifier'] = ''
                     downloadable_dataset['error_messages'].append('Metadata and the area of interest have no intersections!')
                 downloadable_dataset['time_to_resolve_services'] = str(time.time() - start_time_services_metadata)
-            
-                #log.info("number of found services: " + str(len(services)))
+                # log.info("number of found services: " + str(len(services)))
                 # debug - show service information
                 for service in services:
-
                     downloadable_dataset['services'].append(json.loads(self.check_download_options(services[service], str(metadata_info['spatial_dataset_identifier']), str(metadata_info['epsg_id']))))
                     # log.info(services[service].serviceidentification.type + ' - ' + services[service].serviceidentification.version + ' : ' + services[service].distribution.online[0].url)
                     # log.info(self.check_download_options(services[service], str(metadata_info['spatial_dataset_identifier']), str(metadata_info['epsg_id'])))
@@ -869,18 +918,30 @@ class SpatialDataCache():
             else:
                 downloadable_dataset['error_messages'].append('Metadata could not be found in catalogue!')
             downloadable_datasets.append(downloadable_dataset)
-        #log.info(json.dumps(downloadable_datasets))
+            # reset catalogue to first entry in list
+            self.catalogue_uri = self.catalogue_uris[0]
+            self.csw = CatalogueServiceWeb(self.catalogue_uri) 
+        # log.info(json.dumps(downloadable_datasets))
         return json.dumps(downloadable_datasets)
 
     def get_metadata_by_resourceidentifier(self, spatial_dataset_identifier):
         dataset_query = PropertyIsEqualTo('csw:ResourceIdentifier', spatial_dataset_identifier)
-        # look for srv:serviceTypeVersion to find the atom feeds
-        self.csw.getrecords2(constraints=[dataset_query], maxrecords=20, esn = 'full', outputschema='http://www.isotc211.org/2005/gmd')
-        if len(self.csw.records) == 1:
-            return list(self.csw.records.values())[0]
-        else:
-            log.info('More than one or no record for resourceidentifier *' + spatial_dataset_identifier + '* found in catalog. Number of records: ' + str(len(self.csw.records)))
-            return False
+        # iterate over list of csw uris - don't forget to reset csw to first one after this!
+        for csw_uri in self.catalogue_uris:
+            self.catalogue_uri = csw_uri
+            log.info('Search in catalogue: ' + csw_uri);
+            self.csw = CatalogueServiceWeb(self.catalogue_uri)
+            # look for srv:serviceTypeVersion to find the atom feeds
+            try:
+                self.csw.getrecords2(constraints=[dataset_query], maxrecords=20, esn = 'full', outputschema='http://www.isotc211.org/2005/gmd')
+            except:
+                log.info('An error occured when requesting the catalogue for identifier *' + spatial_dataset_identifier + '* - search in next catalogue!')
+                continue
+            if len(self.csw.records) == 1:
+                return list(self.csw.records.values())[0]
+            else:
+                log.info('More than one or no record for resourceidentifier *' + spatial_dataset_identifier + '* found in catalog. Number of records: ' + str(len(self.csw.records)))
+        return False
 
     def generate_cache(self):
         """function to start generation of cache"""
@@ -929,13 +990,26 @@ class SpatialDataCache():
                 downloadable_dataset['download_process_metadata'] = {}
                 download_process_metadata = {}
                 start_time_services_metadata = time.time()
+                services = []
                 services = self.get_coupled_services(str(metadata_info['spatial_dataset_identifier']))
                 downloadable_dataset['time_to_resolve_services'] = str(time.time() - start_time_services_metadata)
                 log.info("number of found services: " + str(len(services)))
+                services_to_delete = []
                 # debug - show service information
+                #Ticket 6686: Add check for secured services in early logic to remove them early and already unset the checkbox for download attempt
                 for service in services:
                     log.info(services[service].serviceidentification.type + ' - ' + services[service].serviceidentification.version + ' : ' + services[service].distribution.online[0].url)
+                    if('http_auth' in services[service].distribution.online[0].url):
+                        services_to_delete.append(service)
 
+                for service in services_to_delete:
+                    del services[service]
+
+                    
+                #services = filter(lambda key, service: 'http_auth' not in service.distribution.online[0].url, services.items())
+                for service in services:
+                    log.info(services[service].serviceidentification.type + ' - ' + services[service].serviceidentification.version + ' : ' + services[service].distribution.online[0].url)
+                        
                 download_service, resource_name, download_service_type = self.get_appropriate_service(dataset['type'], str(metadata_info['spatial_dataset_identifier']), services, metadata_info['epsg_id'])
                 
                 log.info("name of resource: " + str(resource_name))
@@ -956,9 +1030,6 @@ class SpatialDataCache():
                             start_aggregation_time = time.time()
                             # when datasets are downloaded via atom feeds, they are in the crs which was given in the dataset metadata
                             if download_service.serviceidentification.version == 'predefined ATOM':
-                                log.info("CSTEST: tmp outputput folder dest:" + str(os.path.join(self.tmp_output_folder + dataset_aggregate_filename)))
-                                log.info("CSTEST: dataset_file_array: " + str(dataset_file_array))
-                                log.info("CSTEST: epsg info" + str(metadata_info['epsg_id']))
                                 gdal.Warp(os.path.join(self.tmp_output_folder + dataset_aggregate_filename), dataset_file_array, format="GTiff", srcSRS="EPSG:" + str(metadata_info['epsg_id']), dstSRS="EPSG:4326",
                             options=["COMPRESS=LZW", "TILED=YES"])
                             else:
@@ -1010,6 +1081,8 @@ class SpatialDataCache():
             else:
                 downloadable_dataset['error_messages'].append('No metadata found for spatial dataset identifier')
             downloadable_datasets.append(downloadable_dataset)
+            self.catalogue_uri = self.catalogue_uris[0]
+            self.csw = CatalogueServiceWeb(self.catalogue_uri) 
         log.info(json.dumps(downloadable_datasets))   
         # delete area_of_interest files
         self.clean_tmp_files([self.tmp_output_folder + self.area_of_interest_filename + '.tif', self.tmp_output_folder + self.area_of_interest_filename + '.geojson',])

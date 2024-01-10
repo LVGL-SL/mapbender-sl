@@ -46,7 +46,8 @@ class Gpkg:
         result = cursor.fetchall()
         for row in result: 
             metadata_info = self.get_info_from_iso_xml(row[0])
-            log.info(row[1] + " - " + metadata_info['title'] + " - " + row[3] + " - " + metadata_info['date'])
+            #Ticket #6686: Log had to be removed because accessing metadata['date'] is no reliable
+            #log.info(row[1] + " - " + metadata_info['title'] + " - " + row[3] + " - " + metadata_info['date'])
         conn.close()
 
     def get_info_from_iso_xml(self, iso_xml):
@@ -54,8 +55,15 @@ class Gpkg:
         metadata_info = {}
         tree = ET.fromstring(iso_xml)
         date = tree.findall("./{http://www.isotc211.org/2005/gmd}dateStamp/{http://www.isotc211.org/2005/gco}Date")
-        if date:
-            metadata_info['date'] = date[0].text
+        if not date:
+            '''
+            <gmd:dateStamp>
+                <gco:DateTime>2023-11-06T07:18:10</gco:DateTime>
+            </gmd:dateStamp> 
+            try to find DateTime instead
+            '''
+            date = tree.findall("./{http://www.isotc211.org/2005/gmd}dateStamp/{http://www.isotc211.org/2005/gco}DateTime")
+        metadata_info['date'] = date[0].text
         title = tree.findall("./{http://www.isotc211.org/2005/gmd}identificationInfo/{http://www.isotc211.org/2005/gmd}MD_DataIdentification/{http://www.isotc211.org/2005/gmd}citation/{http://www.isotc211.org/2005/gmd}CI_Citation/{http://www.isotc211.org/2005/gmd}title/{http://www.isotc211.org/2005/gco}CharacterString")
         if title:
             metadata_info['title'] = title[0].text

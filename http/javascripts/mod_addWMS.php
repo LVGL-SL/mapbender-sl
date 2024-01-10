@@ -50,16 +50,18 @@ function validateUrl(value){
 }
 
 function paramterbuild(url){
+    //Ticket 6882 - Temporary URL to upper case to check the existence of URL parameters caseinsensitive
+    let tmp_url_to_lower = url.toUpperCase();
     if(url.indexOf("?") == -1){
         url += '?';
     }
     //if (url.indexOf("VERSION=") == -1) {
       //  url += '&VERSION=9.9.9';
     //}
-    if(url.indexOf("REQUEST=") == -1){
+    if(tmp_url_to_lower.indexOf("REQUEST=") == -1){
         url += '&REQUEST=GetCapabilities';
     }
-    if (url.indexOf("SERVICE=") == -1){
+    if (tmp_url_to_lower.indexOf("SERVICE=") == -1){
         url += '&SERVICE=WMS';
     }
 

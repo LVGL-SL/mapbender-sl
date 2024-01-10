@@ -21,7 +21,8 @@ def send_mail(subject: str, body: str, mail_address:str):
 configuration = json.loads(sys.argv[1])
 
 if sys.argv[2] == 'checkOptions':
-    cache = SpatialDataCache(configuration['dataset_configuration'], json.dumps(configuration['area_of_interest']), 'https://gdk.gdi-de.org/gdi-de/srv/eng/csw')
+    # might be that the gdi catalogue must be en instead of ger for us -> Save old for now in comment: https://gdk.gdi-de.org/gdi-de/srv/eng/csw
+    cache = SpatialDataCache(configuration['dataset_configuration'], json.dumps(configuration['area_of_interest']), ["https://gdk.gdi-de.org/gdi-de/srv/ger/csw", "https://vocabulary.geoportal.rlp.de/geonetwork/srv/ger/csw", "https://inspire-geoportal.ec.europa.eu/GeoportalProxyWebServices/resources/OGCCSW202"])
     json_result = cache.check_options()
     # give back json with download options
     print(json_result)
@@ -33,7 +34,7 @@ if sys.argv[2] == 'generateCache':
         output_folder = str(configuration['output_folder'])
     if configuration['output_filename']:
         output_filename = str(configuration['output_filename']) #https://geoportal.saarland.de/gdi-sl/csw
-    cache = SpatialDataCache(configuration['dataset_configuration'], json.dumps(configuration['area_of_interest']), 'https://gdk.gdi-de.org/gdi-de/srv/eng/csw', output_filename=output_filename, output_folder=output_folder)
+    cache = SpatialDataCache(configuration['dataset_configuration'], json.dumps(configuration['area_of_interest']), ["https://gdk.gdi-de.org/gdi-de/srv/ger/csw", "https://vocabulary.geoportal.rlp.de/geonetwork/srv/ger/csw", "https://inspire-geoportal.ec.europa.eu/GeoportalProxyWebServices/resources/OGCCSW202"], output_filename=output_filename, output_folder=output_folder)
     print('start generate cache')
     cache.generate_cache()
     # send downloadlink via email

@@ -1503,9 +1503,9 @@ if ($resource == 'wms' or $resource == 'layer'){
 	$html .= $t_a;
 	$html .= $translation['mapbenderCapabilities'];
 	$html .= $t_b;
-	$html .= "<table class='lesscsstable'>";
-	$html .= $t_a1.$translation['mapbenderCapabilitiesSingleLayer'].$t_b1."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a onclick='' class='linkjs' href = '../php/wms.php?layer_id=".$layerId."&PHPSESSID=".session_id()."&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$mapbenderBaseUrl.$_SERVER['PHP_SELF']."/../wms.php?layer_id=".$layerId."&PHPSESSID=".session_id()."&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS"."\",\"".$translation['mapbenderCapabilitiesSingleLayer']."\");'>".$translation['showLink']."</a>".$t_c;
-	$html .= $t_a1.$translation['mapbenderCapabilitiesWithSubLayer'].$t_b1."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href = '../php/wms.php?layer_id=".$layerId."&PHPSESSID=".session_id()."&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS&withChilds=1' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$mapbenderBaseUrl.$_SERVER['PHP_SELF']."/../wms.php?layer_id=".$layerId."&PHPSESSID=".session_id()."&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS&withChilds=1"."\",\"".$translation['mapbenderCapabilitiesWithSubLayer']."\");'>".$translation['showLink']."</a>".$t_c;
+	$html .= "<table class='lesscsstable'>";	
+	$html .= $t_a1.$translation['mapbenderCapabilitiesSingleLayer'].$t_b1."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a onclick='' class='linkjs' href = '../php/wms.php?layer_id=".$layerId."&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$mapbenderBaseUrl.dirname($_SERVER['PHP_SELF'])."/wms.php?layer_id=".$layerId."&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS"."\",\"".$translation['mapbenderCapabilitiesSingleLayer']."\");'>".$translation['showLink']."</a>".$t_c;
+	$html .= $t_a1.$translation['mapbenderCapabilitiesWithSubLayer'].$t_b1."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href = '../php/wms.php?layer_id=".$layerId."&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS&withChilds=1' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$mapbenderBaseUrl.dirname($_SERVER['PHP_SELF'])."/wms.php?layer_id=".$layerId."&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS&withChilds=1"."\",\"".$translation['mapbenderCapabilitiesWithSubLayer']."\");'>".$translation['showLink']."</a>".$t_c;
 	$html .= "</table>";
 	$html .= $t_c;
     $capUrl = $resourceMetadata['wms_getcapabilities'].getConjunctionCharacter($resourceMetadata['wms_getcapabilities']).'REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS';
@@ -1515,19 +1515,18 @@ if ($resource == 'wms' or $resource == 'layer'){
 		$html .= $t_a.$translation['originalCapabilities'].$t_b."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href = '".$capUrl."' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$capUrl."\",\"".$translation['mapbenderCapabilities']."\");'>".$translation['showLink']."</a>".$t_c;
 	}
 
-	$html .= $t_a.$translation['inspireCapabilities'].$t_b."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href = '../php/wms.php?layer_id=".$layerId."&PHPSESSID=".session_id()."&INSPIRE=1&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$mapbenderBaseUrl.$_SERVER['PHP_SELF']."/../wms.php?layer_id=".$layerId."&PHPSESSID=".session_id()."&INSPIRE=1&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS"."\",\"".$translation['inspireCapabilities']."\");'>".$translation['showLink']."</a>".$t_c;
-
+	
+    $html .= $t_a.$translation['inspireCapabilities'].$t_b."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href = '../php/wms.php?layer_id=".$layerId."&INSPIRE=1&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$mapbenderBaseUrl.dirname($_SERVER['PHP_SELF'])."/wms.php?layer_id=".$layerId."&INSPIRE=1&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS"."\",\"".$translation['inspireCapabilities']."\");'>".$translation['showLink']."</a>".$t_c;
 	$html .= $t_a;
 	$html .= $translation['inspireMetadata'];
 	$html .= $t_b;
 	$html .= "<table class='lesscsstable'>";
 	$html .= $t_a2;
 	$html .= "<img  src='../img/inspire_tr_36.png'>";
-	$html .= $t_b."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href='../php/mod_layerISOMetadata.php?SERVICE=WMS&outputFormat=iso19139&Id=".       $layerId."' target=_blank >".$translation['showDocument']."</a><br/><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$mapbenderBaseUrl.$_SERVER['PHP_SELF']."/../mod_layerISOMetadata.php?SERVICE=WMS&outputFormat=iso19139&Id=".$layerId."\",\"".$translation['inspireMetadaten']."\");'>".$translation['showLink']."</a>";
+	$html .= $t_b."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href='../php/mod_layerISOMetadata.php?SERVICE=WMS&outputFormat=iso19139&Id=".       $layerId."' target=_blank >".$translation['showDocument']."</a><br/><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$mapbenderBaseUrl.dirname($_SERVER['PHP_SELF'])."/mod_layerISOMetadata.php?SERVICE=WMS&outputFormat=iso19139&Id=".$layerId."\",\"".$translation['inspireMetadaten']."\");'>".$translation['showLink']."</a>";
 	$html .= $t_c;
 	$html .= $t_a2."<img style='border: none;width:34px;height:34px' src='../img/rdf_w3c_icon.48.gif' title='".$translation['inspireMetadata']." - RDF/XML (BETA)"."' alt='' />";
-
-	$html .= $t_b."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href='../php/mod_layerISOMetadata.php?SERVICE=WMS&CN=false&outputFormat=rdf&Id=". $layerId."' target=_blank >".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$mapbenderBaseUrl.$_SERVER['PHP_SELF']."/../mod_layerISOMetadata.php?SERVICE=WMS&CN=false&outputFormat=rdf&Id=".$layerId."\",\"".$translation['inspireMetadaten']."\");'>".$translation['showLink']."</a>";
+	$html .= $t_b."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href='../php/mod_layerISOMetadata.php?SERVICE=WMS&CN=false&outputFormat=rdf&Id=". $layerId."' target=_blank >".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$mapbenderBaseUrl.dirname($_SERVER['PHP_SELF'])."/mod_layerISOMetadata.php?SERVICE=WMS&CN=false&outputFormat=rdf&Id=".$layerId."\",\"".$translation['inspireMetadaten']."\");'>".$translation['showLink']."</a>";
         $html .= $t_c;
 
 	$html .= "</table>";
@@ -1537,9 +1536,18 @@ if ($resource == 'wms' or $resource == 'layer'){
 	//if service is secured and http_auth is adjusted show secured url
 	if ($resourceSecured) {
 		$securedLink = HTTP_AUTH_PROXY."/".$layerId."?REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS";
-		$html .= $t_a.$translation['securedCapabilities'].$t_b."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs'  href = '".$securedLink."' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$securedLink."\",\"".$translation['securedCapabilities']."\");'>".$translation['showLink']."</a>".$t_c;
+		$securedLinkWithChilds = HTTP_AUTH_PROXY."/".$layerId."?REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS&withChilds=1";
+		$html .= $t_a;
+		$html .= $translation['securedCapabilities'];
+		//Ticket #5514: Manual for secured services added to interface description page
+		$html .= "<br/><a class='linkjs' href = \"https://geoportal.saarland.de/article/Abgesicherte_Dienste/#Einladen_eines_abgesicherten_Dienstes\" target=_blank><br/><i>(Hier</i></a> zum Hilfedokument <br/> \"Abgesicherte Dienste\")";
+		$html .= $t_b;
+		$html .= "<table class='lesscsstable'>";
+		$html .= $t_a1.$translation['mapbenderCapabilitiesSingleLayer'].$t_b1."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a onclick='' class='linkjs' href = '" . $securedLink . "' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"". $securedLink . "\",\"".$translation['mapbenderCapabilitiesSingleLayer']."\");'>" . $translation['showLink'] . "</a>" . $t_c;
+		$html .= $t_a1.$translation['mapbenderCapabilitiesWithSubLayer'].$t_b1."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href = '" . $securedLinkWithChilds . "' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"". $securedLinkWithChilds ."\",\"".$translation['mapbenderCapabilitiesWithSubLayer']."\");'>".$translation['showLink']."</a>".$t_c;
+		$html .= "</table>";
+		$html .= $t_c;
 	}
-
 	//kml
 	$html .= $t_a.$translation['kml'].$t_b."<a href='../php/mod_interfaceWms4Kml.php?id=".$layerId."'><img style='border: none;width:34px;height:34px' src='../img/misc/kml_icon.gif' title='".$translation['kml']."' alt='' /></a>".$t_c;
 }

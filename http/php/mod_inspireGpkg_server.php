@@ -37,6 +37,53 @@ function validateType($tmpType) {
     }
 }
 
+function isDatasetIdAlreadyInDB($datasetId){
+    $sql = <<<SQL
+SELECT log_id FROM inspire_dls_log WHERE datasetid = $1 AND linktype = 'GPKG' ORDER BY lastchanged DESC
+SQL;
+    $v = array(
+        $datasetId
+    );
+    $t = array('s');
+    $res = db_prep_query($sql,$v,$t);
+    while ($row = db_fetch_array($res)){
+        $logId[] = $row['log_id'];
+    }
+    if (count($logId) > 0) {
+        return $logId[0];
+    } else {
+        return false;
+    }
+}
+
+function logGpkgUsage ($datasetId) {
+    $logId = isDatasetIdAlreadyInDB($datasetId);
+    if ($logId != false) {
+        //update the load_count for this log entry
+        $e = new mb_notice("existing inspire_dls_log entry for gpkg download of dataset found - load count will be incremented");
+        $sql = <<<SQL
+UPDATE inspire_dls_log SET log_count = log_count + 1 WHERE log_id = $1
+SQL;
+        $v = array(
+            $logId
+        );
+        $t = array('i');
+        $res = db_prep_query($sql,$v,$t);
+        return true;
+    } else {
+        //create new record cause the dataset have not been downloaded as geopackage before
+        $sql = <<<SQL
+INSERT INTO inspire_dls_log (createdate, datasetid, linktype, log_count) VALUES (now(), $1, 'GPKG', 1)
+SQL;
+        $v = array(
+            $datasetId
+        );
+        $t = array('s');
+        $res = db_prep_query($sql,$v,$t);
+        return true;
+    }
+}
+
 switch ($ajaxResponse->getMethod()) {
 	case "checkOptions" :
 		if (!Mapbender::postgisAvailable()) {
@@ -58,7 +105,7 @@ switch ($ajaxResponse->getMethod()) {
 		}
 		if ($configurationValid == false) {
 		    $ajaxResponse->setSuccess(false);
-		    $ajaxResponse->setMessage(_mb("Some spatial dataset identifier is not valid!"));
+		    $ajaxResponse->setMessage(_mb("Some spatial dataset identifier is not valid! Actually only urls are supported!"));
 		} else {
 		    $ajaxResponse->setSuccess(true);
 		    $ajaxResponse->setMessage(_mb("Method checkOptions requested."));
@@ -67,7 +114,7 @@ switch ($ajaxResponse->getMethod()) {
 		    //$e = new mb_exception('/usr/bin/python3 /tmp/inspire-gpkg-cache/cli_invoke.py ' . "'" . json_encode($configuration) . "'" . " " . "'checkOptions'" );
 		    
 		    $output = exec('/usr/bin/python3.9 ../extensions/inspire-gpkg-cache/cli_invoke.py ' . "'" . json_encode($configuration) . "'" . " " . "'checkOptions'" );
-		    //$e = new mb_exception("output of python method check_options: " . $output);
+		    $e = new mb_exception("output of python method check_options: " . $output);
 		    //die();
 		    
 		    // some example json files for testing the client
@@ -527,7 +574,7 @@ switch ($ajaxResponse->getMethod()) {
 	        $configuration->output_folder = $outputFolder;
 	        $configuration->output_filename = $outputFilename;
 	        $configuration->notification->email_address = $user->email;
-	        $configuration->notification->subject = _mb("Your GeoPortal.rlp geopackage download has been processed");
+	        $configuration->notification->subject = _mb("Your GeoPortal.sl geopackage download has been processed");
 	        if (defined("GPKG_ABSOLUTE_DOWNLOAD_URI") && GPKG_ABSOLUTE_DOWNLOAD_URI != "") {
 	            $configuration->notification->text = 'Downloadlink: ';
 	            $configuration->notification->text .= GPKG_ABSOLUTE_DOWNLOAD_URI . $outputFilename . ".gpkg";
@@ -536,7 +583,7 @@ switch ($ajaxResponse->getMethod()) {
 	            $configuration->notification->text .= 'https://ngageoint.github.io/geopackage-viewer-js/?gpkg=' . urlencode(GPKG_ABSOLUTE_DOWNLOAD_URI . $outputFilename . ".gpkg");
 	            //https://ngageoint.github.io/geopackage-viewer-js/?gpkg=
 	        } else {
-	           $configuration->notification->text = "https://www.geoportal.rlp.de/metadata/" . $outputFilename . ".gpkg";
+	           $configuration->notification->text = "https://geoportal.saarland.de/inspiredownloads/" . $outputFilename . ".gpkg";
 	        }
 	        //check values
 	        //invoke python script
@@ -544,7 +591,12 @@ switch ($ajaxResponse->getMethod()) {
 	        
 	        //$pythonResult = system('/usr/bin/python3.9 ../extensions/inspire-gpkg-cache/cli_invoke.py ' . "'" . json_encode($configuration) . "'" . " " . "'generateCache' > /dev/null" );
 	        
-	        
+	        /*
+	         * Log information about download of dataset to inspire_dls_log table like it is done for the atom feeds from the atom feed client
+	         */
+	        foreach ($configuration->dataset_configuration->datasets as $spatialDataset) {
+	            logGpkgUsage($spatialDataset->resourceidentifier);
+	        }
 	        //$e = new mb_exception("output of python script - method generate_cache: " .$output);
 	        //$ajaxResponse->setResult(json_decode('{"result": "top"}'));
 	        $ajaxResponse->setMessage(_mb("Your geopackage has been created. Please control your mailbox") . " (" . $user->email . ")");

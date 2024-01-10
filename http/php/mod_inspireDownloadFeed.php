@@ -592,9 +592,16 @@ SQL;
 		break;
 
 		case "wmslayer":
-			$sql = <<<SQL
+			$sql = array();
+		//Ticket 6421: Fix for not tiled download links didn't work
+		$sql[0] = <<<SQL
 select *, 'wmslayer' as origin from (select * from (select mb_metadata.metadata_id, layer_relation.layer_name, layer_relation.fkey_wms_id, layer_relation.layer_id,layer_relation.inspire_download, mb_metadata.uuid as metadata_uuid, mb_metadata.format,mb_metadata.title as metadata_title, mb_metadata.abstract as metadata_abstract, st_xmin(mb_metadata.the_geom) || ',' || st_ymin(mb_metadata.the_geom) || ',' || st_xmax(mb_metadata.the_geom) || ',' || st_ymax(mb_metadata.the_geom)  as metadata_bbox, mb_metadata.bounding_geom as polygon, layer_relation.layer_title, layer_relation.layer_abstract, mb_metadata.ref_system as metadata_ref_system, mb_metadata.datasetid, mb_metadata.spatial_res_type, mb_metadata.spatial_res_value, mb_metadata.datasetid_codespace, mb_metadata.lastchanged as md_timestamp   from (select * from layer inner join ows_relation_metadata on layer.layer_id = ows_relation_metadata.fkey_layer_id) as layer_relation inner join mb_metadata on layer_relation.fkey_metadata_id = mb_metadata.metadata_id where mb_metadata.uuid = $1) layer_data inner join wms on layer_data.fkey_wms_id = wms.wms_id)  as layer_wms, layer_epsg where layer_wms.layer_id = layer_epsg.fkey_layer_id and layer_epsg.epsg = 'EPSG:4326' and layer_wms.layer_id = $2;  
 SQL;
+			
+		$sql[1] = <<<SQL
+select *, 'wmslayer' as origin from (select * from (select * from (select * from (select mb_metadata.metadata_id, layer_relation.layer_name,layer_relation.inspire_download, layer_relation.fkey_wms_id, layer_relation.layer_id, mb_metadata.uuid as metadata_uuid, mb_metadata.format,mb_metadata.title as metadata_title, mb_metadata.abstract as metadata_abstract, st_xmin(mb_metadata.the_geom) || ',' || st_ymin(mb_metadata.the_geom) || ',' || st_xmax(mb_metadata.the_geom) || ',' || st_ymax(mb_metadata.the_geom)  as metadata_bbox, mb_metadata.bounding_geom as polygon, layer_relation.layer_title, layer_relation.layer_abstract, mb_metadata.ref_system as metadata_ref_system, mb_metadata.datasetid, mb_metadata.spatial_res_type, mb_metadata.spatial_res_value, mb_metadata.datasetid_codespace, mb_metadata.lastchanged as md_timestamp   from (select * from layer inner join ows_relation_metadata on layer.layer_id = ows_relation_metadata.fkey_layer_id) as layer_relation inner join mb_metadata on layer_relation.fkey_metadata_id = mb_metadata.metadata_id where mb_metadata.uuid = $1) as layer_metadata inner join ows_relation_data on ows_relation_data.fkey_layer_id = layer_metadata.layer_id) as layer_relation_data inner join datalink on layer_relation_data.fkey_datalink_id = datalink.datalink_id) as layer_data inner join wms on layer_data.fkey_wms_id = wms.wms_id)  as layer_wms, layer_epsg where layer_wms.layer_id = layer_epsg.fkey_layer_id and layer_epsg.epsg = 'EPSG:4326';
+SQL;
+
 		break;
 
 		case "wfs":
@@ -639,8 +646,12 @@ SQL;
 			//only one sql should be done 
 			$v = array($recordId, $layerId);
 			$t = array('s','i');
-			$res = db_prep_query($sql,$v,$t);
-			fillMapbenderMetadata($res, $generateFrom);
+			$res = db_prep_query($sql[0],$v,$t);
+			
+			$v2 = array($recordId);
+			$t2 = array('s');
+			$res_2 = db_prep_query($sql[1],$v2,$t2);
+			fillMapbenderMetadata($res, $generateFrom,$res_2);
 		break;
 		case "wfs":
 			//only one sql should be done 
@@ -1148,7 +1159,7 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 				}
 				//**************************************************************************************
 				$e = new mb_notice("Epsg id of layer ".$mapbenderMetadata[$m]->layer_id." : ".$epsgId);
-					
+
 				//TODO: check if epsg, and bbox are filled correctly!
 				$sqlExtent = "SELECT X(transform(GeometryFromText('POINT(".$mapbenderMetadata[$m]->minx." ".$mapbenderMetadata[$m]->miny.")',4326),".$epsgId.")) as minx, Y(transform(GeometryFromText('POINT(".$mapbenderMetadata[$m]->minx." ".$mapbenderMetadata[$m]->miny.")',4326),".$epsgId.")) as miny, X(transform(GeometryFromText('POINT(".$mapbenderMetadata[$m]->maxx." ".$mapbenderMetadata[$m]->maxy.")',4326),".$epsgId.")) as maxx, Y(transform(GeometryFromText('POINT(".$mapbenderMetadata[$m]->maxx." ".$mapbenderMetadata[$m]->maxy.")',4326),".$epsgId.")) as maxy";
 				$resExtent =  db_query($sqlExtent);
@@ -1751,6 +1762,21 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 
 						$feedEntry->appendChild($feedEntryLink);	
 					}
+					//Ticket 6421: Fix for not tiled download links didn't work 
+					if ($numberOfTiles == 0){
+						
+						$feedEntryLink = $feedDoc->createElement("link");
+						$feedEntryLink->setAttribute("rel", "alternate");						
+						$feedEntryLink->setAttribute("href", $mapbenderMetadata[$i]->datalink_url);
+						$feedEntryLink->setAttribute("type", "image/tiff");
+						$feedEntryLink->setAttribute("hreflang", "de");
+						$feedEntryLink->setAttribute("title", $ressourceTitle);
+						
+						
+
+						$feedEntry->appendChild($feedEntryLink);	
+						
+					}
 				break;
 				case "wfs":
 					//example:
@@ -2021,7 +2047,7 @@ function transformMultipolygon($multiPolygonSql, $fromCRS, $toCRS, $metadataUuid
 }
 
 
-function fillMapbenderMetadata($dbResult, $generateFrom) {
+function fillMapbenderMetadata($dbResult, $generateFrom,$dbResult2 = NULL) {
 	//function increments $indexMapbenderMetadata !!!
 	global $mapbenderMetadata, $indexMapbenderMetadata, $admin, $mapbenderPath;
 	//echo "<error>fill begins</error>";
@@ -2097,9 +2123,15 @@ function fillMapbenderMetadata($dbResult, $generateFrom) {
 			//overwrite values
 		}	
 	} else {
+		//Ticket 6421: Fix for not tiled download links didn't work
+		if(($generateFrom == 'wmslayer') && ($row = db_fetch_assoc($dbResult2))){
+			$mapbenderMetadata[$indexMapbenderMetadata]->datalink_url= $row['datalink_url'];
+			
+		}
 		while ($row = db_fetch_assoc($dbResult)) {
 			//get relevant information 
 			//echo "<error>".$indexMapbenderMetadata."</error>";
+			
 			if ($row['inspire_download'] == '1') {
 				$mapbenderMetadata[$indexMapbenderMetadata]->origin = $row['origin']; 
 				$mapbenderMetadata[$indexMapbenderMetadata]->latlonbbox = $row['latlonbbox']; 
@@ -2131,6 +2163,8 @@ function fillMapbenderMetadata($dbResult, $generateFrom) {
 				$mapbenderMetadata[$indexMapbenderMetadata]->spatial_res_value = $row['spatial_res_value'];
 				$mapbenderMetadata[$indexMapbenderMetadata]->metadata_ref_system = $row['metadata_ref_system'];
 				$mapbenderMetadata[$indexMapbenderMetadata]->format = $row['format'];
+				//Ticket 6421: Fix for not tiled download links didn't work
+				if(! $mapbenderMetadata[$indexMapbenderMetadata]->datalink_url)				
 				$mapbenderMetadata[$indexMapbenderMetadata]->datalink_url = $row['datalink_url'];
 				$mapbenderMetadata[$indexMapbenderMetadata]->wms_getmap = $row['wms_getmap'];
 				$mapbenderMetadata[$indexMapbenderMetadata]->wms_owsproxy = $row['wms_owsproxy'];

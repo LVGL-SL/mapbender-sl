@@ -38,13 +38,6 @@ $minify = true;
 //new for geoportal.rlp - some guis has special functions - for normal mapbender installation this doesn't matter
 if (Mapbender::session()->get("mb_user_gui") !== false) {
 	Mapbender::session()->set("previous_gui",Mapbender::session()->get("mb_user_gui"));
-	if (((Mapbender::session()->get("mb_user_gui") != "Altlastenkataster") && ($gui_id == "Altlastenkataster")) || ((Mapbender::session()->get("mb_user_gui") != "Lärmkartierung-2017") && ($gui_id == "Lärmkartierung-2017"))){
-		if (Mapbender::session()->exists("mb_wmc")) {
-			Mapbender::session()->delete("mb_wmc");
-			$e = new mb_exception("\n\nDelete mb_wmc\n\n");
-	    }
-		
-    }
 }
 Mapbender::session()->set("mb_user_gui",$gui_id);
 //
@@ -303,7 +296,7 @@ if ($representationType == "htmlComplete") {
 }
 $mapPhpParameters = htmlentities($urlParameters, ENT_QUOTES, CHARSET);
 $mapPhpParameters .= "&amp;".htmlentities($_SERVER["QUERY_STRING"]);
-
+//TODO - validate further GET params - e.g. querylayers ... - do this also in index_ext.php!
 //$e = new mb_exception("index.php: mapPhpParameters: ".$mapPhpParameters);
 if ($representationType == "htmlComplete") {
 	$html .= "<script type='text/javascript' src='../javascripts/map.php?".$mapPhpParameters."'></script>".$linebreak;

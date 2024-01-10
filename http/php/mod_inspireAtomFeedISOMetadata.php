@@ -170,7 +170,7 @@ function fillISO19139($iso19139, $recordId) {
 			// check if entries are filled
 			// read information from metadata table
 			$sql = <<<SQL
-			select mb_metadata.title, mb_metadata.abstract, mb_metadata.ref_system, mb_metadata.datasetid, mb_metadata.datasetid_codespace, mb_metadata.origin from mb_metadata where mb_metadata.uuid = $1;
+			select mb_metadata.title, mb_metadata.alternate_title, mb_metadata.abstract, mb_metadata.ref_system, mb_metadata.datasetid, mb_metadata.datasetid_codespace, mb_metadata.origin from mb_metadata where mb_metadata.uuid = $1;
 SQL;
 			$v = array (
 					$recordId 
@@ -181,6 +181,7 @@ SQL;
 			$res = db_prep_query ( $sql, $v, $t );
 			$mbMetadata = db_fetch_array ( $res );
 			$mapbenderMetadata ['mdTitle'] = $mbMetadata ['title'];
+			$mapbenderMetadata ['mdAlternateTitle'] = $mbMetadata ['alternate_title'];
 			$mapbenderMetadata ['mdAbstract'] = $mbMetadata ['abstract'];
 			$mapbenderMetadata ['mdRefSystem'] = $mbMetadata ['ref_sytem'];
 			$mapbenderMetadata ['datasetId'] = $mbMetadata ['datasetid'];
@@ -258,6 +259,7 @@ SQL;
 			$res = db_prep_query ( $sql, $v, $t );
 			$mbMetadata = db_fetch_array ( $res );
 			$mapbenderMetadata ['mdTitle'] = $mbMetadata ['title'];
+			$mapbenderMetadata ['mdAlternateTitle'] = $mbMetadata ['alternate_title'];
 			$mapbenderMetadata ['mdAbstract'] = $mbMetadata ['abstract'];
 			$mapbenderMetadata ['mdRefSystem'] = $mbMetadata ['ref_sytem'];
 			$mapbenderMetadata ['datasetId'] = $mbMetadata ['datasetid'];
@@ -266,8 +268,13 @@ SQL;
 			$mapbenderMetadata ['serviceUuid'] = $mbMetadata ['uuid'];
 			$mapbenderMetadata ['metadataId'] = $mbMetadata ['metadata_id'];
 			//Ticket #6423: Deleted date conversion since it's happening in a later step again and would lead to wrong results
+			//At least temporarily removed due to change on rlp side
 			$mapbenderMetadata['serviceTimestamp'] =  strtotime($mbMetadata['lastchanged']);
 			$mapbenderMetadata['serviceTimestampCreate'] =  strtotime($mbMetadata['createdate']);
+			
+			//$mapbenderMetadata ['serviceTimestamp'] = strtotime ( $mbMetadata ['wms_timestamp'] );
+			//$mapbenderMetadata ['serviceTimestampCreate'] = strtotime ( $mbMetadata ['wms_timestamp_create'] );
+
 			$mapbenderMetadata ['serviceDepartment'] = $mbMetadata ['responsible_party'];
 			if ($mbMetadata ['responsible_party_email'] != '') {
 			    $mapbenderMetadata ['serviceDepartmentMail'] = $mbMetadata ['responsible_party_email'] ;
@@ -331,7 +338,7 @@ SQL;
 			// check if entries are filled
 			// read information from metadata table
 			$sql = <<<SQL
-			select mb_metadata.title, mb_metadata.abstract, mb_metadata.ref_system, mb_metadata.datasetid_codespace , mb_metadata.datasetid, mb_metadata.origin from mb_metadata where mb_metadata.uuid = $1;
+			select mb_metadata.title, mb_metadata.alternate_title, mb_metadata.abstract, mb_metadata.ref_system, mb_metadata.datasetid_codespace , mb_metadata.datasetid, mb_metadata.origin from mb_metadata where mb_metadata.uuid = $1;
 SQL;
 			$v = array (
 					$recordId 
@@ -342,6 +349,7 @@ SQL;
 			$res = db_prep_query ( $sql, $v, $t );
 			$mbMetadata = db_fetch_array ( $res );
 			$mapbenderMetadata ['mdTitle'] = $mbMetadata ['title'];
+			$mapbenderMetadata ['mdAlternateTitle'] = $mbMetadata ['alternate_title'];
 			$mapbenderMetadata ['mdAbstract'] = $mbMetadata ['abstract'];
 			$mapbenderMetadata ['mdRefSystem'] = $mbMetadata ['ref_sytem'];
 			$mapbenderMetadata ['datasetId'] = $mbMetadata ['datasetid'];
@@ -419,7 +427,7 @@ SQL;
 			// check if entries are filled
 			// read information from metadata table
 			$sql = <<<SQL
-			select mb_metadata.title, mb_metadata.abstract, mb_metadata.ref_system, mb_metadata.datasetid, mb_metadata.datasetid_codespace, mb_metadata.origin from mb_metadata where mb_metadata.uuid = $1;
+			select mb_metadata.title, mb_metadata.alternate_title, mb_metadata.abstract, mb_metadata.ref_system, mb_metadata.datasetid, mb_metadata.datasetid_codespace, mb_metadata.origin from mb_metadata where mb_metadata.uuid = $1;
 SQL;
 			$v = array (
 					$recordId 
@@ -430,6 +438,7 @@ SQL;
 			$res = db_prep_query ( $sql, $v, $t );
 			$mbMetadata = db_fetch_array ( $res );
 			$mapbenderMetadata ['mdTitle'] = $mbMetadata ['title'];
+			$mapbenderMetadata ['mdAlternateTitle'] = $mbMetadata ['alternate_title'];
 			$mapbenderMetadata ['mdAbstract'] = $mbMetadata ['abstract'];
 			$mapbenderMetadata ['mdRefSystem'] = $mbMetadata ['ref_sytem'];
 			$mapbenderMetadata ['datasetId'] = $mbMetadata ['datasetid'];
@@ -722,7 +731,15 @@ SQL;
 	$title_cs->appendChild ( $titleText );
 	$title->appendChild ( $title_cs );
 	$CI_Citation->appendChild ( $title );
-	
+	//add optional alternateTitle element
+	if (isset($mapbenderMetadata ['mdAlternateTitle']) && $mapbenderMetadata ['mdAlternateTitle'] !== "") {
+	    $alternateTitle = $iso19139->createElement("gmd:alternateTitle");
+	    $alternateTitle_cs = $iso19139->createElement("gco:CharacterString");
+	    $alternateTitleText = $iso19139->createTextNode($mapbenderMetadata ['mdAlternateTitle']);
+	    $alternateTitle_cs->appendChild($alternateTitleText);
+	    $alternateTitle->appendChild($alternateTitle_cs);
+	    $CI_Citation->appendChild($alternateTitle);  
+	}
 	// Create date elements B5.2-5.4 - format will be only a date - no dateTime given
 	// Do things for B 5.2 date of publication
 	if (isset ( $mapbenderMetadata ['serviceTimestampCreate'] )) {

@@ -28,6 +28,7 @@ class Iso19139 {
 	var $createDate;
 	var $changeDate;
 	var $title;
+	var $alternate_title;
 	var $abstract;
 	var $metadata;
 	var $wgs84Bbox = array(); //minx, miny, maxx, maxy in EPSG:4326
@@ -95,8 +96,9 @@ class Iso19139 {
 	function __construct() {
 		//initialize empty iso19139 object
 		$this->fileIdentifier = "";
-		$title->title = "empty iso19139 object title";
-		$title->abstract = "empty iso19139 object abstract";
+		$this->title = "empty iso19139 object title";
+		$this->alternate_title = "";
+		$this->abstract = "empty iso19139 object abstract";
 		$this->createDate = "1900-01-01";
 		$this->changeDate = "1900-01-01";
 		$this->metadata = "";
@@ -315,6 +317,12 @@ XML;
 			//TODO: check if this is set, maybe DateTime must be searched instead?
 			$this->title = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString');
 			$this->title = $this->title[0];
+			//alternate title
+			$this->alternate_title = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:citation/gmd:CI_Citation/gmd:alternateTitle/gco:CharacterString');
+			$this->alternate_title = $this->alternate_title[0];
+			if (is_null($this->alternate_title) || !isset($this->alternate_title) || $this->alternate_title == false) {
+			    $this->alternate_title = '';
+			}
 			//dataset identifier - howto model into md_metadata?
 			//check where datasetid is defined - maybe as RS_Identifier or as MD_Identifier see http://inspire.jrc.ec.europa.eu/documents/Metadata/INSPIRE_MD_IR_and_ISO_v1_2_20100616.pdf page 18
 			//First check if MD_Identifier is set, then check if RS_Identifier is used!
@@ -1401,6 +1409,7 @@ XML;
 			//initialize empty iso19139 object
 			$this->fileIdentifier = $row['uuid'];
 			$this->title = $row['title'];
+			$this->alternate_title = $row['alternate_title'];
 			$this->abstract = $row['abstract'];
 			$this->createDate =  $row['createdate'];//"1900-01-01";
 			$this->changeDate = $row['changedate'];//"1900-01-01";
@@ -2215,7 +2224,7 @@ SQL;
 		//insert an instance for iso19139 into mapbenders database
 		$e = new mb_notice("class_iso19139.php: insert metadata with title: ".$this->title);
 		$sql = <<<SQL
-INSERT INTO mb_metadata (lastchanged, link, origin, md_format, data, linktype, uuid, title, createdate, changedate, abstract, searchtext, type, tmp_reference_1, tmp_reference_2, export2csw, datasetid, datasetid_codespace, randomid, fkey_mb_user_id, harvestresult, harvestexception, lineage, inspire_top_consistence, spatial_res_type, spatial_res_value, update_frequency, format, inspire_charset, ref_system, the_geom, datalinks, inspire_whole_area, inspire_actual_coverage, inspire_download, bounding_geom, transfer_size, fees, md_license_source_note, constraints, responsible_party_name, responsible_party_email, preview_image, fkey_mb_group_id, md_proxy, inspire_interoperability, searchable, fkey_gui_id, fkey_wmc_serial_id, fkey_mapviewer_id)  VALUES(now(), $1, $18, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, $42, $43, $44, $45, $46, $47, $48, $49)
+INSERT INTO mb_metadata (lastchanged, link, origin, md_format, data, linktype, uuid, title, createdate, changedate, abstract, searchtext, type, tmp_reference_1, tmp_reference_2, export2csw, datasetid, datasetid_codespace, randomid, fkey_mb_user_id, harvestresult, harvestexception, lineage, inspire_top_consistence, spatial_res_type, spatial_res_value, update_frequency, format, inspire_charset, ref_system, the_geom, datalinks, inspire_whole_area, inspire_actual_coverage, inspire_download, bounding_geom, transfer_size, fees, md_license_source_note, constraints, responsible_party_name, responsible_party_email, preview_image, fkey_mb_group_id, md_proxy, inspire_interoperability, searchable, fkey_gui_id, fkey_wmc_serial_id, fkey_mapviewer_id, alternate_title)  VALUES(now(), $1, $18, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, $42, $43, $44, $45, $46, $47, $48, $49, $50)
 SQL;
 		$v = array(
 			$this->href,
@@ -2266,9 +2275,14 @@ SQL;
 			$this->searchable,
 			$this->fkeyGuiId,
 			$this->fkeyWmcSerialId,
-			$this->fkeyMapviewerId
+			$this->fkeyMapviewerId,
+		    $this->alternate_title
 		);
-			$t = array('s','s','s','s','s','s','s','s','s','s','s','s','s','b','s','s','s','s','i','i','s','s','b','s','s','s','s','s','s','POLYGON','s','s','s','i','POLYGON','d','s','s','s','s','s','s','i','b','b','b','i','i','i');
+			//$e = new mb_exception($this->tmpExtentBegin);
+			//$e = new mb_exception($this->tmpExtentEnd);
+			//$e = new mb_exception($this->createDate);
+			//$e = new mb_exception($this->changeDate);
+			$t = array('s','s','s','s','s','s','s','s','s','s','s','s','s','b','s','s','s','s','i','i','s','s','b','s','s','s','s','s','s','POLYGON','s','s','s','i','POLYGON','d','s','s','s','s','s','s','i','b','b','b','i','i','i','s');
 			$res = db_prep_query($sql,$v,$t);
 			return $res;
 	}
@@ -2319,12 +2333,15 @@ SQL;
 		//check if the timestamp of an existing metadata element is not newer than the timestamp of the current metadata object!!!!
 		//TODO
 		//problem: <<<SQL have a limited number of chars!
+		
 		if ($changeAuthorization == true) {
 		    $sql = "UPDATE mb_metadata SET link = $1, origin = $18, md_format = $2, data = $3, ";
 		    $sql .= "linktype = $4, uuid = $5, title = $6, createdate = $7, changedate = $8, lastchanged = now(), ";
 		    $sql .= "abstract = $9, searchtext = $10, type = $11, tmp_reference_1 = $12, tmp_reference_2 = $13, export2csw = $14, datasetid = $15, ";
 		    $sql .= "datasetid_codespace = $16, randomid = $17, harvestresult = $20, harvestexception = $21, lineage = $22, inspire_top_consistence = $23, ";
-		    $sql .= "spatial_res_type = $24, spatial_res_value = $25, update_frequency = $26, format = $27, inspire_charset = $28, ref_system = $29, the_geom = $30, datalinks = $31, inspire_whole_area = $32, inspire_actual_coverage = $33, inspire_download = $34, bounding_geom = $35, transfer_size = $36, fees = $37, md_license_source_note = $38, constraints = $39, responsible_party_name = $40, responsible_party_email = $41, preview_image = $42, fkey_mb_group_id = $43, md_proxy = $44, inspire_interoperability = $45, searchable = $46, fkey_gui_id = $47, fkey_wmc_serial_id = $48, fkey_mapviewer_id = $49 WHERE metadata_id = $19";
+		    $sql .= "spatial_res_type = $24, spatial_res_value = $25, update_frequency = $26, format = $27, inspire_charset = $28, ref_system = $29, the_geom = $30, datalinks = $31, inspire_whole_area = $32, inspire_actual_coverage = $33, inspire_download = $34, bounding_geom = $35, transfer_size = $36, fees = $37, md_license_source_note = $38, constraints = $39, responsible_party_name = $40, responsible_party_email = $41, preview_image = $42, fkey_mb_group_id = $43, md_proxy = $44, inspire_interoperability = $45, searchable = $46, fkey_gui_id = $47, fkey_wmc_serial_id = $48, fkey_mapviewer_id = $49, alternate_title = $50 WHERE metadata_id = $19";
+		    //$e= new mb_exception("class_iso19139.php: downloadLinks json".$this->jsonEncodeDownloadLinks($this->downloadLinks));
+		    //$e= new mb_exception("class_iso19139.php: downloadLinks[0]".$this->downloadLinks[0]);
 		    $v = array(
 			$this->href,
 			$this->format,
@@ -2374,16 +2391,20 @@ SQL;
 			$this->searchable,
 			$this->fkeyGuiId,
 			$this->fkeyWmcSerialId,
-			$this->fkeyMapviewerId
+			$this->fkeyMapviewerId,
+		    $this->alternate_title
 		    );
-		    $t = array('s','s','s','s','s','s','s','s','s','s','s','s','s','b','s','s','s','s','i','i','s','s','b','s','s','s','s','s','s','POLYGON','s','s','s','i','POLYGON','d','s','s','s','s','s','s','i','b','b','b','i','i','i');
+		    //$e = new mb_exception("class_iso19139: ".$this->createWktBboxFromArray($this->wgs84Bbox));
+		    $t = array('s','s','s','s','s','s','s','s','s','s','s','s','s','b','s','s','s','s','i','i','s','s','b','s','s','s','s','s','s','POLYGON','s','s','s','i','POLYGON','d','s','s','s','s','s','s','i','b','b','b','i','i','i','s');
 		    $res = db_prep_query($sql,$v,$t);
 		} else { //do the update without changing owner and fkey_mb_group_id!
 		    $sql = "UPDATE mb_metadata SET link = $1, origin = $18, md_format = $2, data = $3, ";
 		    $sql .= "linktype = $4, uuid = $5, title = $6, createdate = $7, changedate = $8, lastchanged = now(), ";
 		    $sql .= "abstract = $9, searchtext = $10, type = $11, tmp_reference_1 = $12, tmp_reference_2 = $13, export2csw = $14, datasetid = $15, ";
 		    $sql .= "datasetid_codespace = $16, randomid = $17, harvestresult = $20, harvestexception = $21, lineage = $22, inspire_top_consistence = $23, ";
-		    $sql .= "spatial_res_type = $24, spatial_res_value = $25, update_frequency = $26, format = $27, inspire_charset = $28, ref_system = $29, the_geom = $30, datalinks = $31, inspire_whole_area = $32, inspire_actual_coverage = $33, inspire_download = $34, bounding_geom = $35, transfer_size = $36, fees = $37, md_license_source_note = $38, constraints = $39, responsible_party_name = $40, responsible_party_email = $41, preview_image = $42, md_proxy = $43, inspire_interoperability = $44, searchable = $45, fkey_gui_id = $46, fkey_wmc_serial_id = $47, fkey_mapviewer_id = $48 WHERE metadata_id = $19";
+		    $sql .= "spatial_res_type = $24, spatial_res_value = $25, update_frequency = $26, format = $27, inspire_charset = $28, ref_system = $29, the_geom = $30, datalinks = $31, inspire_whole_area = $32, inspire_actual_coverage = $33, inspire_download = $34, bounding_geom = $35, transfer_size = $36, fees = $37, md_license_source_note = $38, constraints = $39, responsible_party_name = $40, responsible_party_email = $41, preview_image = $42, md_proxy = $43, inspire_interoperability = $44, searchable = $45, fkey_gui_id = $46, fkey_wmc_serial_id = $47, fkey_mapviewer_id = $48, alternate_title = $49 WHERE metadata_id = $19";
+		    //$e= new mb_exception("class_iso19139.php: downloadLinks json".$this->jsonEncodeDownloadLinks($this->downloadLinks));
+		    //$e= new mb_exception("class_iso19139.php: downloadLinks[0]".$this->downloadLinks[0]);
 		    $v = array(
 			$this->href,
 			$this->format,
@@ -2432,9 +2453,11 @@ SQL;
 			$this->searchable,			
 			$this->fkeyGuiId,
 			$this->fkeyWmcSerialId,
-			$this->fkeyMapviewerId
+			$this->fkeyMapviewerId,
+		    $this->alternate_title
 		    );
-		    $t = array('s','s','s','s','s','s','s','s','s','s','s','s','s','b','s','s','s','s','i','i','s','s','b','s','s','s','s','s','s','POLYGON','s','s','s','i','POLYGON','d','s','s','s','s','s','s','b','b','b','i','i','i');
+		    //$e = new mb_exception("class_iso19139: ".$this->createWktBboxFromArray($this->wgs84Bbox));
+		    $t = array('s','s','s','s','s','s','s','s','s','s','s','s','s','b','s','s','s','s','i','i','s','s','b','s','s','s','s','s','s','POLYGON','s','s','s','i','POLYGON','d','s','s','s','s','s','s','b','b','b','i','i','i','s');
 		    $res = db_prep_query($sql,$v,$t);
 		}
 		return $res;
@@ -2721,6 +2744,14 @@ SQL;
 				$uuidArray[0] = $this->fileIdentifier;
 				$resultPropagation = $propagation->doPropagation("metadata", false, "push",  $uuidArray);
 				//********************************************************************************
+				//Ticket #4714 Sl specific adaption to populate alternate title to WMS and WFS tables based on dataset metadata url upload
+				if(!$this->updateRelatedResourceTable($resourceType, $resourceId)){
+					//db_rollback();
+					$e = new mb_exception("class_Iso19139:"._mb("Cannot update metadata dependant resource table (WMS/WFS)!"));
+					$result['message'] = "class_Iso19139:"._mb("Cannot update metadata dependant resource table (WMS/WFS)!");
+				}else{
+					//Successcase handling hier eigentlich nicht notwendig
+				}
 				//insert relations
 				$row = db_fetch_assoc($res);
 				$metadataId = $row['metadata_id'];
@@ -2779,5 +2810,59 @@ SQL;
 			$result['message'] = "Insert metadata successfully into database!";
 			return $result;
 		}	
+	}
+
+	//Ticket #4714 Sl specific adaption to populate alternate title to WMS and WFS tables based on dataset metadata url upload
+	private function updateRelatedResourceTable($resourceType, $resourceId){
+		//Update WMS/WFS table based on is upload data
+		//Currently only for alternate title (Ticket #4717)
+		//Check resource type in general
+		if(!($resourceType == "layer" || $resourceType == "featuretype")){
+			return false;
+		}
+
+		//Alternate title specific check on field/value existence
+		if (is_null($this->alternate_title) || !isset($this->alternate_title) || $this->alternate_title == false) {
+			return false;
+		}
+
+		//Search service (wms/wfs)
+		switch ($resourceType) {
+			case "layer":
+				$select_service_sql = "SELECT fkey_wms_id as service_id FROM mapbender.layer WHERE layer_id = $resourceId";
+				break;
+			case "featuretype":
+				$select_service_sql = "SELECT fkey_wfs_id as service_id FROM wfs_featuretype WHERE featuretype_id = $resourceId";
+				break;
+		}
+
+		//retrieve service id 
+		$res_service_sql = db_query($select_service_sql);
+		$service_row = db_fetch_assoc($res_service_sql);
+		$service_id = $service_row['service_id'];	
+
+		//check servoce od
+		if (is_null($service_id) || $service_id == ''){
+			return false;
+		}
+
+		//Prepare update statement based on resource type:
+		switch ($resourceType) {
+			case "layer":
+				$update_service_sql = "UPDATE mapbender.wms SET wms_alternate_title = $1 WHERE wms_id = $2";
+				break;
+			case "featuretype":
+				$update_service_sql = "UPDATE mapbender.wfs SET wfs_alternate_title = $1 WHERE wfs_id = $2";
+				break;
+		}
+		
+		//Execute update
+		$update_values = array($this->alternate_title[0], $service_id);
+		$value_types = array('s','i');
+		$res_update = db_prep_query($update_service_sql, $update_values, $value_types);
+
+		return $res_update;
+
+
 	}
 }

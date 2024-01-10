@@ -1486,7 +1486,14 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 			if ($f == "html") {
 				$returnObject->license = $tou; // - generate license info in json for json format!!!!!
 			}
-			$returnObject->accessUrl = $wfs->getCapabilities;
+			//Ticket: 6827: If Proxy flag is set and due to that the proxy variable in class_wfs_factory
+			//-> Replace internal ogc api datasource url with geoportal access url
+			if ($wfs->proxy){
+				$returnObject->accessUrl = "https://".$_SERVER['SERVER_NAME']."/registry/wfs/". $wfsid . "?";
+			}
+			else{
+				$returnObject->accessUrl = $wfs->getCapabilities;
+			}
 			// uri to test openapi description:
 			// https://editor.swagger.io/
 			if ($collections == "api") {

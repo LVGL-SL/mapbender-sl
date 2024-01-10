@@ -582,6 +582,10 @@ function fillSectionList(featureCollection, k) {
           }else{
               url=url_tmp
           }
+		  //Ticket #6773: For wfs outputFormat v3.2 Links are not working due to "+" being decoded to " " automatically -> Has to be encoded due to that
+		  if(url.includes("gml+xml")){
+			url = url.replace("gml+xml", "gml%2Bxml");
+		  }
 
           //console.log(encodeURIComponent(url))
           //console.log(url)

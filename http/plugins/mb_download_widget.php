@@ -97,7 +97,7 @@
 		downloadDialog.append($(spinnerHtml));
 		downloadDialog.append($(datasetListHtml));
 		downloadDialog.dialog({
-			width: 350,
+			width: 370,
 			autoOpen: false,
 			position: [o.$target.offset().left+20, o.$target.offset().top+80]
 		}).bind("dialogclose", function () {
@@ -236,6 +236,25 @@
             that.area_of_interest = JSON.parse(multi.toString());
             		
             var mapObj = getMapObjByName('mapframe1');
+            //get list of spatial_dataset_identifier, if some exists
+            sdi_list = [];
+            for (let indexWms = 0; indexWms < mapObj.wms.length; ++indexWms) {
+        		const currentWms = mapObj.wms[indexWms];
+        		for (let indexLayer = 0; indexLayer < currentWms.objLayer.length; ++indexLayer) {
+        			const currentLayer = currentWms.objLayer[indexLayer];
+        			if (((typeof currentLayer.layer_identifier != "undefined") && Array.isArray(currentLayer.layer_identifier) && (currentLayer.layer_identifier.length > 0)) && currentLayer.gui_layer_visible == 1) {
+        				//console.log(parseInt(currentLayer.layer_uid));
+        				for (let indexIdentifier = 0; indexIdentifier < currentLayer.layer_identifier.length; ++indexIdentifier) {
+        				    //only add identifier that are not empty!
+        				    if (currentLayer.layer_identifier[indexIdentifier].identifier != "") {
+        				    	sdi_list.push(currentLayer.layer_identifier[indexIdentifier].identifier);   
+        				    }
+        				}
+        			}
+        			//console.log(currentLayer);
+        		}
+    		}
+    		console.log(sdi_list);
             //get list of layers db ids
             layer_ids = [];
             // TODO - does deeper hierachies exists?
@@ -245,7 +264,9 @@
         			const currentLayer = currentWms.objLayer[indexLayer];
         			if (((currentLayer.layer_uid != '') || (typeof currentLayer.layer_uid != "undefined")) && currentLayer.gui_layer_visible == 1) {
         				//console.log(parseInt(currentLayer.layer_uid));
-        				layer_ids.push(parseInt(currentLayer.layer_uid));
+        				if (!isNaN(parseInt(currentLayer.layer_uid))) {
+        					layer_ids.push(parseInt(currentLayer.layer_uid));
+        				}
         			}
         		}
     		}
@@ -254,7 +275,7 @@
             fetch('../php/mod_getDatasetIdentifierByLayer.php?layerIds=' + layer_ids.join(','))
                 .then((response) => response.json())
                 	.then((data) => {
-                		that.requestDownloadOptions(data, JSON.parse(multi.toString()));
+                		that.requestDownloadOptions(data.concat(sdi_list), JSON.parse(multi.toString()));
                 	});
                 	
             inProgress = false;
@@ -284,6 +305,8 @@
             }
         });
     };
+    
+   
     
     var validateAndSendForm = function () {
     	//alert('test');
@@ -373,21 +396,32 @@
     	columnContainer = $(document.createElement('th')).appendTo(rowContainer);
     	vectorTitle = $(document.createElement('b')).appendTo(columnContainer);
     	vectorTitle.append("<?php echo _mb('Raster');?>");
+    	columnContainer = $(document.createElement('th')).appendTo(rowContainer);
+    	serviceTitle = $(document.createElement('b')).appendTo(columnContainer);
+    	serviceTitle.append("<?php echo _mb('Service Info');?>");	
     	for (dataset_id in data) {
     		rowContainer = $(document.createElement('tr')).appendTo(tableContainer);
     		columnContainer = $(document.createElement('th')).appendTo(rowContainer);
     		if (typeof data[dataset_id]['title'] != "undefined") {
         		datasetLink = $(document.createElement('a')).appendTo(columnContainer);
         		datasetLink.attr({'target':'_blank'});
-        		datasetLink.attr({'href':'https://www.geoportal.saarland.de/mapbender/php/mod_iso19139ToHtml.php?url=https%3A%2F%2Fwww.geoportal.saarland.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D' + data[dataset_id]['fileidentifier']});
-        		datasetTitle = $(document.createElement('b')).appendTo(datasetLink);
+        		//#6686 Merge change url
+				//datasetLink.attr({'href':'https://www.geoportal.saarland.de/mapbender/php/mod_iso19139ToHtml.php?url=https%3A%2F%2Fwww.geoportal.saarland.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D' + data[dataset_id]['fileidentifier']});
+        		datasetLink.attr({'href':'https://www.geoportal.saarland.de/mapbender/php/mod_iso19139ToHtml.php?url=' + encodeURIComponent(data[dataset_id]['csw'] + '?request=GetRecordById&service=CSW&version=2.0.2&ElementSetName=full&OUTPUTSCHEMA=http://www.isotc211.org/2005/gmd&Id=' + data[dataset_id]['fileidentifier']) + '&resolveCoupledResources=true'});
+        		datasetTitle = $(document.createElement('i')).appendTo(datasetLink);
         		datasetTitle.append(data[dataset_id]['title']);
+        		if (data[dataset_id]['error_messages'].length > 0) {
+        			datasetLink.attr({'title': data[dataset_id]['error_messages'].join(' - ')});
+        			datasetLink.attr({'style':'color: red;'});
+        		} else {
+        			datasetLink.attr({'title': data[dataset_id]['spatial_dataset_identifier']});
+        		}
     		} else {
     			datasetInfo = $(document.createElement('div')).appendTo(columnContainer);
         		datasetInfo.attr({'style':'color: red;'});
         		//datasetInfo.attr({'href':'https://www.geoportal.saarland.de/mapbender/php/mod_iso19139ToHtml.php?url=https%3A%2F%2Fwww.geoportal.saarland.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D' + data[dataset_id]['fileidentifier']});
         		datasetInfoTitle = $(document.createElement('i')).appendTo(datasetInfo);
-        		datasetInfoTitle.attr({'title':'<?php echo _mb("Dataset not found in catalogue!");?>'});
+        		datasetInfoTitle.attr({'title':'<?php echo _mb("Dataset not found in catalogues (Regional, DE, EU)! Last checked CSW: " );?>' + data[dataset_id]['csw']});
         		datasetInfoTitle.append(data[dataset_id]['spatial_dataset_identifier']);
     		}
     		serviceType = [];
@@ -416,7 +450,17 @@
     		} else {
     			rasterCheck.attr({'disabled':'disabled'});
     		}
-
+    		columnContainer = $(document.createElement('th')).appendTo(rowContainer);
+    		if (typeof data[dataset_id]['services'] !== "undefined"  &&  data[dataset_id]['services'].length > 0) {
+        		serviceCheck = $(document.createElement('img')).appendTo(this.columnContainer);
+    			serviceCheck.attr({'src':'../img/server_map-ilink.png'});
+    			serviceCheck.attr({'width':'20'});
+    			serviceCheck.attr({'height':'20'});
+    			//serviceCheck.attr({'onClick':'test = window.open("data:text/json,"' + encodeURIComponent(JSON.stringify(data[dataset_id]['services'])) + ', "_blank");test.focus();'});
+    			//serviceCheck.attr({'onClick':'alert("' + JSON.stringify(data[dataset_id]['services']) + '")'});
+    			//serviceCheck.attr({'onClick':'alert("' + JSON.stringify(data[dataset_id]['services']) + '")'});
+    			serviceCheck.attr({'title': JSON.stringify(data[dataset_id]['services'])});
+			}
     	}
     	submitContainer = $(document.createElement('input')).appendTo(formContainer);
     	submitContainer.attr({'type':'button'});
@@ -461,16 +505,20 @@
 	};
 	
     this.requestDownloadOptions = function (sdiArray, area_of_interest) {
-    	//console.log(sdiArray);
+    	console.log(sdiArray);
     	
     	var download_configuration = {}
     	download_configuration.area_of_interest = area_of_interest;
     	download_configuration.dataset_configuration = {};
     	download_configuration.dataset_configuration.datasets = [];
-    	for (sdi in sdiArray) {
+    	var uniqueSdiArray = sdiArray.filter((value, index, array) => array.indexOf(value) === index);
+    	for (sdi in uniqueSdiArray) {
     	    entry = {};
-    	    entry['resourceidentifier'] = sdiArray[sdi];
-    		download_configuration.dataset_configuration.datasets.push(entry);
+    	    //delete empty identifier from list
+    	    if (uniqueSdiArray[sdi] != "") {
+    	        entry['resourceidentifier'] = uniqueSdiArray[sdi];
+    		    download_configuration.dataset_configuration.datasets.push(entry);
+    		}
     	}
     	$('#load-options-spinner').show();
     	$.ajaxSetup({async:true});
