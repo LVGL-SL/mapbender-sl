@@ -382,8 +382,9 @@ function mod_featureInfo_event(e){
 			//build list of possible featureInfo requests
 			featureInfos = mod_featureInfo_mapObj.getFeatureInfoRequestsForLayers(point, ignoreWms, Mapbender.modules[options.target].getSRS(), realWorldPoint, featureInfoCollectLayers) || [];
             var length = featureInfos.length + ownDataInfos.length;
+            //Ticket 4918 - Info for users that they may have clicked outside of the bounding box(requestable area)
 			if (length === 0) {
-				alert("<?php echo _mb("Please enable some layer to be requestable");?>!");
+				alert("<?php echo _mb("Please enable some layer to be requestable or you are outside of the bounding box");?>!");
 				return false;
 			}
 			if (length === 1) {

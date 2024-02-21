@@ -1081,7 +1081,8 @@ Mapbender.Map = function (options) {
 			//get all layers for this wms which have activated featureInfo Button
 			//loop over all layers of this wms
 	 		for (var j = 0; j < this.wms[i].objLayer.length; j++) {
-				if (this.wms[i].objLayer[j].gui_layer_querylayer == 1 && this.wms[i].objLayer[j].gui_layer_queryable == 1) {
+				//Ticket 4918: exclude Grouplayers, also Rootlayer
+				if (this.wms[i].objLayer[j].gui_layer_querylayer == 1 && this.wms[i].objLayer[j].gui_layer_queryable == 1 && (!this.wms[i].objLayer[j].has_childs)) {
 					var featureInfoObj = {};
                    			featureInfoObj.title = this.wms[i].objLayer[j].gui_layer_title;
 					//pull featureinfo request
@@ -1116,7 +1117,9 @@ Mapbender.Map = function (options) {
 						featureInfoObj.legendurl = "empty";
 					}
 					//return new request!
-		    			allRequests.push(featureInfoObj);
+					//Ticket 4918 exclude Layer, if clickpoint outside BoundingBox of the Layer
+					    if(featureInfoObj.inBbox)
+		    			    allRequests.push(featureInfoObj);
 				} //end queryable condition
 			} //end for layer loop
 		} //end layer or wms based featureInfo
