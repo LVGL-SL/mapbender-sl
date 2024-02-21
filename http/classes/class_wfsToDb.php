@@ -326,14 +326,55 @@ class WfsToDb {
 		}
 
 		// delete all metadata relations which come capabilities
-
+########################neu Ticket 7069: ###########################
         if (!$updateMetadataOnly) {
+			
+				$v = array($aWfs->id);
+        		$t = array("i");
+				$sql = "Select fkey_metadata_id,fkey_featuretype_id FROM ows_relation_metadata WHERE fkey_featuretype_id IN " ;
+        		$c = 2;
+				$sql .= "(SELECT featuretype_id FROM wfs_featuretype WHERE fkey_wfs_id = $1)";/*AND NOT featuretype_name IN(";		
+				for($i=0; $i<count($aWfs->featureTypeArray); $i++){
+					if($i>0){$sql .= ',';}
+						$sql .= "$".$c;
+						array_push($v,$aWfs->featureTypeArray[$i]->name);
+						//$e = new mb_notice("class_wfsToDb.php: WFS_UPDATE: old featuretype name added for read: ".$aWfs->featureTypeArray[$i]->name);
+						array_push($t,'s');
+						$c++;
+				}
+				$sql .= ") )";*/
+        		$sql .= " AND ows_relation_metadata.relation_type = 'capabilities'";
+
+        		
+			
+			   
+			$res_metadata_id = db_prep_query($sql,$v,$t);
+			
         		$sql = "DELETE FROM ows_relation_metadata WHERE fkey_featuretype_id IN " ;
         		$sql .= "(SELECT featuretype_id FROM wfs_featuretype WHERE fkey_wfs_id = $1)";
         		$sql .= " AND ows_relation_metadata.relation_type = 'capabilities'";
         		$v = array($aWfs->id);
         		$t = array("i");
-        		$res = db_prep_query($sql,$v,$t);     
+        		$res = db_prep_query($sql,$v,$t);
+				
+			while($row = db_fetch_array($res_metadata_id)){
+				$sql = "Select count(*) from ows_relation_metadata where fkey_metadata_id = $1 ;";
+				$v = array($row["fkey_metadata_id"]);
+				$t = array('i');
+				$res_count = db_prep_query($sql,$v,$t);
+				$res_count2 = db_fetch_array($res_count);
+				if ($res_count2["count"] == 0){
+					$sql_del = "DELETE from mb_metadata where metadata_id = $1 ;";
+					$v = array($row["fkey_metadata_id"]);
+					$t = array('i');
+					$res_count = db_prep_query($sql_del,$v,$t);
+			}
+		}
+				
+				
+
+
+				
         		// delete and refill WFS operations
         		$sql = "DELETE FROM wfs_operation WHERE fkey_wfs_id = $1 ";
         		$v = array($aWfs->id);
@@ -541,7 +582,8 @@ class WfsToDb {
 	public static function delete ($aWfs) {
 		//first delete coupled metadata, cause there is no contraints in the database to do so
 		$e = new mb_notice("Deleting MetadataURLs for wfs with id :".$aWfs->id);
-		//WfsToDb::deleteFeatureTypeMetadataUrls($aWfs->id); //Not needed any more, cause the relations are deleted thru class_iso19139.php
+		########################neu Ticket 7069: ###########################
+		WfsToDb::deleteFeatureTypeMetadataUrls_and_relations ($aWfs->id); //Not needed any more, cause the relations are deleted thru class_iso19139.php
 		//then delete wfs itself
 		$sql = "DELETE FROM wfs WHERE wfs_id = $1";
 		$v = array($aWfs->id);
@@ -1683,7 +1725,43 @@ SQL;
 		}
 		return true;
 	}
+	########################neu Ticket 7069: ###########################
+	private static function deleteFeatureTypeMetadataUrls_and_relations ($wfsId) {
+		
+				$v = array($wfsId);
+        		$t = array("i");
+				$sql = "Select fkey_metadata_id,fkey_featuretype_id FROM ows_relation_metadata WHERE fkey_featuretype_id IN " ;
+        		$sql .= "(SELECT featuretype_id FROM wfs_featuretype WHERE fkey_wfs_id = $1)";
+				
+				
+        		$sql .= " AND ows_relation_metadata.relation_type = 'capabilities'";
 
+        		
+			
+			   
+			$res_metadata_id = db_prep_query($sql,$v,$t);
+			
+        		$sql = "DELETE FROM ows_relation_metadata WHERE fkey_featuretype_id IN " ;
+        		$sql .= "(SELECT featuretype_id FROM wfs_featuretype WHERE fkey_wfs_id = $1)";
+        		$sql .= " AND ows_relation_metadata.relation_type = 'capabilities'";
+        		$v = array($wfsId);
+        		$t = array("i");
+        		$res = db_prep_query($sql,$v,$t);
+				
+			while($row = db_fetch_array($res_metadata_id)){
+				$sql = "Select count(*) from ows_relation_metadata where fkey_metadata_id = $1 ;";
+				$v = array($row["fkey_metadata_id"]);
+				$t = array('i');
+				$res_count = db_prep_query($sql,$v,$t);
+				$res_count2 = db_fetch_array($res_count);
+				if ($res_count2["count"] == 0){
+					$sql_del = "DELETE from mb_metadata where metadata_id = $1 ;";
+					$v = array($row["fkey_metadata_id"]);
+					$t = array('i');
+					$res_count = db_prep_query($sql_del,$v,$t);
+				}
+			}
+	}
 	/**
 	 * Checks if a featuretype exists in the database. It selects the rows
 	 * that match the WFS id and the featuretype name.

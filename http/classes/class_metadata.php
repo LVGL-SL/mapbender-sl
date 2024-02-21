@@ -1553,9 +1553,19 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 			$whereStr .= $txt_whereCond;
 		}
 		//Add WHERE condition to search
-		if ($whereStr !== '') {
+		//Ticket 7069: exclude Datasets not coupled from search result
+		//Solution currently taken out due to change that coupled metadata is deleted in the intended places
+		//If this code is needed again -> take out the second bracket after the where condition and remove comment-characters(slashed + asterisk slash ) below
+		if (($whereStr !== ''))  //&& !(strtolower($this->searchResources) === "dataset")){
 			$whereStr = "WHERE " . $whereStr;
+		/*}
+		else if (($whereStr !== '')){
+			$whereStr = "WHERE " . $whereStr. " AND coupled_resources  ~ '[0-9]+'";			
 		}
+		else if (strtolower($this->searchResources) === "dataset")
+			$whereStr = "WHERE coupled_resources  ~ '[0-9]+' ";
+		*/
+		
 		$sql .= $whereStr;
 		//TODO ORDER BY in SQL - not necessary for counting things:
 		$sql .= $this->orderBy;
