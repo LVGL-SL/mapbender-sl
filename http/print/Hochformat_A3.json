@@ -74,10 +74,10 @@
                 "karte": {
                     "type": "map",
                     "res_dpi": 72,
-                    "x_ul": 20.2,
-                    "y_ul": 27.3,
-                    "width": 262,
-                    "height": 304,
+                    "x_ul": 17.5,
+                    "y_ul": 28.9,
+                    "width": 261.3,
+                    "height": 303.0,
                     "coords": 1,
                     "coords_font_family": "Arial",
                     "coords_font_size": 11
@@ -85,23 +85,23 @@
                 "minikarte": {
                     "type": "overview",
                     "res_dpi": 72,
-                    "x_ul": 19.8,
-                    "y_ul": 26.6,
+                    "x_ul": 17.5,
+                    "y_ul": 28.9,
                     "width": 50,
                     "height": 50
                 },
                 "scale": {
                     "type": "text",
-                    "x_ul": 150.0,
-                    "y_ul": 349.0,
+                    "x_ul": 92.0,
+                    "y_ul": 345.8,
                     "font_family": "Arial",
                     "font_size": 14,
                     "value": "scale"
                 },
                 "date": {
                     "type": "text",
-                    "x_ul": 50.5,
-                    "y_ul": 349.0,
+                    "x_ul": 39.5,
+                    "y_ul": 345.8,
                     "font_family": "Arial",
                     "font_size": 14,
                     "value": "date"
@@ -142,8 +142,8 @@
                 },
                 "kommentar1": {
                     "type": "para",
-                    "x_ul": 20.1,
-                    "y_ul": 365.2,
+                    "x_ul": 18.9,
+                    "y_ul": 363.2,
                     "font_family": "Arial",
                     "font_size": 11,
                     "width": 215,
