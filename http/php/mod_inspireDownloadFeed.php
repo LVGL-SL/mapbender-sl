@@ -32,6 +32,7 @@ require_once(dirname(__FILE__) . "/../classes/class_cache.php");
 require_once(dirname(__FILE__) . "/../classes/class_iso19139.php");
 require_once(dirname(__FILE__) . "/../classes/class_crs.php");
 require_once(dirname(__FILE__) . "/../classes/class_metadata_monitor.php");
+require_once(dirname(__FILE__) . "/../classes/class_universal_wfs_factory.php");
 
 //check_epsg_wms_13($tmp_epsg)
 //http://www.weichand.de/inspire/dls/verwaltungsgrenzen.xml
@@ -577,6 +578,147 @@ function generateOpenSearchDescription($feedDoc, $recordId, $generateFrom) {
 	$osLanguage->appendChild($osLanguageText);
 	$feed->appendChild($osLanguage);
 	return $feedDoc->saveXML();
+}
+
+function addBboxEntry($bboxWfsArray, &$bboxWfs, &$countBbox, &$multiPolygonText, $numberOfObjects, $crs, $wfs, $maxFeatureCount, $featuretypeName, $geometryFieldName) {
+    $e = new mb_notice("php/mod_inspireDownloadFeed.php: maxFeatureCount: " . $maxFeatureCount);
+    $minxWfs = $bboxWfsArray[0];
+    $minyWfs = $bboxWfsArray[1];
+    $maxxWfs = $bboxWfsArray[2];
+    $maxyWfs = $bboxWfsArray[3];
+    if ($numberOfObjects <= $maxFeatureCount) {
+        $bboxWfs[$featuretypeName][$countBbox] = $minxWfs.",".$minyWfs.",".$maxxWfs.",".$maxyWfs;
+        //NEW 2022-07-11 - use a single sql to calculate the intersections
+        $multiPolygonText .= "((" . $minxWfs . " " . $minyWfs . "," . $maxxWfs . " " . $minyWfs . "," . $maxxWfs . " " . $maxyWfs . ",";
+        $multiPolygonText .= $minxWfs . " " . $maxyWfs . "," . $minxWfs . " " . $minyWfs . ")),";
+        $countBbox++;
+        $e = new mb_notice("php/mod_inspireDownloadFeed.php: addBboxEntry direkt - number of objects: " . $numberOfObjects);
+    } else {
+        //split bbox in two half bboxes and call the function for each of the bboxes
+        $e = new mb_notice("php/mod_inspireDownloadFeed.php: split bboxes in two parts");
+        //first check which side - use the longer side to split
+        if (($maxxWfs - $minxWfs) >= ($maxyWfs - $minyWfs)) {
+            $firstBbox = array($minxWfs, $minyWfs, $minxWfs + ($maxxWfs - $minxWfs) / 2, $maxyWfs);
+        } else {
+            $firstBbox = array($minxWfs, $minyWfs, $maxxWfs, $minyWfs + ($maxyWfs - $minyWfs) / 2);
+        }
+        $bboxFilter = getBboxFilter($firstBbox, $crs, $wfs->getVersion(), $geometryFieldName, $alterAxisOrder);
+        //count features in current bbox
+        $featureHitsBbox = $wfs->countFeatures( $featuretypeName, $bboxFilter, false, false, false, 'GET');
+        if ($featureHitsBbox <= $maxFeatureCount) {
+            $bboxWfs[$featuretypeName][$countBbox] = $firstBbox[0].",".$firstBbox[1].",".$firstBbox[2].",".$firstBbox[3];
+            //NEW 2022-07-11 - use a single sql to calculate the intersections
+            $multiPolygonText .= "((" . $firstBbox[0] . " " . $firstBbox[1] . "," . $firstBbox[2] . " " . $firstBbox[1] . "," . $firstBbox[2] . " " . $firstBbox[3] . ",";
+            $multiPolygonText .=  $firstBbox[0] . " " . $firstBbox[3] . "," . $firstBbox[0] . " " . $firstBbox[1] . ")),";
+            $countBbox++;
+            $e = new mb_notice("php/mod_inspireDownloadFeed.php: addBboxEntry firstBox - number of objects: " . $featureHitsBbox);
+        } else {
+            addBboxEntry($firstBbox, $bboxWfs, $countBbox, $multiPolygonText, $featureHitsBbox, $crs, $wfs, $maxFeatureCount, $featuretypeName, $geometryFieldName);
+        }
+        //second bbox
+        if (($maxxWfs - $minxWfs) >= ($maxyWfs - $minyWfs)) {
+            $secondBbox = array($minxWfs + ($maxxWfs - $minxWfs) / 2, $minyWfs, $maxxWfs, $maxyWfs);
+        } else {
+            $secondBbox = array($minxWfs, $minyWfs + ($maxyWfs - $minyWfs) / 2, $maxxWfs, $maxyWfs);
+        }
+        $bboxFilter = getBboxFilter($secondBbox, $crs, $wfs->getVersion(), $geometryFieldName, $alterAxisOrder);
+        //count features in current bbox
+        $featureHitsBbox = $wfs->countFeatures( $featuretypeName, $bboxFilter, false, false, false, 'GET');
+        if ($featureHitsBbox <= $maxFeatureCount) {
+            $bboxWfs[$featuretypeName][$countBbox] = $secondBbox[0].",".$secondBbox[1].",".$secondBbox[2].",".$secondBbox[3];
+            //NEW 2022-07-11 - use a single sql to calculate the intersections
+            $multiPolygonText .= "((" . $secondBbox[0] . " " . $secondBbox[1] . "," . $secondBbox[2] . " " . $secondBbox[1] . "," . $secondBbox[2] . " " . $secondBbox[3] . ",";
+            $multiPolygonText .=  $secondBbox[0] . " " . $secondBbox[3] . "," . $secondBbox[0] . " " . $secondBbox[1] . ")),";
+            $countBbox++;
+            $e = new mb_notice("php/mod_inspireDownloadFeed.php: addBboxEntry secondBox - number of objects: " . $featureHitsBbox);
+        } else {
+            addBboxEntry($secondBbox, $bboxWfs, $countBbox, $multiPolygonText, $featureHitsBbox, $crs, $wfs, $maxFeatureCount, $featuretypeName, $geometryFieldName);
+        }
+    }
+}
+
+function getGeometryFieldNameFromMapbenderDb($mapbenderGeoemtryFieldName, $mapbenderFeaturetypeName) {
+    if (!isset($mapbenderGeoemtryFieldName) || $mapbenderGeoemtryFieldName == '') {
+        $geometryFieldName = 'geometry';
+    } else {
+        $geometryFieldName = $mapbenderGeoemtryFieldName;
+    }
+    if (strpos($mapbenderFeaturetypeName, ':') !== false) {
+        $ftNamespace = explode(':', $mapbenderFeaturetypeName);
+        $ftNamespace = $ftNamespace[0];
+        $geometryFieldName = $ftNamespace.':'.$geometryFieldName;
+    } else {
+        $ftNamespace = false;
+        $geometryFieldName = $geometryFieldName;
+    }
+    return $geometryFieldName;
+}
+
+function getBboxFilter($bbox, $crs, $wfs_version, $geometryFieldName, $switchAxisOrder=false) {
+    if ($switchAxisOrder) {
+        $newBbox[0] = $bbox[1];
+        $newBbox[1] = $bbox[0];
+        $newBbox[2] = $bbox[3];
+        $newBbox[3] = $bbox[2];
+        $bbox = $newBbox;
+    }
+    //if geometry name has an namespace - separate them for wfs 1.1.0
+    if (strpos($geometryFieldName, ':') !== false) {
+        $ftNamespace = explode(':', $geometryFieldName);
+        $ftNamespace = $ftNamespace[0];
+        $geometryFieldNameWithoutNamespace = str_replace($ftNamespace . ":", "", $geometryFieldName);
+    } else {
+        $geometryFieldNameWithoutNamespace = $geometryFieldName;
+    }
+    switch ($wfs_version) {
+        case "2.0.0":
+            $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>';
+            $bboxFilter .= '<fes:ValueReference>'.$geometryFieldName.'</fes:ValueReference>';
+            //<gml:Envelope srsName="urn:ogc:def:crs:EPSG::1234">
+            $bboxFilter .= '<gml:Envelope xmlns:gml="http://www.opengis.net/gml/3.2" srsName="'.$crs.'">';
+            //FIX for ESRI? TODO
+            $bboxFilter .= '<gml:lowerCorner>'.$bbox[0].' '.$bbox[1].'</gml:lowerCorner>';
+            $bboxFilter .= '<gml:upperCorner>'.$bbox[2].' '.$bbox[3].'</gml:upperCorner>';
+            $bboxFilter .= '</gml:Envelope>';
+            $bboxFilter .= '</fes:BBOX>';
+            $bboxFilter .= '</fes:Filter>';
+            //$bboxFilter = rawurlencode(utf8_decode($bboxFilter));
+            break;
+        case "2.0.2":
+            $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>';
+            $bboxFilter .= '<fes:ValueReference>'.$geometryFieldName.'</fes:ValueReference>';
+            //<gml:Envelope srsName="urn:ogc:def:crs:EPSG::1234">
+            $bboxFilter .= '<gml:Envelope xmlns:gml="http://www.opengis.net/gml/3.2" srsName="'.$crs.'">';
+            //FIX for ESRI? TODO
+            $bboxFilter .= '<gml:lowerCorner>'.$bbox[0].' '.$bbox[1].'</gml:lowerCorner>';
+            $bboxFilter .= '<gml:upperCorner>'.$bbox[2].' '.$bbox[3].'</gml:upperCorner>';
+            $bboxFilter .= '</gml:Envelope>';
+            $bboxFilter .= '</fes:BBOX>';
+            $bboxFilter .= '</fes:Filter>';
+            //$bboxFilter = rawurlencode(utf8_decode($bboxFilter));
+            break;
+        case "1.1.0":
+            $bboxFilter = '<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc"><ogc:BBOX>';
+            //$bboxFilter = '<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:BBOX>';
+            //$bboxFilter .= '<gml:Box srsName="EPSG:'.$epsgId[1].'"';
+            //? $mapbenderMetadata[$i]->geometry_field_name[0];
+            $bboxFilter .= '<ogc:PropertyName>' . $geometryFieldNameWithoutNamespace . '</ogc:PropertyName>';
+            $bboxFilter .= '<gml:Box xmlns:gml="http://www.opengis.net/gml" srsName="'.$crs.'">';
+            $bboxFilter .= '<gml:coordinates decimal="." cs="," ts=" ">';
+            //$currentBbox = explode(',',$bboxWfs[$mapbenderMetadata[$i]->featuretype_name][$l]);
+            //$e = new mb_notice("Bounding box ".$l." : ".$l.$bboxWfs[$mapbenderMetadata[$i]->featuretype_name][$l]);
+            //fix for esri????? TODO check crs axes order handling
+            //if (strtoupper($mapbenderMetadata[$i]->geometry_field_name[0] == "SHAPE")) {
+            //	$bboxFilter .= $currentBboxGetFeature[1].','.$currentBboxGetFeature[0].' '.$currentBboxGetFeature[3].','.$currentBboxGetFeature[2];
+                //} else {
+                $bboxFilter .= $bbox[0].','.$bbox[1].' '.$bbox[2].','.$bbox[3];
+                //}
+                $bboxFilter .= '</gml:coordinates></gml:Box></ogc:BBOX></ogc:Filter>';
+                //$e = new mb_exception("php/mod_inspireDownloadFeed.php: bbox filter wfs 1.1.0: " . $bboxFilter);
+                //$bboxFilter = rawurlencode(utf8_decode($bboxFilter));
+                break;
+    }
+    return $bboxFilter;
 }
 
 
@@ -1276,60 +1418,22 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 				if (!($mapbenderMetadata[$i]->wfs_version) || $mapbenderMetadata[$i]->wfs_version == '') {
 					return "<error>Version of WFS : ".$mapbenderMetadata[$i]->wfs_version." is not supported to generate inspire download services for predefined datasets!</error>";
 				}
-				//check if count is possible - in wfs 1.0.0 it is not possible!
-				if ($mapbenderMetadata[$i]->wfs_version !== '1.0.0') {
-					//define request to get number of hits per featuretype
-					//add ? if not given in string
-					$gHLink = $mapbenderMetadata[$i]->wfs_getfeature."SERVICE=WFS&REQUEST=GetFeature&VERSION=";
-					$gHLink .= $mapbenderMetadata[$i]->wfs_version."&".$typeParameterName."=";
-					$gHLink .= $mapbenderMetadata[$i]->featuretype_name."&resultType=hits";
-					$startRequestTime = time();
-					//get auth information from database:
-					$sql = "SELECT wfs_auth_type, wfs_username, wfs_password from wfs WHERE wfs_id = $1 ";
-					$v = array($mapbenderMetadata[$i]->wfs_id);
-					$t = array('i');
-					$res = db_prep_query($sql,$v,$t);
-					$row = db_fetch_assoc($res);
-					$auth['auth_type'] = $row["wfs_auth_type"];
-					$auth['username'] = $row["wfs_username"];
-					$auth['password'] = $row["wfs_password"];
-					if (isset($auth['auth_type']) && $auth['auth_type'] != '' && isset($auth['username']) && $auth['username'] != '' && isset($auth['password']) && $auth['password'] != '') {
-						$hitConnector = new connector($gHLink,$auth);
-					} else {
-						$hitConnector = new connector($gHLink);
-					}
-					$hitXml = $hitConnector->file;
-					$endRequestTime = time();
-					$diffTime = $endRequestTime-$startRequestTime;
-					$e = new mb_notice("Time for counting objects of featuretype ".$mapbenderMetadata[$i]->featuretype_name." : ".$diffTime." seconds!");
-					//parse hits
-					try {
-						$featureTypeHits =  new SimpleXMLElement($hitXml);
-						if ($featureTypeHits == false) {
-							throw new Exception('Cannot parse WFS number of hits request!');
-						}
-					}
-					catch (Exception $e) {
-    						$e = new mb_exception($e->getMessage());
-					}
-					switch ($mapbenderMetadata[$i]->wfs_version) {
-						case "2.0.0":
-							$hits = $featureTypeHits->xpath('/wfs:FeatureCollection/@numberMatched');
-							break;
-						case "2.0.2":
-							$hits = $featureTypeHits->xpath('/wfs:FeatureCollection/@numberMatched');
-							break;
-						case "1.1.0":
-							$hits = $featureTypeHits->xpath('/wfs:FeatureCollection/@numberOfFeatures');
-							break;
-					}
-					$featureHits[$i] = (integer)$hits[0];
-					//$e = new mb_exception($featureHits[$i]." hits for featuretype ".$mapbenderMetadata[$i]->featuretype_name);
-					//calculate further bboxes if the # of hits extents some value
-					//minimum number of single tiles:
-					$countTiles = ceil($featureHits[$i]/$maxFeatureCount);
+				//count features by class instead of own way
+				//instantiate wfs by id
+				$myWfsFactory = new UniversalWfsFactory ();
+				$wfs = $myWfsFactory->createFromDb ( $mapbenderMetadata[$i]->wfs_id );
+				//simple invocation
+				$featureHitsTest = $wfs->countFeatures( $mapbenderMetadata[$i]->featuretype_name, false, false, false, false, 'GET');
+				if ($featureHitsTest == false) {
+				    $message = "counting is not possible";
+				    $countTiles = 1;
 				} else {
-					$countTiles = 1;
+				    $e = new mb_exception("php/mod_inspireDownloadFeed.php: hits 1: " . $featureHitsTest);
+				    $featureHits[$i] = (integer)$featureHitsTest;
+				    //$e = new mb_exception($featureHits[$i]." hits for featuretype ".$mapbenderMetadata[$i]->featuretype_name);
+				    //calculate further bboxes if the # of hits extents some value
+				    //minimum number of single tiles:
+				    $countTiles = ceil($featureHits[$i]/$maxFeatureCount);
 				}
 				//calculate number of rows and columns from x / y ratio
 				//$e = new mb_exception("http/php/mod_inspireDownloadFeed.php: - Bbox from metadata: minx: ". $mapbenderMetadata[$i]->minx." - miny: ".$mapbenderMetadata[$i]->miny." - maxx: ".$mapbenderMetadata[$i]->maxx." - maxy: ".$mapbenderMetadata[$i]->maxy." - CRS: ".$mapbenderMetadata[$i]->featuretype_srs." - EPSG ID: ".$crsObject->identifierCode);
@@ -1346,7 +1450,6 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 				$sqlExtent = "SELECT X(transform(GeometryFromText('POINT(".$mapbenderMetadata[$i]->minx." ".$mapbenderMetadata[$i]->miny.")',4326),".$crsObject->identifierCode.")) as minx, Y(transform(GeometryFromText('POINT(".$mapbenderMetadata[$i]->minx." ".$mapbenderMetadata[$i]->miny.")',4326),".$crsObject->identifierCode.")) as miny, X(transform(GeometryFromText('POINT(".$mapbenderMetadata[$i]->maxx." ".$mapbenderMetadata[$i]->maxy.")',4326),".$crsObject->identifierCode.")) as maxx, Y(transform(GeometryFromText('POINT(".$mapbenderMetadata[$i]->maxx." ".$mapbenderMetadata[$i]->maxy.")',4326),".$crsObject->identifierCode.")) as maxy";
 				$resExtent =  db_query($sqlExtent);
 				//depending on providing service and crs the axis order should be taken into account 
-				//
 				$minx = floatval(db_result($resExtent,0,"minx"));
 				$miny = floatval(db_result($resExtent,0,"miny"));
 				$maxx = floatval(db_result($resExtent,0,"maxx"));
@@ -1354,6 +1457,7 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 				/*$e = new mb_exception("http/php/mod_inspireDownloadFeed.php: - minx: ".$minx. " - maxx: ".$maxx);	
 				$e = new mb_exception("http/php/mod_inspireDownloadFeed.php: - miny: ".$miny. " - maxy: ".$maxy);	
 				$e = new mb_exception("http/php/mod_inspireDownloadFeed.php: countTiles: " . $countTiles);*/
+				$geometryFieldName = getGeometryFieldNameFromMapbenderDb($mapbenderMetadata[$i]->geometry_field_name[0], $mapbenderMetadata[$i]->featuretype_name);
 				//only calculate new boxes if countTiles > 1
 				if ($countTiles > 1) {
 					$diffX = $maxx - $minx; //in m - depends on given epsg code
@@ -1362,6 +1466,7 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 					$nRows = ceil($diffY / $width);
 					$nCols = ceil($diffX / $width);
 					$bboxWfs = array();
+					$bboxWfs2 = array();
 					$countBbox = 0;
 					$multiPolygonText = "'MULTIPOLYGON(";
 					for ($j = 0; $j < $nRows; $j++) {
@@ -1375,12 +1480,16 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 							//echo "maxxWms: ". $maxxWms .",";
 							$maxyWfs = $miny + ($j+1) * $width;
 							//echo "maxyWms: ". $maxyWms .",";
-							//$bboxWfs[$mapbenderMetadata[$i]->featuretype_name][$countBbox] = $minxWfs.",".$minyWfs.",".$maxxWfs.",".$maxyWfs;
-							$bboxWfs[$mapbenderMetadata[$i]->featuretype_name][$countBbox] = $minxWfs.",".$minyWfs.",".$maxxWfs.",".$maxyWfs;
-							//NEW 2022-07-11 - use a single sql to calculate the intersections
-							$multiPolygonText .= "((" . $minxWfs . " " . $minyWfs . "," . $maxxWfs . " " . $minyWfs . "," . $maxxWfs . " " . $maxyWfs . ",";
-							$multiPolygonText .= $minxWfs . " " . $maxyWfs . "," . $minxWfs . " " . $minyWfs . ")),";
-							$countBbox++;
+							//check if bbox don't have more than maxfeatures, the bboxes are given in the
+							$bboxFilter = getBboxFilter(array($minxWfs, $minyWfs, $maxxWfs, $maxyWfs), $crs, $wfs->getVersion(), $geometryFieldName, $alterAxisOrder);
+							//count features in current bbox
+							$featureHitsBbox = $wfs->countFeatures( $mapbenderMetadata[$i]->featuretype_name, $bboxFilter, false, false, false, 'GET');
+							$e = new mb_notice("http/php/mod_inspireDownloadFeed.php: - hits for bbox: " . $featureHitsBbox);
+							if ($featureHitsBbox > 0) {
+							    $e = new mb_notice("http/php/mod_inspireDownloadFeed.php: - add recursively");
+							    //recursively add bbox to array 
+							    addBboxEntry(array($minxWfs, $minyWfs, $maxxWfs, $maxyWfs), $bboxWfs, $countBbox, $multiPolygonText, $featureHitsBbox, $crs, $wfs, $maxFeatureCount, $mapbenderMetadata[$i]->featuretype_name, $geometryFieldName);
+							}
 						}
 					}
 					//new approach since 2022-07-11
@@ -1398,7 +1507,7 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 				    }
 				    $bboxWfs[$mapbenderMetadata[$i]->featuretype_name] = $newBboxWfs[$mapbenderMetadata[$i]->featuretype_name];
 					$featureTypeBboxWGS84 = array_values($lonLatBboxWfs2); 	
-					$countBbox = count($featureTypeBboxWGS84);				    
+					$countBbox = count($featureTypeBboxWGS84);	
 				} else {
 					//only normal extent used
 					if ($minx == "" || $miny == "" || $maxx == "" || $maxy == "") {
@@ -1421,6 +1530,7 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 					//georss needs latitude longitude
 					$featureTypeBboxWGS84[] = $lonLatBbox[1].",".$lonLatBbox[0].",".$lonLatBbox[3].",".$lonLatBbox[2];		
 				}
+				
 				//$getFeatureLink = array();
 				/*TODO for ($i = 0; $i < $countRessource-1; $i++) {
 					$gFLink = $mapbenderMetadata[$i]->wfs_getfeature."SERVICE=WFS&REQUEST=GetFeature&VERSION=";
@@ -1444,81 +1554,18 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
             </fes:BBOX>
 	</fes:Filter>
 					*/
-					if (!isset($mapbenderMetadata[$i]->geometry_field_name[0]) || $mapbenderMetadata[$i]->geometry_field_name[0] == '') {
-						$geometryFieldName = 'geometry';
-					} else {
-						$geometryFieldName = $mapbenderMetadata[$i]->geometry_field_name[0];
-					}
+				    
+				    //				    
 					//$e = new mb_exception("mod_inspireDownloadFeed.php: geometryFieldName: ".$geometryFieldName);
 					//get bbox from wfs metadata
 					$currentBbox = explode(',',$bboxWfs[$mapbenderMetadata[$i]->featuretype_name][$l]);
 					//change axis order if crs definition and service needs it
 					if ($alterAxisOrder == true) {
 						$e = new mb_exception("mod_inspireDownloadFeed.php: axis order should be altered!");
-						$currentBboxNew = $currentBbox;
-						$currentBboxGetFeature[0] = $currentBboxNew[1];
-						$currentBboxGetFeature[1] = $currentBboxNew[0];
-						$currentBboxGetFeature[2] = $currentBboxNew[3];
-						$currentBboxGetFeature[3] = $currentBboxNew[2];
-					} else {
-						$currentBboxGetFeature = $currentBbox;
 					}
-					/*$e = new mb_exception("ftname: ".$mapbenderMetadata[$i]->featuretype_name);
-					$e = new mb_exception("gfname: ".$geometryFieldName);*/
-					if (strpos($mapbenderMetadata[$i]->featuretype_name, ':') !== false) {
-						$ftNamespace = explode(':', $mapbenderMetadata[$i]->featuretype_name);
-						$ftNamespace = $ftNamespace[0];
-						$geometryFieldName = $ftNamespace.':'.$geometryFieldName;
-					} else {
-						$ftNamespace = false;
-						$geometryFieldName = $geometryFieldName;
-					}
-					switch ($mapbenderMetadata[$i]->wfs_version) {
-						case "2.0.0":
-							$bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>';
-							$bboxFilter .= '<fes:ValueReference>'.$geometryFieldName.'</fes:ValueReference>';
-							//<gml:Envelope srsName="urn:ogc:def:crs:EPSG::1234">
-							$bboxFilter .= '<gml:Envelope xmlns:gml="http://www.opengis.net/gml/3.2" srsName="'.$crs.'">';
-							//FIX for ESRI? TODO
-							$bboxFilter .= '<gml:lowerCorner>'.$currentBboxGetFeature[0].' '.$currentBboxGetFeature[1].'</gml:lowerCorner>';
-							$bboxFilter .= '<gml:upperCorner>'.$currentBboxGetFeature[2].' '.$currentBboxGetFeature[3].'</gml:upperCorner>';
-              						$bboxFilter .= '</gml:Envelope>';
-		            				$bboxFilter .= '</fes:BBOX>';
-							$bboxFilter .= '</fes:Filter>';
-							$bboxFilter = rawurlencode(utf8_decode($bboxFilter));
-							break;
-						case "2.0.2":
-							$bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>';
-							$bboxFilter .= '<fes:ValueReference>'.$geometryFieldName.'</fes:ValueReference>';
-							//<gml:Envelope srsName="urn:ogc:def:crs:EPSG::1234">
-							$bboxFilter .= '<gml:Envelope xmlns:gml="http://www.opengis.net/gml/3.2" srsName="'.$crs.'">';
-							//FIX for ESRI? TODO
-							$bboxFilter .= '<gml:lowerCorner>'.$currentBboxGetFeature[0].' '.$currentBboxGetFeature[1].'</gml:lowerCorner>';
-							$bboxFilter .= '<gml:upperCorner>'.$currentBboxGetFeature[2].' '.$currentBboxGetFeature[3].'</gml:upperCorner>';
-              						$bboxFilter .= '</gml:Envelope>';
-		            				$bboxFilter .= '</fes:BBOX>';
-							$bboxFilter .= '</fes:Filter>';
-							$bboxFilter = rawurlencode(utf8_decode($bboxFilter));
-							break;
-						case "1.1.0":
-							$bboxFilter = '<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc"><ogc:BBOX>';
-							//$bboxFilter = '<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><ogc:BBOX>';
-							//$bboxFilter .= '<gml:Box srsName="EPSG:'.$epsgId[1].'"';
-							$bboxFilter .= '<ogc:PropertyName>'.$mapbenderMetadata[$i]->geometry_field_name[0].'</ogc:PropertyName>';
-							$bboxFilter .= '<gml:Box xmlns:gml="http://www.opengis.net/gml" srsName="'.$crs.'">';
-							$bboxFilter .= '<gml:coordinates decimal="." cs="," ts=" ">';
-							//$currentBbox = explode(',',$bboxWfs[$mapbenderMetadata[$i]->featuretype_name][$l]);
-							$e = new mb_notice("Bounding box ".$l." : ".$l.$bboxWfs[$mapbenderMetadata[$i]->featuretype_name][$l]);
-							//fix for esri????? TODO check crs axes order handling
-							//if (strtoupper($mapbenderMetadata[$i]->geometry_field_name[0] == "SHAPE")) {
-							//	$bboxFilter .= $currentBboxGetFeature[1].','.$currentBboxGetFeature[0].' '.$currentBboxGetFeature[3].','.$currentBboxGetFeature[2];
-							//} else {
-								$bboxFilter .= $currentBboxGetFeature[0].','.$currentBboxGetFeature[1].' '.$currentBboxGetFeature[2].','.$currentBboxGetFeature[3];
-							//}
-							$bboxFilter .= '</gml:coordinates></gml:Box></ogc:BBOX></ogc:Filter>';
-							$bboxFilter = rawurlencode(utf8_decode($bboxFilter));
-							break;
-					}
+					$currentBboxGetFeature = $currentBbox;
+					$geometryFieldName = getGeometryFieldNameFromMapbenderDb($mapbenderMetadata[$i]->geometry_field_name[0], $mapbenderMetadata[$i]->featuretype_name);
+					$bboxFilter = getBboxFilter($currentBboxGetFeature, $crs, $wfs->getVersion(), $geometryFieldName, $alterAxisOrder);
 					//check if owsproxy is activated for wfs - if so, use absolute url of wfs
 					//e.g.: www.geoportal.rlp.de/registry/wfs/{wfs_id}? - important - there has to be one wfsconf defined and assigned!
 					if ($admin->getWFSOWSstring($mapbenderMetadata[$i]->wfs_id) == false) {
@@ -1535,7 +1582,7 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 						//use first output format which have been found - TODO - check if it should be pulled from featuretype instead from wfs 
 						$gFLink .= "&outputFormat=".rawurlencode($mapbenderMetadata[$i]->output_formats[0]);
 					}
-					$gFLink .= "&FILTER=".$bboxFilter;
+					$gFLink .= "&FILTER=".rawurlencode(utf8_decode($bboxFilter));
 					$getFeatureLink[] = $gFLink;
 					$featureTypeName[] = $mapbenderMetadata[$i]->featuretype_name;
 					$featureTypeBbox[] = $bboxWfs[$mapbenderMetadata[$i]->featuretype_name][$l];
