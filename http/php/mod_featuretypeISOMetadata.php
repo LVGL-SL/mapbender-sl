@@ -319,6 +319,26 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:pointOfContact/gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:CI_Contact/gmd:address/gmd:CI_Address/gmd:city/gco:CharacterString',
             isset($mbMeta['city']) ? $mbMeta['city'] : 'city not known');
+    
+    //add optional administrativeArea
+    $sql = "SELECT keyword.keyword FROM keyword, wfs_featuretype_keyword ftk WHERE ftk.fkey_featuretype_id=$1 AND ftk.fkey_keyword_id=keyword.keyword_id";
+    $v = array((integer)$recordId);
+    $t = array('i');
+    $res = db_prep_query($sql, $v, $t);
+    $keywordsArray = array();
+    while ($row = db_fetch_array($res)) {
+        if (isset($row['keyword']) && $row['keyword'] != "") {
+            $keywordsArray[] = $row['keyword'];
+        }
+    }
+    if (defined('ADMINISTRATIVE_AREA') && ADMINISTRATIVE_AREA != '') {
+        $adminAreaObj = json_decode(ADMINISTRATIVE_AREA);
+        if (in_array($adminAreaObj->keyword, $keywordsArray)) {
+            $xmlBuilder->addValue($MD_Metadata,
+                './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:pointOfContact/gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:CI_Contact/gmd:address/gmd:CI_Address/gmd:administrativeArea/gco:CharacterString', $adminAreaObj->value);
+        }
+    }
+    //	
 
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:pointOfContact/gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:CI_Contact/gmd:address/gmd:CI_Address/gmd:postalCode/gco:CharacterString',
@@ -355,7 +375,8 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
 	}
 
 	//pull special keywords from custom categories:	
-	$sql = "SELECT custom_category.custom_category_key FROM custom_category, wfs_featuretype_custom_category ftcc WHERE ftcc.fkey_featuretype_id = $1 AND ftcc.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0";
+        //Ticket #7189 Fixed bug that category keywords were not added here - especially to include "inspireidentifiziert" in ogc api and ogc wfs interface metadata
+	$sql = "SELECT custom_category.custom_category_key as keyword FROM custom_category, wfs_featuretype_custom_category ftcc WHERE ftcc.fkey_featuretype_id = $1 AND ftcc.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0";
 	$v = array((integer)$recordId);
 	$t = array('i');
 	$res = db_prep_query($sql,$v,$t);

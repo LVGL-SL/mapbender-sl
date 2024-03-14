@@ -1580,6 +1580,11 @@ class wms {
 //		$newLayer->layer_searchable = $currentLayer["searchable"];
 		$newLayer->gui_layer_wms_id = $currentLayer["extension"]["WMS_ID"];
 		$newLayer->gui_layer_status = $currentLayer["extension"]["GUI_STATUS"];
+		//read info from wmc confs 
+		$styleIndex = $currentLayer['styleIndex'];
+		/*if ($styleIndex >= 0 && $styleIndex < count($currentLayer["style"]) && $currentLayer["style"][$styleIndex]["name"] != "") {
+		  $e = new mb_exception("class_wms.php: current layer style name: " . $currentLayer["style"][$styleIndex]["name"]);
+		}*/
 		if ($styleIndex >= 0 && $styleIndex < count($currentLayer["style"])) {
 			$newLayer->gui_layer_style = $currentLayer["style"][$styleIndex]["name"];
 		}
@@ -2911,7 +2916,9 @@ SQL;
 		//TODO: generate temporal uuid for inserting and getting the serial afterwards
 		//delete old relations for this resource - only those which are from 'capabilities'
 		$mbMetadata_1 = new Iso19139();
-		$mbMetadata_1->deleteMetadataRelation("layer", $this->objLayer[$i]->db_id,"capabilities");
+		//$mbMetadata_1->deleteMetadataRelation("layer", $this->objLayer[$i]->db_id,"capabilities");
+		//7069 - Call of new method introduced in class_iso19139.php
+		$mbMetadata_1->deleteMetadataRelation_and_Metadata("layer", $this->objLayer[$i]->db_id,"capabilities");
 		//delete object?
 		for($j=0; $j<count($this->objLayer[$i]->layer_metadataurl);$j++){
 			$mbMetadata = new Iso19139();
@@ -2958,6 +2965,11 @@ SQL;
 				catch(Exception $e) {
     					$exception = new mb_exception($e->getMessage());
 				}
+			//Added for 7069 - Might be possible that it can be taken out - Currently kept
+			} else {
+				
+				
+				
 			}
 		}
 	}
@@ -3209,6 +3221,29 @@ SQL;
 				
 		}
 		
+		//#########Ticket 7069###################################### Delete all Metadata, if no coupling exists (1)######################################
+		
+				# delete all layer which are outdated
+		//first delete their metadataUrl entries*****
+		$e = new mb_exception("class_wms.php:  delete entries in mb_metadata of old layers, if no entries in ows_relation_metadata");
+		$v = array($myWMS);
+		$t = array('i');
+				$c = 2;
+		$sql = "Select fkey_metadata_id FROM ows_relation_metadata WHERE fkey_layer_id IN " ;
+		$sql .= "(SELECT layer_id FROM layer WHERE fkey_wms_id = $1 AND layer_pos > 0 AND NOT layer_name IN (";
+		for($i=1; $i<count($this->objLayer); $i++){
+				if($i>1){$sql .= ',';}
+				$sql .= "$".$c;
+				array_push($v,$this->objLayer[$i]->layer_name);
+				array_push($t,'s');
+				$c++;
+				}
+				$sql .= ") )";
+		$res_metadata_ids = db_prep_query($sql,$v,$t);
+		
+		//####################original#################################
+		
+		
 		# delete all layer which are outdated
 		//first delete their metadataUrl entries*****
 		$e = new mb_notice("class_wms.php: delete all metadataUrl relations of old layer");
@@ -3228,6 +3263,24 @@ SQL;
 				$sql .= " AND ows_relation_metadata.relation_type = 'capabilities'";
 		$res = db_prep_query($sql,$v,$t);
 		
+//###############Ticket 7069################## Delete all Metadata, if no coupling exists##############(2)################
+
+
+		while($row = db_fetch_array($res_metadata_ids)){
+			$sql = "Select count(*) from ows_relation_metadata where fkey_metadata_id = $1 ;";
+			$v = array($row["fkey_metadata_id"]);
+			$t = array('i');
+			$res_count = db_prep_query($sql,$v,$t);
+			$res_count2 = db_fetch_array($res_count);
+			if ($res_count2["count"] == 0){
+				$sql_del = "DELETE from mb_metadata where metadata_id = $1 ;";
+				$v = array($row["fkey_metadata_id"]);
+			    $t = array('i');
+			    $res_count = db_prep_query($sql_del,$v,$t);
+			}
+		}
+
+
 		
 		//*******************************************
 		//TODO: is this done for the keywords too? Maybe not, cause they are stored only once! Only the relations have to be deleted!

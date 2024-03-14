@@ -204,7 +204,51 @@ else {
 		
 	//Before the wms will be deleted, the metadataUrls and dataUrls from the Layers must be deleted!
 	//The other things will be done by class_wms!
-	//***
+	//***Ticket 7069
+	################################ neu ###############
+	    $e = new mb_exception("mod_deleteWMS.php:  delete entries in mb_metadata of to delete layers, if no entries in ows_relation_metadata");
+		$v = array($wmsList);
+		$t = array('i');
+				
+		$sql = "Select fkey_metadata_id FROM ows_relation_metadata WHERE fkey_layer_id IN " ;
+		$sql .= "(SELECT layer_id FROM layer WHERE fkey_wms_id = $1 AND layer_pos > 0 )";
+        $sql .= " AND ows_relation_metadata.relation_type = 'capabilities'";		
+		$res_metadata_ids = db_prep_query($sql,$v,$t);
+				
+		
+		
+		# delete all layer which are outdated
+		//first delete their metadataUrl entries*****
+		$e = new mb_notice("delete all metadataUrl relations of old layer");
+		$v = array($wmsList);
+			$t = array('i');
+		
+		$sql = "DELETE FROM ows_relation_metadata WHERE fkey_layer_id IN " ;
+		$sql .= "(SELECT layer_id FROM layer WHERE fkey_wms_id = $1) ";
+		
+		$sql .= " AND ows_relation_metadata.relation_type = 'capabilities'";
+		$res = db_prep_query($sql,$v,$t);
+		
+		//################################ neu ###############
+		
+		while($row = db_fetch_array($res_metadata_ids)){
+			$sql = "Select count(*) from ows_relation_metadata where fkey_metadata_id = $1 ;";
+			$v = array($row["fkey_metadata_id"]);
+			$t = array('i');
+			$res_count = db_prep_query($sql,$v,$t);
+			$res_count2 = db_fetch_array($res_count);
+			if ($res_count2["count"] == 0){
+				$sql_del = "DELETE from mb_metadata where metadata_id = $1 ;";
+				$v = array($row["fkey_metadata_id"]);
+				$t = array('i');
+			    $res_count3 = db_prep_query($sql_del,$v,$t);
+			}
+		}
+
+	
+	
+	
+	
 	/*$sql = "DELETE FROM mb_metadata WHERE metadata_id IN (SELECT metadata_id FROM mb_metadata INNER JOIN";
 	$sql .= " (SELECT * from ows_relation_metadata WHERE fkey_layer_id IN ";
 	$sql .= " (SELECT layer_id FROM layer WHERE fkey_wms_id = $1) )";

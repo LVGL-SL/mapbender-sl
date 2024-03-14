@@ -1601,6 +1601,45 @@ SQL;
 			return true;
 		}
 	}
+    //PL: Ticket 7069 new function
+	public function deleteMetadataRelation_and_Metadata($resourceType, $resourceId, $relationType){
+		//delete all relations which are defined from capabilities - this does delete the metadata entries themself, if no entry in ows_relation_metadata!
+		
+		####################################### neu ####################################
+		$e = new mb_exception("class_wms.php:  delete entries in mb_metadata of old layers, if no entries in ows_relation_metadata");
+		$v = array($resourceId);
+		$t = array('i');
+				
+		$sql = "Select fkey_metadata_id FROM ows_relation_metadata WHERE fkey_layer_id = $1 AND relation_type = '".$relationType."'"  ;		
+		$res_metadata_ids = db_prep_query($sql,$v,$t);
+		################################### original ##################################
+		$sql = "DELETE FROM ows_relation_metadata WHERE fkey_".$resourceType."_id = $1 AND relation_type = '".$relationType."'";
+		$v = array($resourceId);
+		$t = array('i');
+		$res = db_prep_query($sql,$v,$t);
+		if(!$res){
+			$e = new mb_exception("class_Iso19139:"."Cannot delete metadata relations for resource ".$resourceType." with id: ".$resourceId);
+			return false;
+		} else {
+			######################################## neu ####################################
+			while($row = db_fetch_array($res_metadata_ids)){
+				$sql = "Select count(*) from ows_relation_metadata where fkey_metadata_id = $1 ;";
+				$v = array($row["fkey_metadata_id"]);
+				$t = array('i');
+				$res_count = db_prep_query($sql,$v,$t);
+				$res_count2 = db_fetch_array($res_count);
+				if ($res_count2["count"] == 0){
+					$sql_del = "DELETE from mb_metadata where metadata_id = $1 ;";
+					$v = array($row["fkey_metadata_id"]);
+					$t = array('i');
+					$res_count = db_prep_query($sql_del,$v,$t);
+			}
+		}
+
+		}
+		
+		return true;
+	}
 
 	public function checkMetadataRelation($resourceType, $resourceId, $metadataId, $origin){
 		if ($resourceType !== 'metadata') {
