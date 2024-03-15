@@ -376,7 +376,7 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
 
 	//pull special keywords from custom categories:	
         //Ticket #7189 Fixed bug that category keywords were not added here - especially to include "inspireidentifiziert" in ogc api and ogc wfs interface metadata
-	$sql = "SELECT custom_category.custom_category_key as keyword FROM custom_category, wfs_featuretype_custom_category ftcc WHERE ftcc.fkey_featuretype_id = $1 AND ftcc.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0";
+	$sql = "SELECT DISTINCT custom_category.custom_category_key as keyword FROM custom_category, wfs_featuretype_custom_category ftcc WHERE ftcc.fkey_featuretype_id = $1 AND ftcc.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0";
 	$v = array((integer)$recordId);
 	$t = array('i');
 	$res = db_prep_query($sql,$v,$t);

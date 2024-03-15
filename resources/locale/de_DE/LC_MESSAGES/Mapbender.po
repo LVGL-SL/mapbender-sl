@@ -3666,8 +3666,8 @@ msgstr "Fehler bei den Koordinatensystemen"
 msgid "Please choose a requestable Layer"
 msgstr "Wählen Sie bitte die abfragbare Ebene aus"
 
-msgid "Please enable some layer to be requestable"
-msgstr "Aktivieren Sie bitte die Abfragbarkeit einer Ebene"
+msgid "Please enable some layer to be requestable or you are outside of the bounding box"
+msgstr "Aktivieren Sie bitte die Abfragbarkeit einer Ebene, oder Sie sind außerhalb der Bounding Box"
 
 msgid "No legend available"
 msgstr "Keine Legende verfügbar"
