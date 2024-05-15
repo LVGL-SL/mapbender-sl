@@ -1011,6 +1011,8 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 		break;
 	}
 	//$e = new mb_exception("mod_inspireDownloadFeed.php: cachedVariableTimestamp: ".date("Y-m-d H:i:s",$cache->cachedVariableCreationTime($atomFeedKey)));
+	//Ticket #7322: Deactivate cache here to test reload quickly
+	//$cache->isActive = false;
 	if ($cache->isActive && $cache->cachedVariableExists($atomFeedKey) && (date("Y-m-d H:i:s",$cache->cachedVariableCreationTime($atomFeedKey)) > $maxDate)) {
 		#$e = new mb_exception("class_map.php: read ".$atomFeedKey." from ".$cache->cacheType." cache!");
 		return $cache->cachedVariableFetch($atomFeedKey);
@@ -2001,6 +2003,7 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 	//</entry>
 		$feed->appendChild($feedEntry);
 		//duplicate feed entry for other formats if one is given
+		//Ticket: CSINFO:  Shape-Comparison to avoid listing all types for incorrect outFormats of arcgis services
 		if ($type == 'DATASET' && $generateFrom == 'wfs' && count($mapbenderMetadata[$i]->output_formats) > 1 && strtoupper($mapbenderMetadata[$i]->geometry_field_name[0] !== "SHAPE")) {
 			for ($j=1; $j < count($mapbenderMetadata[$i]->output_formats); $j++) {
 				$feedEntryCopy = $feedEntry;
@@ -2301,7 +2304,9 @@ function fillMapbenderMetadata($dbResult, $generateFrom,$dbResult2 = NULL) {
 					}
 					if (count($mapbenderMetadata[$indexMapbenderMetadata]->output_formats) < 1) {
 						//set default output format to gml2 TODO - check if senseful
-						$mapbenderMetadata[$indexMapbenderMetadata]->output_formats[0] = "text/xml; subtype=gml/2.1.2";
+						//Ticket 7275: Fallback Value (primarily necessary for WFS 2.0.0 (arcgis server)) 
+						//due to incorrect outputFormat-Values in capabilties
+						$mapbenderMetadata[$indexMapbenderMetadata]->output_formats[0] = "application/gml+xml; version=3.2";//"text/xml; subtype=gml/2.1.2";
 					}
 					$mapbenderMetadata[$indexMapbenderMetadata]->output_formats = array_unique($mapbenderMetadata[$indexMapbenderMetadata]->output_formats);
 					//get geometry field name from featuretype information out of mapbender database
