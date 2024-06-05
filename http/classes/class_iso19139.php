@@ -1251,14 +1251,26 @@ XML;
 					$html .= '<div>';
 					break;
 			}
+						##################         Iicket 7292       ######################
+						########## Der konkatenierte String wird bei den Kommata geplittet. ######################
+			$e = explode(',',$iso19139Hash[4]['value']);
 			$html .= '<fieldset><legend>'._mb("Online access").'</legend>';
 			$html .= $tableBegin;
-			$html .= $t_a."<b>".$iso19139Hash[4]['html']."</b>: ".$t_b."<a property=\"url\" href='".$iso19139Hash[4]['value']."' target='_blank'>".$iso19139Hash[4]['value']."</a>".$t_c;
+			
+			$html .= $t_a."<b>".$iso19139Hash[4]['html']."</b>: ";
+			##########  Pro Teilstring wird ein Link erzeugt #######################
+			for($i = 0; $i < count($e); $i++)			{
+			
+			$html .=  $t_b."<a property=\"url\" href='".$e[$i]."' target='_blank'>".$e[$i]."</a>".$t_c;
+			if ($i < (count($e) - 1))
+			$html .= $t_a;
+			}
 			if ($iso19139Hash[3]['value'] == 'service' && $iso19139Hash[10]['value'] == 'download') {
 					if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != '' && parse_url($iso19139Hash[4]['value'])) {	
 						$html .= $t_a."<b>"._mb("ATOM Feed client")."</b>: ".$t_b."<a href='".MAPBENDER_PATH."/plugins/mb_downloadFeedClient.php?url=".urlencode($iso19139Hash[4]['value'])."' target='_blank'>"._mb("Download")."</a>".$t_c;
 					}
 			}
+			
 			$html .= $tableEnd;
 			$html .= '</fieldset>';
 			$html .= '<fieldset><legend>'._mb("Metadata").'</legend>';
