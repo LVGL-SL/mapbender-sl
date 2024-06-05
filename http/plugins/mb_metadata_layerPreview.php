@@ -42,7 +42,7 @@ switch ($ajaxResponse->getMethod()) {
 		$e = new mb_notice("plugins/mb_metadatalayerPreview.php: weld map: ".$mapurl);
 		//Ticket 6761: Changed to internal access of resource to avoid issues with secured services
 		if(DEFINED("FULLY_QUALIFIED_DOMAIN_NAME")){
-			if(strpos($mapurl, FULLY_QUALIFIED_DOMAIN_NAME)){
+			if((strpos($mapurl,FULLY_QUALIFIED_DOMAIN_NAME)) && (strpos($mapurl, "owsproxy"))){
 				$mapurl = str_replace(FULLY_QUALIFIED_DOMAIN_NAME,'127.0.0.1',$mapurl);
 			}
 		}
