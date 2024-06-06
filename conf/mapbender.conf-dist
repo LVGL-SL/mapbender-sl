@@ -401,7 +401,7 @@ define("WRAPPER_PATH","/portal/karten.html");
 # --------------------------------------------
 # define if mapbender is already integrated in new django portal
 # --------------------------------------------
-define("DJANGO_PORTAL", true);
+define("DJANGO_PORTAL", false);
 
 define("OWSPROXY_ALLOW_SESSION_GRABBING", false);
 
@@ -471,6 +471,11 @@ define("GPKG_ABSOLUTE_DOWNLOAD_URI", "https://www.geoportal.rlp.de/inspiredownlo
 # Max area for download of gpkg in squarekilometer
 # --------------------------------------------
 define("GPKG_AREA_LIMIT", "100");
+
+# --------------------------------------------
+# Export special keyword for opendata classified resources
+# --------------------------------------------
+#define("OPENDATAKEYWORD", "opendata");
 
 #
 ###HACK for GLOBALS
