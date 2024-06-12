@@ -448,6 +448,7 @@ function proxyFile($iso19139str, $outputFormat)
 	}
 }
 
+//Duplicated to class_xml_helper_utils.php //Couldn't be imported from here - Should be kept the same
 function generateDescriptiveKeywords($iso19139, $descriptiveKeywordsArray, $keywordType='default'){
     $descriptiveKeywords = $iso19139->createElement("gmd:descriptiveKeywords");
     $MD_Keywords = $iso19139->createElement("gmd:MD_Keywords");
@@ -514,8 +515,12 @@ function generateDescriptiveKeywords($iso19139, $descriptiveKeywordsArray, $keyw
             foreach ($descriptiveKeywordsArray as $key => $value) {
                 $keyword = $iso19139->createElement("gmd:keyword");
                 $e = new mb_exception("custom_category_key: " . $key);
-                //define HVD base uri - this is used as key for HVD categories - if such an uri is found, get the german translation for the theme and add a thesaurus!
-                $hvdBaseUri = "http://data.europa.eu/bna/";
+        		// hvdBaseURI from config or fallback
+        		if (DEFINED("HVD_BASE_URI") && HVD_BASE_URI != '') {
+					$hvdBaseUri = HVD_BASE_URI;
+				}else {
+					$hvdBaseUri= "http://data.europa.eu/bna/";
+				}
                 //in RLP the categories codes are extended: "HVD - " - this must be removed before exporting them ;-)
                 if (strpos($key, $hvdBaseUri) == 0 && $key != 'inspireidentifiziert') {
                     $e = new mb_exception("HVD cat found!");

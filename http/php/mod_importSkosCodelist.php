@@ -24,6 +24,8 @@ $skosUrl = "https://inspire.ec.europa.eu/metadata-codelist/PriorityDataset/Prior
 //single hvd theme
 //$skosUrl = "http://publications.europa.eu/resource/authority/bna/c_dd313021";
 //hvd themes - linked together
+//Note: Only this link must be processed:
+//Make sure sequence permissions + table permissions work for <mapbenderdbuser>
 $skosUrl = "http://publications.europa.eu/resource/authority/bna/asd487ae75";
 
 

@@ -31,6 +31,7 @@ require_once(dirname(__FILE__) . "/../classes/class_iso19139.php");
 require_once(dirname(__FILE__) . "/../classes/class_XmlBuilder.php");
 require_once(dirname(__FILE__)."/../classes/class_owsConstraints.php");
 require_once(dirname(__FILE__)."/../classes/class_qualityReport.php");
+require_once(dirname(__FILE__)."/../classes/class_xml_helper_utils.php");
 
 if (file_exists(dirname(__FILE__)."/../../conf/linkedDataProxy.json")) {
      $configObject = json_decode(file_get_contents("../../conf/linkedDataProxy.json"));
@@ -394,19 +395,42 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
 	}
 	//pull special keywords from custom categories:	
         //Ticket #7189 Fixed bug that category keywords were not added here - especially to include "inspireidentifiziert" in ogc api and ogc wfs interface metadata
-	$sql = "SELECT DISTINCT custom_category.custom_category_key as keyword FROM custom_category, wfs_featuretype_custom_category ftcc WHERE ftcc.fkey_featuretype_id = $1 AND ftcc.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0";
+	$sql = "SELECT DISTINCT custom_category.custom_category_key as keyword, custom_category.custom_category_code_de FROM custom_category, wfs_featuretype_custom_category ftcc WHERE ftcc.fkey_featuretype_id = $1 AND ftcc.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0";
 	$v = array((integer)$recordId);
 	$t = array('i');
 	$res = db_prep_query($sql,$v,$t);
 	$e = new mb_notice("look for custom categories: ");
+        // hvdBaseURI from config or fallback
+        if (DEFINED("HVD_BASE_URI") && HVD_BASE_URI != '') {
+                $hvdBaseUri = HVD_BASE_URI;
+        }else {
+                $hvdBaseUri= "http://data.europa.eu/bna/";
+        }
+        $hvdKeywordList = array();
 	while ($row = db_fetch_array($res)) {
         $pos++;
 	if ($row['keyword'] !== null && $row['keyword'] !== '') {
-        	$xmlBuilder->addValue($MD_Metadata,
-            	'./gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword['.$pos.']/gco:CharacterString',
-            	$row['keyword']);
+                if (strpos($row['keyword'], $hvdBaseUri ) === 0){
+                        // $xmlBuilder->addValue($MD_Metadata,
+                        // './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword['.$pos.']/gco:CharacterString',
+                        // $row['custom_category_code_de']);
+                       $hvdKeywordList[$row['custom_category_key']] =  $row['custom_category_code_de'];
+
+                }else{
+                        $xmlBuilder->addValue($MD_Metadata,
+                        './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword['.$pos.']/gco:CharacterString',
+                        $row['keyword']);
+                }
+
+
 		}
 	}
+        $descriptiveKeywordsHVD = xml_helper_utils::generateDescriptiveKeywords($xmlBuilder->getDoc(),$hvdKeywordList, 'custom');
+        xml_helper_utils::appendElementToElementByXPath($MD_Metadata, $descriptiveKeywordsHVD, './gmd:identificationInfo/srv:SV_ServiceIdentification');
+        xml_helper_utils::removeElementsWithDuplicateValue($MD_Metadata, './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gco:CharacterString');
+        xml_helper_utils::removeEmptyElementsByXPath($MD_Metadata, '//gmd:keyword');
+
+
 	//Part B 3 INSPIRE Category
 	//do this only if an INSPIRE keyword (Annex I-III) is set
 	//Resource Constraints B 8

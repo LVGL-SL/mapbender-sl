@@ -27,6 +27,7 @@ require_once (dirname ( __FILE__ ) . "/../classes/class_Uuid.php");
 require_once (dirname ( __FILE__ ) . "/../classes/class_iso19139.php");
 require_once (dirname ( __FILE__ ) . "/../classes/class_owsConstraints.php");
 require_once (dirname ( __FILE__ ) . "/../classes/class_qualityReport.php");
+require_once (dirname(__FILE__)."/../classes/class_xml_helper_utils.php");
 
 $con = db_connect ( DBSERVER, OWNER, PW );
 db_select_db ( DB, $con );
@@ -972,8 +973,8 @@ SQL;
 	    case "wmslayer" :
 	        // dls is generated from wms for one layer
 	        $sql = <<<SQL
-				SELECT keyword.keyword as keyword FROM keyword, layer_keyword WHERE layer_keyword.fkey_layer_id=$1 AND layer_keyword.fkey_keyword_id=keyword.keyword_id union
-SELECT custom_category.custom_category_key as keyword FROM custom_category, layer_custom_category WHERE layer_custom_category.fkey_layer_id = $1 AND layer_custom_category.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0;
+				SELECT keyword.keyword as keyword, '' as custom_category_code_de FROM keyword, layer_keyword WHERE layer_keyword.fkey_layer_id=$1 AND layer_keyword.fkey_keyword_id=keyword.keyword_id union
+SELECT custom_category.custom_category_key as keyword, custom_category_code_de FROM custom_category, layer_custom_category WHERE layer_custom_category.fkey_layer_id = $1 AND layer_custom_category.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0;
 SQL;
 	        $v = array (
 	            ( integer ) $mapbenderMetadata ["resourceId"]
@@ -984,8 +985,8 @@ SQL;
 	        break;
 	    case "wfs" :
 	        $sql = <<<SQL
-			SELECT keyword.keyword as keyword FROM keyword, wfs_featuretype_keyword WHERE wfs_featuretype_keyword.fkey_featuretype_id IN ( $1 ) AND wfs_featuretype_keyword.fkey_keyword_id=keyword.keyword_id union
-SELECT custom_category.custom_category_key as keyword FROM custom_category, wfs_featuretype_custom_category WHERE wfs_featuretype_custom_category.fkey_featuretype_id IN ( $1 ) AND wfs_featuretype_custom_category.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0;
+			SELECT keyword.keyword as keyword, '' as custom_category_code_de FROM keyword, wfs_featuretype_keyword WHERE wfs_featuretype_keyword.fkey_featuretype_id IN ( $1 ) AND wfs_featuretype_keyword.fkey_keyword_id=keyword.keyword_id union
+SELECT custom_category.custom_category_key as keyword, custom_category_code_de FROM custom_category, wfs_featuretype_custom_category WHERE wfs_featuretype_custom_category.fkey_featuretype_id IN ( $1 ) AND wfs_featuretype_custom_category.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0;
 SQL;
 	        // get keywords for all featuretypes
 	        // $mapbenderMetadata['featureTypes'] - array of ft ids
@@ -998,8 +999,8 @@ SQL;
 	        break;
 	    default :
 	        $sql = <<<SQL
-			SELECT keyword.keyword as keyword FROM keyword, mb_metadata_keyword WHERE mb_metadata_keyword.fkey_metadata_id=$1 AND mb_metadata_keyword.fkey_keyword_id=keyword.keyword_id union
-SELECT custom_category.custom_category_key as keyword FROM custom_category, mb_metadata_custom_category WHERE mb_metadata_custom_category.fkey_metadata_id = $1 AND mb_metadata_custom_category.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0;
+			SELECT keyword.keyword as keyword, '' as custom_category_code_de FROM keyword, mb_metadata_keyword WHERE mb_metadata_keyword.fkey_metadata_id=$1 AND mb_metadata_keyword.fkey_keyword_id=keyword.keyword_id union
+SELECT custom_category.custom_category_key as keyword, custom_category_code_de FROM custom_category, mb_metadata_custom_category WHERE mb_metadata_custom_category.fkey_metadata_id = $1 AND mb_metadata_custom_category.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0;
 SQL;
 	        $v = array (
 	            ( integer ) $mapbenderMetadata ["metadataId"]
@@ -1009,10 +1010,21 @@ SQL;
 	        );
 	        break;
 	}
+	//Ticket #7418: Handling hvd keywords
+	if (DEFINED("HVD_BASE_URI") && HVD_BASE_URI != '') {
+		$hvdBaseUri = HVD_BASE_URI;
+	}else {
+		$hvdBaseUri= "http://data.europa.eu/bna/";
+	}
+	$hvdKeywordList=array();
 	$res = db_prep_query ( $sql, $v, $t );
 	while ( $row = db_fetch_array ( $res ) ) {
 	    if (isset($row ['keyword']) && $row ['keyword'] != '') {
-	        $keywordsArray[] = $row ['keyword'];
+			if (strpos($row['keyword'], $hvdBaseUri ) === 0){
+				$hvdKeywordList[$row['custom_category_key']] =  $row['custom_category_code_de'];
+			}else{
+	        	$keywordsArray[] = $row ['keyword'];
+			}
 	    }
 	}
 	if (defined('ADMINISTRATIVE_AREA') && ADMINISTRATIVE_AREA != '') {
@@ -1131,6 +1143,15 @@ SQL;
 	$MD_Keywords->appendChild ( $keyword );
 	$descriptiveKeywords->appendChild ( $MD_Keywords );
 	$SV_ServiceIdentification->appendChild ( $descriptiveKeywords );
+
+	//Cleanup keywords
+	xml_helper_utils::removeElementsWithDuplicateValue($MD_Metadata, './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gco:CharacterString');
+	xml_helper_utils::removeEmptyElementsByXPath($MD_Metadata, '//gmd:keyword');
+
+	////Ticket #7418: Handling hvd keywords
+	$descriptiveKeywordsHVD = xml_helper_utils::generateDescriptiveKeywords($iso19139, $hvdKeywordList, 'custom');
+	$SV_ServiceIdentification->appendChild ( $descriptiveKeywordsHVD );
+
 	
 	// Part B 3 INSPIRE Category
 	// do this only if an INSPIRE keyword (Annex I-III) is set - not applicable to services!
