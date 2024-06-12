@@ -1099,7 +1099,6 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 			}
 		break;
 	}
-	$cache->isActive = false; //TODO delete productive
 	//$e = new mb_exception("mod_inspireDownloadFeed.php: cachedVariableTimestamp: ".date("Y-m-d H:i:s",$cache->cachedVariableCreationTime($atomFeedKey)));
 	//Ticket #7322: Deactivate cache here to test reload quickly
 	//$cache->isActive = false;
