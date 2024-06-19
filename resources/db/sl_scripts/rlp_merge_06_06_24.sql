@@ -9,6 +9,7 @@ CREATE TABLE custom_category_origin
 ALTER TABLE custom_category_origin
   OWNER TO postgres;
 
+ALTER TABLE custom_category_origin ALTER name drop not null;
 -- Column: uuid
 
 -- ALTER TABLE custom_category_origin DROP COLUMN uuid;
