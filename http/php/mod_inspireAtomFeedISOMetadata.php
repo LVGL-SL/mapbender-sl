@@ -1021,7 +1021,7 @@ SQL;
 	while ( $row = db_fetch_array ( $res ) ) {
 	    if (isset($row ['keyword']) && $row ['keyword'] != '') {
 			if (strpos($row['keyword'], $hvdBaseUri ) === 0){
-				$hvdKeywordList[$row['custom_category_key']] =  $row['custom_category_code_de'];
+				$hvdKeywordList[$row['keyword']] =  $row['custom_category_code_de'];
 			}else{
 	        	$keywordsArray[] = $row ['keyword'];
 			}
