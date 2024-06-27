@@ -414,7 +414,7 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
                         // $xmlBuilder->addValue($MD_Metadata,
                         // './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword['.$pos.']/gco:CharacterString',
                         // $row['custom_category_code_de']);
-                       $hvdKeywordList[$row['custom_category_key']] =  $row['custom_category_code_de'];
+                       $hvdKeywordList[$row['keyword']] =  $row['custom_category_code_de'];
 
                 }else{
                         $xmlBuilder->addValue($MD_Metadata,
