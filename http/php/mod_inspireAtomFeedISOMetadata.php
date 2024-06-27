@@ -985,8 +985,8 @@ SQL;
 	        break;
 	    case "wfs" :
 	        $sql = <<<SQL
-			SELECT keyword.keyword as keyword, '' as custom_category_code_de FROM keyword, wfs_featuretype_keyword WHERE wfs_featuretype_keyword.fkey_featuretype_id IN ( $1 ) AND wfs_featuretype_keyword.fkey_keyword_id=keyword.keyword_id union
-SELECT custom_category.custom_category_key as keyword, custom_category_code_de FROM custom_category, wfs_featuretype_custom_category WHERE wfs_featuretype_custom_category.fkey_featuretype_id IN ( $1 ) AND wfs_featuretype_custom_category.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0;
+			SELECT keyword.keyword as keyword, '' as custom_category_code_de FROM keyword, wfs_featuretype_keyword WHERE wfs_featuretype_keyword.fkey_featuretype_id = ANY(string_to_array(( $1 ),',')::int[]) AND wfs_featuretype_keyword.fkey_keyword_id=keyword.keyword_id union
+SELECT custom_category.custom_category_key as keyword, custom_category_code_de FROM custom_category, wfs_featuretype_custom_category WHERE wfs_featuretype_custom_category.fkey_featuretype_id = ANY(string_to_array(( $1 ),',')::int[]) AND wfs_featuretype_custom_category.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0;
 SQL;
 	        // get keywords for all featuretypes
 	        // $mapbenderMetadata['featureTypes'] - array of ft ids
