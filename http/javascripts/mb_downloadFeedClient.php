@@ -582,10 +582,6 @@ function fillSectionList(featureCollection, k) {
           }else{
               url=url_tmp
           }
-		  //Ticket #6773: For wfs outputFormat v3.2 Links are not working due to "+" being decoded to " " automatically -> Has to be encoded due to that
-		  if(url.includes("gml+xml")){
-			url = url.replace("gml+xml", "gml%2Bxml");
-		  }
 
           //console.log(encodeURIComponent(url))
           //console.log(url)
@@ -608,13 +604,17 @@ function fillSectionList(featureCollection, k) {
 		//create link do django download servie if more than one tile selected
 		//if (document.getElementById("user_id").getAttribute("value") == 2){
 
+				//Ticket #6773: For wfs outputFormat v3.2 Links are not working due to "+" being decoded to " " automatically -> Has to be encoded due to that
+				if(url.includes("gml+xml")){
+					url = url.replace("gml+xml", "gml%2Bxml");
+				}
                 if(DlSet.urls.length > 1){
 
                     downloadLink = $(document.createElement('a')).appendTo('#section_list');
-    		            downloadLink.attr({'onclick':"sendtodjango()"});
+    		        downloadLink.attr({'onclick':"sendtodjango()"});
                     downloadLink.attr({'target':'_blank'});
                     downloadLink.attr({'id':'download_link'});
-    		            downloadLink.text("<?php echo _mb("Start download, a zip file will be mailed to you!");?>");
+    		        downloadLink.text("<?php echo _mb("Start download, a zip file will be mailed to you!");?>");
 
                 }else{
           					downloadLink = $(document.createElement('a')).appendTo('#section_list');
@@ -667,6 +667,8 @@ function sendtodjango(){
   DlSet.scriptname = window.location.pathname.substring(window.location.pathname.lastIndexOf('/')+1);
   DlSet.lang = navigator.language || navigator.userLanguage;
   host = location.protocol.concat("//").concat(window.location.hostname);
+  //Ticket #7352: The data structure here would also need the featureType-ID for WFS multi download
+  //console.log("CSTEST:" + JSON.stringify(DlSet) );
 
   var DlJSON = {user_id: DlSet.user_id, user_name:DlSet.user_name , session_id:DlSet.session_id , user_email: DlSet.user_email, uuid: DlSet.uuid, timestamp: DlSet.timestamp, scriptname: DlSet.scriptname, names:DlSet.names, urls:DlSet.urls, lang:DlSet.lang};
   url = host.concat("/manage/download")

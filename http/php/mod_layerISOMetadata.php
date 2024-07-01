@@ -27,6 +27,7 @@ require_once (dirname ( __FILE__ ) . "/../php/mod_validateInspire.php");
 require_once (dirname ( __FILE__ ) . "/../classes/class_iso19139.php");
 require_once (dirname ( __FILE__ ) . "/../classes/class_owsConstraints.php");
 require_once (dirname ( __FILE__ ) . "/../classes/class_qualityReport.php");
+require_once (dirname(__FILE__)."/../classes/class_xml_helper_utils.php");
 
 // check for absolute url
 if (defined ( "MAPBENDER_PATH" ) && MAPBENDER_PATH != '') {
@@ -603,6 +604,29 @@ function fillISO19139($iso19139, $recordId) {
 			$MD_Keywords->appendChild ( $keyword );
 		}
 	}
+	//check opendata license
+	if (DEFINED("OPENDATAKEYWORD") && OPENDATAKEYWORD != '') {
+	    $sql = "SELECT wms_id, termsofuse.isopen from wms LEFT OUTER JOIN";
+	    $sql .= "  wms_termsofuse ON  (wms.wms_id = wms_termsofuse.fkey_wms_id) LEFT OUTER JOIN termsofuse ON";
+	    $sql .= " (wms_termsofuse.fkey_termsofuse_id=termsofuse.termsofuse_id) where wms.wms_id = $1";
+	    $v = array();
+	    $t = array();
+	    array_push($t, "i");
+	    array_push($v, (int)$mapbenderMetadata ['wms_id']);
+	    $res = db_prep_query($sql,$v,$t);
+	    $row = db_fetch_array($res);
+	    if (isset($row['wms_id'])) {
+	        if ($row['isopen'] == "1") {
+	            // a special keyword 
+	            $keyword = $iso19139->createElement ( "gmd:keyword" );
+	            $keyword_cs = $iso19139->createElement ( "gco:CharacterString" );
+	            $keywordText = $iso19139->createTextNode ( OPENDATAKEYWORD );
+	            $keyword_cs->appendChild ( $keywordText );
+	            $keyword->appendChild ( $keyword_cs );
+	            $MD_Keywords->appendChild ( $keyword );
+	        }
+	    }
+	}
 	// a special keyword for service type wms as INSPIRE likes it ;-)
 	$keyword = $iso19139->createElement ( "gmd:keyword" );
 	$keyword_cs = $iso19139->createElement ( "gco:CharacterString" );
@@ -611,7 +635,13 @@ function fillISO19139($iso19139, $recordId) {
 	$keyword->appendChild ( $keyword_cs );
 	$MD_Keywords->appendChild ( $keyword );
 	// pull special keywords from custom categories:
-	$sql = "SELECT custom_category.custom_category_key FROM custom_category, layer_custom_category WHERE layer_custom_category.fkey_layer_id = $1 AND layer_custom_category.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0";
+	//Ticket #7418: Handling hvd keywords
+	if (DEFINED("HVD_BASE_URI") && HVD_BASE_URI != '') {
+		$hvdBaseUri = HVD_BASE_URI;
+	}else {
+		$hvdBaseUri= "http://data.europa.eu/bna/";
+	}
+	$sql = "SELECT DISTINCT custom_category.custom_category_key, custom_category.custom_category_code_de FROM custom_category, layer_custom_category WHERE layer_custom_category.fkey_layer_id = $1 AND layer_custom_category.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0";
 	$v = array (
 			( integer ) $recordId 
 	);
@@ -620,19 +650,32 @@ function fillISO19139($iso19139, $recordId) {
 	);
 	$res = db_prep_query ( $sql, $v, $t );
 	$countCustom = 0;
+	$hvdKeywordList = array();
 	while ( $row = db_fetch_array ( $res ) ) {
 		if (isset ( $row ['custom_category_key'] ) && $row ['custom_category_key'] != "") {
-			$keyword = $iso19139->createElement ( "gmd:keyword" );
-			$keyword_cs = $iso19139->createElement ( "gco:CharacterString" );
-			$keywordText = $iso19139->createTextNode ( $row ['custom_category_key'] );
-			$keyword_cs->appendChild ( $keywordText );
-			$keyword->appendChild ( $keyword_cs );
-			$MD_Keywords->appendChild ( $keyword );
-			$countCustom ++;
+			if (strpos($row['custom_category_key'], $hvdBaseUri ) === 0){
+				$hvdKeywordList[$row['custom_category_key']] =  $row['custom_category_code_de'];
+			}else{
+				$keyword = $iso19139->createElement ( "gmd:keyword" );
+				$keyword_cs = $iso19139->createElement ( "gco:CharacterString" );
+				$keywordText = $iso19139->createTextNode ( $row ['custom_category_key'] );
+				$keyword_cs->appendChild ( $keywordText );
+				$keyword->appendChild ( $keyword_cs );
+				$MD_Keywords->appendChild ( $keyword );
+				$countCustom ++;
+			}
 		}//test
 	}
 	$descriptiveKeywords->appendChild ( $MD_Keywords );
 	$SV_ServiceIdentification->appendChild ( $descriptiveKeywords );
+
+	////Ticket #7418: Handling hvd keywords
+	$descriptiveKeywordsHVD = xml_helper_utils::generateDescriptiveKeywords($iso19139,$hvdKeywordList, 'custom');
+	$SV_ServiceIdentification->appendChild ( $descriptiveKeywordsHVD );
+
+	//Cleanup keywords
+	xml_helper_utils::removeElementsWithDuplicateValue($MD_Metadata, './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gco:CharacterString');
+	xml_helper_utils::removeEmptyElementsByXPath($MD_Metadata, '//gmd:keyword');
 	
 	// Part B 3 INSPIRE Category
 	// do this only if an INSPIRE keyword (Annex I-III) is set

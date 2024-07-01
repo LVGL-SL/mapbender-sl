@@ -3449,7 +3449,7 @@ switch ($f) {
 		$html .= '</body>' . $newline;
 		$html .= '</html>' . $newline;
 		//
-		header ( "text/html" );
+		header ( "Content-Type: text/html" );
 		echo $html;
 		die ();
 }

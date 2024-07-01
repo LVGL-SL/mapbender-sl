@@ -62,9 +62,10 @@ var MetadataManagerSelectApi = function (o) {
 				},
 				callback: function (obj, result, message) {
 			
-					$("<div></div>").text(message).dialog({
-						modal: true
-					});
+					//$("<div></div>").text(message).dialog({
+					//	modal: true
+					//});
+					alert(message);
 					that.initTable();
 				}
 			});
