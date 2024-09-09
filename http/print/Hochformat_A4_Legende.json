@@ -28,8 +28,12 @@
                     "label" : "72 dpi"
                 },
                 {
-                    "value" : "144",
-                    "label" : "144 dpi"
+                    "value": "150",
+                    "label": "150 dpi"
+                },
+                {
+                    "value": "300",
+                    "label": "300 dpi"
                 }
             ]
         },
