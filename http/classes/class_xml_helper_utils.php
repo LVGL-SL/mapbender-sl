@@ -44,11 +44,15 @@ class xml_helper_utils{
 
     }
 
-    public static function appendElementToElementByXPath(DOMElement $elementToAppendTo, DOMElement $appendElement, $query){
+    public static function appendElementToElementByXPath(DOMElement $elementToAppendTo, DOMElement $appendElement, $queryToAppendTo){
+        //Prevent adding  nodes with empty text?
+        /*if($appendElement->textContent == ''){
+            return false;
+        }*/
+
         $xpath = new DOMXPath($elementToAppendTo->ownerDocument);
 
-        //execute query
-        $nodes = $xpath->query($query, $elementToAppendTo);
+        $nodes = $xpath->query($queryToAppendTo, $elementToAppendTo);
 
         if ($nodes->length > 0) {
             $targetElement = $nodes->item(0);
@@ -56,8 +60,36 @@ class xml_helper_utils{
         }
     }
 
+    #Ticket 7571: New Method to add an element inside another element but also directly after an element that is specified in the x path expression (query)
+    #Needed for wfs metadata because it is generated using the XMLBuilder class. Elements that are added differently are moved so this method is used at the end to place them where needed
+
+    public static function appendElementAfterElementByXPath(DOMElement $elementToAppendTo, DOMElement $appendElement, $queryToInsertAfter){
+        //Prevent adding  nodes with empty text?
+        /*if($appendElement->textContent == ''){
+            return false;
+        }*/
+        $xpath = new DOMXPath($elementToAppendTo->ownerDocument);
+
+        $nodes = $xpath->query($queryToInsertAfter, $elementToAppendTo);
+        if ($nodes->length > 0) {
+            $targetToAppendAfter = $nodes->item($nodes->length-1);
+        }else{
+            return false;
+        }
+
+        $parent = $targetToAppendAfter->parentNode;
+
+        $parent->insertBefore($appendElement, $targetToAppendAfter->nextSibling);
+        
+    }
+
     //Duplicated from mod_dataISOMetadata //Couldn't be imported from there - SHould be kept the same
     public static function generateDescriptiveKeywords($iso19139, $descriptiveKeywordsArray, $keywordType='default'){
+        #Ticket #7570: Returning false if descriptiveKeywordsArray is empty
+        if (!$descriptiveKeywordsArray){
+            return false;
+        }
+
         $descriptiveKeywords = $iso19139->createElement("gmd:descriptiveKeywords");
         $MD_Keywords = $iso19139->createElement("gmd:MD_Keywords");
         switch ($keywordType){

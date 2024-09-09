@@ -1150,7 +1150,10 @@ SQL;
 
 	////Ticket #7418: Handling hvd keywords
 	$descriptiveKeywordsHVD = xml_helper_utils::generateDescriptiveKeywords($iso19139, $hvdKeywordList, 'custom');
-	$SV_ServiceIdentification->appendChild ( $descriptiveKeywordsHVD );
+	//Ticket #7570 Element only getting added if method returns something else then false (false = empty list was added)
+	if($descriptiveKeywordsHVD){
+		$SV_ServiceIdentification->appendChild ( $descriptiveKeywordsHVD );
+	}
 
 	
 	// Part B 3 INSPIRE Category

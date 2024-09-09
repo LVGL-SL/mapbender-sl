@@ -426,7 +426,7 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
 		}
 	}
         $descriptiveKeywordsHVD = xml_helper_utils::generateDescriptiveKeywords($xmlBuilder->getDoc(),$hvdKeywordList, 'custom');
-        xml_helper_utils::appendElementToElementByXPath($MD_Metadata, $descriptiveKeywordsHVD, './gmd:identificationInfo/srv:SV_ServiceIdentification');
+        //xml_helper_utils::appendElementAfterElementByXPath($MD_Metadata, $descriptiveKeywordsHVD, './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords');
         xml_helper_utils::removeElementsWithDuplicateValue($MD_Metadata, './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gco:CharacterString');
         xml_helper_utils::removeEmptyElementsByXPath($MD_Metadata, '//gmd:keyword');
 
@@ -581,6 +581,8 @@ SQL;
         }
     }
     }
+    
+
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:distributionInfo/gmd:MD_Distribution/gmd:distributionFormat/gmd:MD_Format/gmd:name/@gco:nilReason',
             'inapplicable');
@@ -646,7 +648,13 @@ SQL;
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:report/gmd:DQ_DomainConsistency/gmd:result/gmd:DQ_ConformanceResult/gmd:pass/gco:Boolean',
             'true');
-    
+
+    //Ticket #7571: Moved the append of the hvd category to the end of the method to make sure it stays in place
+    //Always adding it directly after other keywords 
+    //Ticket 7570: Element only getting added if method returns something else then false
+    if($descriptiveKeywordsHVD){
+        xml_helper_utils::appendElementAfterElementByXPath($MD_Metadata, $descriptiveKeywordsHVD, './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords');
+    }
     return $xmlBuilder->getDoc()->saveXML();
 
     //TODO exchange specifications from inspire_legislation.json afterwards like it is done in mod_layerISOMetadata.php
