@@ -38,10 +38,11 @@ db_select_db(DB,$con);
 //$wmsView = "search_wms_view";
 $wmsView = "wms_search_table";
 
+//Ticket: 7365 - Call with https to avoid wfs logic to take http for metadatalinks(mod_efaturetypeISOMetadata)
 if (isset($configObject->metadataGenerationUri) && $configObject->metadataGenerationUri != "") {
     $baseUri = $configObject->metadataGenerationUri;
 } else {
-    $baseUri = "http://localhost/mapbender";
+    $baseUri = "https://localhost/mapbender";
 }
 
 $sql = "update mb_metadata set export2csw = false where position('GetRecordById' in data) <> 0 and position('GetRecordById' in data) is not null";
