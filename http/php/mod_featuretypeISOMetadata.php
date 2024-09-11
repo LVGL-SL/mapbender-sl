@@ -276,6 +276,15 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
             './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:citation/gmd:CI_Citation/gmd:alternateTitle/gco:CharacterString',
             $mbMeta['wfs_alternate_title']);
     }
+	
+        //Ticket #7382: Removed this block from wfs template and added the logic after alternate title to avoid validation issues
+	$chunk = './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:citation/gmd:CI_Citation/gmd:date';
+        $xmlBuilder->addValue($MD_Metadata, $chunk . '/gmd:CI_Date/gmd:date/gco:Date', '2001-01-01');
+        $xmlBuilder->addValue($MD_Metadata, $chunk . '/gmd:CI_Date/gmd:dateType/gmd:CI_DateTypeCode', "revision");
+        $xmlBuilder->addValue($MD_Metadata, $chunk . '/gmd:CI_Date/gmd:dateType/gmd:CI_DateTypeCode/@codeListValue', "revision");
+        $xmlBuilder->addValue($MD_Metadata, $chunk . '/gmd:CI_Date/gmd:dateType/gmd:CI_DateTypeCode/@codeList',
+            "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_DateTypeCode");
+	
     $pos = 0;
 	//Do things for B 5.3 date of revision
 	if (isset($mbMeta['wfs_timestamp'])) {
