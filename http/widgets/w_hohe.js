@@ -2,6 +2,7 @@ var jsonPoints = [];
 var paintPoints = false;
 var uebergeben = false;
 var create = false;
+var string_cursor = "";
 $.widget("mapbender.mb_hohe", {
 	options: {
 		measurePointDiameter: 6,
@@ -212,17 +213,43 @@ $.widget("mapbender.mb_hohe", {
 				else
 					this._trigger("update", null, -5);
 				l = -1;
+				
+                
+				
+				//if((string_cursor = this.element.css("cursor")) != "corsshair")
+				if((this.element.css("cursor")) != "crosshair")
+				{
+				    string_cursor = this.element.css("cursor");
+				    this.element.css("cursor", "crosshair");
+				 }
+				
+				
+				//this.element.css("cursor", "default");
 				break;
 			}
 		}
-		if (l > 0) this._trigger("update", null, -2);
+		if (l > 0)
+		{
+			this._trigger("update", null, -2);
+			if(this.element.css("cursor") == "crosshair")
+				{
+				   
+				    this.element.css("cursor", string_cursor);
+				    
+
+				}
+			
+		}
+
 	},
 	/*
 	Diese Funtkion ist in mb_hohe_widget mit der Funktion reinitializeMeasure verknüpft
 	*/
 	_reinitialize: function (e) {
+		
 		this.element
 			.unbind("click", $.proxy(this, "_reinitialize"))
+			
 		this._trigger("reinitialize", e);
 		return false;
 	},
@@ -525,13 +552,19 @@ const re = await response.text();
 	},
 
 	_init: function () {
+		
 		this.element
 			.bind("mousemove", $.proxy(this, "_measure"))
 			.bind("mousedown", $.proxy(this, "_addPoint"))
+			.bind("onwheel",$.proxy(this, "_measure"))
 			.css("cursor", "crosshair");
+			
+			
 	},
 
 	_create: function () {
+		
+		
 		this._measurePoints = [];
 		jsonPoints = [];
 		paintPoints = false;
@@ -576,6 +609,8 @@ const re = await response.text();
 
 	// the measured geometry will be available, the events will be deleted
 	deactivate: function () {
+		
+		
 		this.element
 			.unbind("mousedown", this._addPoint)
 			.css("cursor", "default");
@@ -584,13 +619,16 @@ const re = await response.text();
 
 	// delete everything
 	destroy: function () {
+
 		this.deactivate();
 		this._canvas.clear();
 		this._measurePoints = [];
 		jsonPoints = [];
 		paintPoints = false;
 		uebergeben = false;
+		create = false;
 		this._$canvas.remove();
+		this.element.unbind("onwheel",$.proxy(this, "_measure"));
 		this._map.events.afterMapRequest.unregister($.proxy(this._redraw, this));
 		$.Widget.prototype.destroy.apply(this, arguments); // default destroy
 		$(this.element).data("mb_hohe", null);
