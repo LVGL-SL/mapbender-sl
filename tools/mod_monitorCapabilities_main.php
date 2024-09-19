@@ -24,7 +24,7 @@ $wfsToExclude = [];
 $wmsToExclude = [];
 
 if (file_exists ( dirname ( __FILE__ ) . "/../conf/excludeFromMonitoring.json" )) {
-	$configObject = json_decode ( file_get_contents ( "../conf/excludeFromMonitoring.json" ) );
+	$configObject = json_decode ( file_get_contents ( dirname ( __FILE__ ) . "/../conf/excludeFromMonitoring.json" ) );
 }
 if (isset ( $configObject ) && isset ( $configObject->wms ) && count($configObject->wms) > 0 ) {
 	$wmsToExclude = $configObject->wms;
