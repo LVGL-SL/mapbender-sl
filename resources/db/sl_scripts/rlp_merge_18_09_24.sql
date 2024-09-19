@@ -21,3 +21,6 @@ INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, contex
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES('Geoportal-SL', 'sdi_download_widget', 'polygonFillSnapped', '#FC3', '' ,'var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES('Geoportal-SL', 'sdi_download_widget', 'polygonStrokeWidthDefault', '1', '' ,'var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES('Geoportal-SL', 'sdi_download_widget', 'polygonStrokeWidthSnapped', '5', '' ,'var');
+
+-- Position change of Geopackge Downloader //scaleText -> width: 97px TODO
+UPDATE gui_element SET e_left=145, e_top = 185  WHERE e_id = 'sdi_download_widget' AND fkey_gui_id = 'Geoportal-SL' ;
