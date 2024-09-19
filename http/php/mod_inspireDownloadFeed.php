@@ -2160,7 +2160,7 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 		$feed->appendChild($feedEntry);
 		//duplicate feed entry for other formats if one is given
 		//Ticket: CSINFO:  Shape-Comparison to avoid listing all types for incorrect outFormats of arcgis services
-		if ($type == 'DATASET' && $generateFrom == 'wfs' && count($mapbenderMetadata[$i]->output_formats) > 1 && strtoupper($mapbenderMetadata[$i]->geometry_field_name[0] !== "SHAPE")) {
+		if ($type == 'DATASET' && $generateFrom == 'wfs' && count($mapbenderMetadata[$i]->output_formats) > 1 && strtoupper($mapbenderMetadata[$i]->geometry_field_name[0]) !== "SHAPE") {
 			for ($j=1; $j < count($mapbenderMetadata[$i]->output_formats); $j++) {
 				$feedEntryCopy = $feedEntry;
 				$feedEntryCopyXml = $feedDoc->saveXML($feedEntry);
