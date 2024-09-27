@@ -663,10 +663,11 @@ class SpatialDataCache():
             bboxes = []
             # if number of matched is greater then number returned - build bboxes
             if 'numberMatched' in json_result.keys() and 'numberReturned' in json_result.keys():
+                bboxes_new = []
                 if int(json_result['numberMatched']) > (json_result['numberReturned']):
                     bboxes = self.calculate_feature_bboxes(metadata_info, int(json_result['numberMatched']), self.max_features_oaf)
                     #split each box into two boxes until the number of objects in box is lesser than max_features_oaf
-                    bboxes_new = []
+                    #bboxes_new = []
                     for bbox in bboxes:
                         bbox_feature_count = 0
                         download_url = ogc_api_features_base_url + "?f=json&limit=10&bbox=" + str(bbox.bounds[0]) + "," + str(bbox.bounds[1]) + "," + str(bbox.bounds[2]) + "," + str(bbox.bounds[3])
@@ -708,7 +709,7 @@ class SpatialDataCache():
             inc_bboxes = 0 
             for bbox in bboxes_new:
                 #TODO invoke tiling of bboxes recursively if number of features in box is bigger than maxfeatures!
-                download_url = ogc_api_features_base_url + "?f=json&limit=1000&bbox=" + str(bbox.bounds[0]) + "," + str(bbox.bounds[1]) + "," + str(bbox.bounds[2]) + "," + str(bbox.bounds[3])
+                download_url = ogc_api_features_base_url + "?f=json&limit=" + str(self.max_features_oaf) + "&bbox=" + str(bbox.bounds[0]) + "," + str(bbox.bounds[1]) + "," + str(bbox.bounds[2]) + "," + str(bbox.bounds[3])
                 r = requests.get(download_url)
                 out = open(self.tmp_output_folder + metadata_info['fileidentifier'] + "_json _" + str(inc_bboxes) + ".geojson", 'w')
                 out.write(r.text)
