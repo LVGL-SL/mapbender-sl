@@ -147,17 +147,7 @@
 	      <!-- WFS server title -->
               <gco:CharacterString>WFS Server title</gco:CharacterString>
             </gmd:title>
-            <gmd:date>
-              <gmd:CI_Date>
-                <gmd:date>
-                  <!-- WFS server timestamp -->
-                  <gco:Date>2001-01-01</gco:Date>
-                </gmd:date>
-                <gmd:dateType>
-                  <gmd:CI_DateTypeCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
-                </gmd:dateType>
-              </gmd:CI_Date>
-            </gmd:date>
+
             <!--<gmd:identifier>
               <gmd:MD_Identifier>
                 <gmd:code>
@@ -331,7 +321,6 @@
             </srv:connectPoint>
           </srv:SV_OperationMetadata>
         </srv:containsOperations>
-        <srv:operatesOn/>
       </srv:SV_ServiceIdentification>
       <!-- ######################################################################## -->
     </gmd:identificationInfo>

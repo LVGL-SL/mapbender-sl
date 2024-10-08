@@ -13,7 +13,7 @@ var MeasureApi = function (o) {
 				echo nl2br(htmlentities("Klicken Sie in die Karte, um eine Strecke zu zeichnen, mit Doppelklick beim letzten Punkt wird ein Hoehendiagramm erzeugt.", ENT_QUOTES, "UTF-8"));
 			?></div></div>",
 		informationHtml =
-                        "<canvas id='can' width='630' height='250'></canvas>";
+                        "<canvas id='can' width='660' height='250'></canvas>";
 	
 
 	var jsonarray = [];		  
@@ -45,11 +45,23 @@ var MeasureApi = function (o) {
 			autoOpen: false,
 			position: [5,5],
                         width : 700,
-                        heigth: 300
+                        heigth: 300,
+						  buttons: [
+    {
+      text: "Reset",
+      click: function() {
+        resetII();
+      }
+    }
+  ]
+						
                         
 		}).bind("dialogclose", function () {
 			button.stop();
 			that.destroy();
+		}).bind("mousedown", function (e) {
+			testButton(e.offsetX,e.offsetY);
+			
 		});
 
 		//
@@ -89,7 +101,7 @@ var MeasureApi = function (o) {
                  if(data == -1)
                  {
 	
-				   ctx.clearRect(0, 0, 630, 250);
+				   ctx.clearRect(0, 0, 660, 250);
                    prep_json(jsonarray);
                    
                    draw_lineII();
@@ -101,7 +113,7 @@ var MeasureApi = function (o) {
                  else if (data == -2)
                  {
                    
-                   ctx.clearRect(0, 0, 630, 250);
+                   ctx.clearRect(0, 0, 660, 250);
                    draw_lineII();
                    draw_Points(data);
                    draw_stuetzpunkte();
@@ -113,14 +125,14 @@ var MeasureApi = function (o) {
                  {
 					
                    if(data == -5) data = 0;
-                   ctx.clearRect(0, 0, 630, 250);
+                   ctx.clearRect(0, 0, 660, 250);
                    draw_lineII();
                    draw_Points(data);
                    draw_stuetzpunkte();
                    koordinaten_system_zeichnen(hoehe_min,hoehe_max,gesamt_laenge);
 
                  }
-
+//drawButton();
 
 	};
 
@@ -177,9 +189,10 @@ var MeasureApi = function (o) {
                                 .unbind("mb_measurelastpointadded", finishMeasure)
 								.unbind("mb_hohenew", reset)
 								.unbind("mousedown")
+								
 								.unbind("mb_measurereinitialize", reinitializeMeasure);
 		}
-                ctx.clearRect(0, 0, 600, 250);
+                ctx.clearRect(0, 0, 660, 250);
                 points = [];
                 jsonarray = [];
 				hideMeasureData();
@@ -194,7 +207,7 @@ var MeasureApi = function (o) {
                 $('input[name="measured_x_values"]').val("");
                 $('input[name="measured_y_values"]').val("");
 	
-		
+
 	
 		that.activate();
 			
@@ -215,9 +228,10 @@ var MeasureApi = function (o) {
 								.bind("mb_hoheupdate", updateView)				
 								.bind("mb_hohelastpointadded", finishMeasure)
 								.bind("mb_hohereinitialize", reinitializeMeasure)
-								.bind("click", changeDialogContent)
+								.bind("click", changeDialogContent)								
 								.bind("mb_hohenew", reset);
 		}
+
 		if (!inProgress) {
 			inProgress = true;
 			measureDialog.html(defaultHtml);
@@ -290,8 +304,23 @@ var color_coord ='#99BF86';
 var color_coord_halb = '#A3C1A7';//#838A87
 var color_coord_garnicht = '#A3ABA7';
 var line_100 = '#333333';
-var c = document.getElementById("can");
+var c = document.getElementById("can")
+
 var ctx = c.getContext("2d");
+ctx.width = 500;
+
+
+
+var testButton = function(x,y) {
+	
+ if ((620 <= x) && (x <= 620 + 70) &&  (220 <= y )&& (y <= 220 + 20)){
+resetII(); 
+ 
+ return true;}
+	 
+ else return false;
+};
+
 
 
 
@@ -608,11 +637,12 @@ er wird farblich gezeichnet je nach dem ob die zwei Punkte in der BBox sind oder
 
         ctx.font = "12px Arial";
 
-        ctx.clearRect(0, 0, 600, 250);
+        ctx.clearRect(0, 0, 700, 250);
         ctx.fillText("Sie koennen mit Klicken eine Strecke in die Kartei zeichnen. Beim letzten Punkt bitte ein Doppelklick.",9,15);
 		ctx.fillText("Nach dem Erstellen koennen Sie ueber die Strecke fahren und bekommen die Hoehe angezeigt.",9,30);
 		ctx.fillText("Nach dem Erstellen können Sie mit einenm Click in die Karte das Diagramm zurücksetzen.",9,60);
-        draw_stuetzpunkte();
+		draw_stuetzpunkte();
+		
     	
 		
 		

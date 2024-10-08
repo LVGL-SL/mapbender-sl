@@ -565,7 +565,7 @@ function generateDescriptiveKeywords($iso19139, $descriptiveKeywordsArray, $keyw
                     $descriptiveKeywords->appendChild($MD_Keywords);
                 } else {
                     $keyword_cs = $iso19139->createElement("gco:CharacterString");
-                    $keywordText = $iso19139->createTextNode($row['custom_category_key']);
+                    $keywordText = $iso19139->createTextNode($value);
                     $keyword_cs->appendChild($keywordText);
                     $keyword->appendChild($keyword_cs);
                     $MD_Keywords->appendChild($keyword);
@@ -958,6 +958,9 @@ function fillISO19139($iso19139, $recordId)
 
 	$code = $iso19139->createElement("gmd:code");
 	$code_cs = $iso19139->createElement("gco:CharacterString");
+
+	//new resource identifier handling - will already be created by class_iso19139.php - since 2024/06
+    //if the metadata will be initiated via class, the identifier may already be there - here the metadata is called by sql :-(
 
 	if (isset($departmentMetadata['mb_group_registry_url']) && $departmentMetadata['mb_group_registry_url'] !== "") {
 		if (substr($departmentMetadata['mb_group_registry_url'], -1) !== '/') {

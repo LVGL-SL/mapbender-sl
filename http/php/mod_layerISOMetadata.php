@@ -671,7 +671,10 @@ function fillISO19139($iso19139, $recordId) {
 
 	////Ticket #7418: Handling hvd keywords
 	$descriptiveKeywordsHVD = xml_helper_utils::generateDescriptiveKeywords($iso19139,$hvdKeywordList, 'custom');
-	$SV_ServiceIdentification->appendChild ( $descriptiveKeywordsHVD );
+	//Ticket #7570: Only adding keywords element if list was not empty
+	if ($descriptiveKeywordsHVD){
+		$SV_ServiceIdentification->appendChild ( $descriptiveKeywordsHVD );
+	}
 
 	//Cleanup keywords
 	xml_helper_utils::removeElementsWithDuplicateValue($MD_Metadata, './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gco:CharacterString');

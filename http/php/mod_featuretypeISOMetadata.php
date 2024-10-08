@@ -276,6 +276,15 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
             './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:citation/gmd:CI_Citation/gmd:alternateTitle/gco:CharacterString',
             $mbMeta['wfs_alternate_title']);
     }
+	
+        //Ticket #7382: Removed this block from wfs template and added the logic after alternate title to avoid validation issues
+	$chunk = './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:citation/gmd:CI_Citation/gmd:date';
+        $xmlBuilder->addValue($MD_Metadata, $chunk . '/gmd:CI_Date/gmd:date/gco:Date', '2001-01-01');
+        $xmlBuilder->addValue($MD_Metadata, $chunk . '/gmd:CI_Date/gmd:dateType/gmd:CI_DateTypeCode', "revision");
+        $xmlBuilder->addValue($MD_Metadata, $chunk . '/gmd:CI_Date/gmd:dateType/gmd:CI_DateTypeCode/@codeListValue', "revision");
+        $xmlBuilder->addValue($MD_Metadata, $chunk . '/gmd:CI_Date/gmd:dateType/gmd:CI_DateTypeCode/@codeList',
+            "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_DateTypeCode");
+	
     $pos = 0;
 	//Do things for B 5.3 date of revision
 	if (isset($mbMeta['wfs_timestamp'])) {
@@ -426,7 +435,7 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
 		}
 	}
         $descriptiveKeywordsHVD = xml_helper_utils::generateDescriptiveKeywords($xmlBuilder->getDoc(),$hvdKeywordList, 'custom');
-        xml_helper_utils::appendElementToElementByXPath($MD_Metadata, $descriptiveKeywordsHVD, './gmd:identificationInfo/srv:SV_ServiceIdentification');
+        //xml_helper_utils::appendElementAfterElementByXPath($MD_Metadata, $descriptiveKeywordsHVD, './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords');
         xml_helper_utils::removeElementsWithDuplicateValue($MD_Metadata, './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gco:CharacterString');
         xml_helper_utils::removeEmptyElementsByXPath($MD_Metadata, '//gmd:keyword');
 
@@ -581,6 +590,8 @@ SQL;
         }
     }
     }
+    
+
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:distributionInfo/gmd:MD_Distribution/gmd:distributionFormat/gmd:MD_Format/gmd:name/@gco:nilReason',
             'inapplicable');
@@ -646,7 +657,13 @@ SQL;
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:report/gmd:DQ_DomainConsistency/gmd:result/gmd:DQ_ConformanceResult/gmd:pass/gco:Boolean',
             'true');
-    
+
+    //Ticket #7571: Moved the append of the hvd category to the end of the method to make sure it stays in place
+    //Always adding it directly after other keywords 
+    //Ticket 7570: Element only getting added if method returns something else then false
+    if($descriptiveKeywordsHVD){
+        xml_helper_utils::appendElementAfterElementByXPath($MD_Metadata, $descriptiveKeywordsHVD, './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords');
+    }
     return $xmlBuilder->getDoc()->saveXML();
 
     //TODO exchange specifications from inspire_legislation.json afterwards like it is done in mod_layerISOMetadata.php

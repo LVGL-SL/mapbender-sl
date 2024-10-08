@@ -96,6 +96,14 @@ switch ($ajaxResponse->getMethod()) {
 		//check configuration values 
 		$configurationValid = false;
 		//validate spatial_dataset_identifier
+
+		//Message for empty dataset list
+		if(count($configuration->dataset_configuration->datasets) == 0){
+			$ajaxResponse->setSuccess(false);
+		    $ajaxResponse->setMessage(_mb("No spatial dataset identifier found!"));
+			break;
+		}
+
 		foreach ($configuration->dataset_configuration->datasets as $spatialDataset) {
 		    //$spatialDataset['resourceidentifier'];
 		    $configurationValid = validateSpatialDatasetIdentifier($spatialDataset->resourceidentifier);

@@ -20,6 +20,7 @@ require_once(dirname(__FILE__)."/../../conf/isoMetadata.conf");
 require_once(dirname(__FILE__)."/class_connector.php");
 require_once(dirname(__FILE__)."/class_Uuid.php");
 require_once(dirname(__FILE__)."/class_crs.php");
+require_once(dirname(__FILE__)."/class_administration.php");
 require_once(dirname(__FILE__) . "/class_propagateMetadata.php");
 require_once dirname(__FILE__) . "/../../tools/wms_extent/extent_service.conf";
 class Iso19139 {
@@ -1492,6 +1493,7 @@ XML;
 	} 
 
 	public function createFromDBInternalId($metadataId){
+		$admin = new administration();
 		$sql = "SELECT * , st_xmin(the_geom) || ',' || st_ymin(the_geom) || ',' || st_xmax(the_geom) || ',' || st_ymax(the_geom)  as bbox2d, st_asgml(3,bounding_geom) as bounding_polygon from mb_metadata WHERE metadata_id = $1";
 		$v = array($metadataId);
 		$t = array('i');
@@ -1555,7 +1557,15 @@ XML;
 					}
 				}
 			}
-
+			//fill keywords and categories later cause they are stored in relations!
+			/*$this->keywords = array();
+			$this->keywordsThesaurusName = array();
+			$this->isoCategoryKeys = array();
+			//following information is specific to mapbender information model - they are identified by id!
+			$this->isoCategories = array();
+			$this->inspireCategories = array();
+			$this->customCategories = array();
+			*/
 			$this->hierarchyLevel = $row['type'];
 			$this->tmpExtentBegin = $row['tmp_reference_1'];//"1900-01-01";
 			$this->tmpExtentEnd = $row['tmp_reference_2'];//"1900-01-01";
@@ -1593,6 +1603,37 @@ XML;
 			$this->fkeyWmcSerialId = $row['fkey_wmc_serial_id'];
 			$this->fkeyMapviewerId = $row['fkey_mapviewer_id'];
 			$this->furtherLinksJson = $row['further_links_json'];
+			/* generate resource identifier for metador records
+			*  they don't have given datasetId and datasetIdCodeSpace attributes
+			*/
+			$departmentMetadata = $admin->getOrgaInfoFromRegistry('metadata', $metadataId, $this->owner);
+			if (isset($departmentMetadata['mb_group_registry_url']) && $departmentMetadata['mb_group_registry_url'] !== "") {
+				if (substr($departmentMetadata['mb_group_registry_url'], -1) !== '/') {
+					$uniqueResourceIdentifierCodespace = $departmentMetadata['mb_group_registry_url'] . '/';
+				} else {
+					$uniqueResourceIdentifierCodespace =  $departmentMetadata['mb_group_registry_url'];
+				}
+			} else {
+				if (isset($departmentMetadata['mb_group_homepage']) && $departmentMetadata['mb_group_homepage'] !== "") {
+					if (substr($departmentMetadata['mb_group_homepage'], -1) !== '/') {
+						$uniqueResourceIdentifierCodespace = $departmentMetadata['mb_group_homepage'] . '/' . 'registry/spatial/dataset/';
+					} else {
+						$uniqueResourceIdentifierCodespace =  $departmentMetadata['mb_group_homepage'] . 'registry/spatial/dataset/';
+					}
+				} else {
+					if (defined('METADATA_DEFAULT_CODESPACE')) {
+						if (substr($departmentMetadata['mb_group_homepage'], -1) !== '/') {
+							$uniqueResourceIdentifierCodespace = METADATA_DEFAULT_CODESPACE . '/' . 'registry/spatial/dataset/';
+						} else {
+							$uniqueResourceIdentifierCodespace =  METADATA_DEFAULT_CODESPACE . 'registry/spatial/dataset/';
+						}
+					} else {
+						$uniqueResourceIdentifierCodespace = "http://www.mapbender.org/registry/spatial/dataset/";
+					}
+				}
+			}
+			$this->datasetIdCodeSpace = rtrim($uniqueResourceIdentifierCodespace, '/');
+			$this->datasetId = $this->fileIdentifier;
 			//get relations from other tables:
 			//get categories and keywords
 			//get isoCategories
