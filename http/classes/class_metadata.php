@@ -765,24 +765,45 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 
 
 */
-			$layer_id_sorted = array();
+			// $layer_id_sorted = array();
 			
-			foreach (json_decode($coupledLayers->internalResult)->wms->srv as $server) {
-				foreach ($server->layer as $layer) {
+			// foreach (json_decode($coupledLayers->internalResult)->wms->srv as $server) {
+			// 	foreach ($server->layer as $layer) {
 				
-					$layer_id_sorted[] = $layer->id;
+			// 		$layer_id_sorted[] = $layer->id;
 			
-				}
-			}
+			// 	}
+			// }
 			
-			$this->sortMetadataJSON($datasetMatrix,$layer_id_sorted,$coupledLayers,$layerSearchArray) ;
+			// $this->sortMetadataJSON($datasetMatrix,$layer_id_sorted,$coupledLayers,$layerSearchArray) ;
 			
 			
 			
 			//insert objects into dataset result list
 			for ($i = 0; $i < count($datasetMatrix); $i++) {
-			//Ticket 6655: Changed order of Datasetsearch subservices
-			//Some lines were deleted due to this change -> In case of issues compare this against rlp branch	
+				$layerCount = 0;
+				foreach ($this->datasetJSON->dataset->srv[$i]->coupledResources->layer as $layer) {
+					
+					//first add whole srv result
+					$subTree = json_decode($coupledLayers->internalResult)->wms->srv[$layerSearchArray[$layer->id]];
+					$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv = $subTree;
+					# not only add the service object, but also the layer title, ...
+					# maybe it is easier to get the right layer and add this as the "root" layer object instead of the whole subtree
+					// extract layer with id from subtree
+					if (is_array($subTree->layer) && isset($layer->id)) {
+						$coupledLayer = $this->findLayer($subTree->layer, $layer->id);
+					
+						//reinitialize layer array
+						if ($coupledLayer != false) {
+							//delete sublayers from found layer !
+							unset($coupledLayer->layer);
+							$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv->layer = array();
+							$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv->layer[0] = $coupledLayer; 
+						}
+					}
+					//$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv = json_decode($coupledLayers->internalResult)->wms->srv[$layerSearchArray[$layer->id]];
+					$layerCount++;
+				}
 				$featuretypeCount = 0;
 				foreach ($this->datasetJSON->dataset->srv[$i]->coupledResources->featuretype as $ft) {
 					$this->datasetJSON->dataset->srv[$i]->coupledResources->featuretype[$featuretypeCount]->srv = json_decode($coupledFeaturetypes->internalResult, true)->wfs->srv[$featuretypeSearchArray[$ft->id]];
@@ -806,58 +827,12 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 					$downloadOptionsFromMetadata = json_decode(getDownloadOptions(array($datasetMatrix[$i]['fileidentifier']), $this->protocol . "://" . $this->hostName . "/mapbender/"));
 					//try to load coupled atom feeds from mod_getDownloadOptions and add them to result list! (if no wms layer nor wfs featuretype is available)
 					foreach ($downloadOptionsFromMetadata->{$datasetMatrix[$i]['fileidentifier']}->option as $dlOption) {
-						if ($dlOption->type == "downloadlink") {
+						if ($dlOption->type == "downloadlink" || $dlOption->type == "distribution" || $dlOption->type == "remotelist") {
 							$this->datasetJSON->dataset->srv[$i]->coupledResources->inspireAtomFeeds[] = $dlOption;
 						}
 					}
-					//Ticket 6655: Changed order of Datasetsearch subservices
-					usort($this->datasetJSON->dataset->srv[$i]->coupledResources->inspireAtomFeeds, fn($a, $b) => $a->type <=> $b->type);
 				}
 			}
-		}
-	}
-//Ticket 6655: Changed order of Datasetsearch subservices
-//$matrix ist Matrix von oben
-//$sorted_id_list ist die nach Titeln und WMS sortierte LayerID Liste
-
-
-	private function sortMetadataJSON($matrix, $sorted_id_list,$coupled_layers,$layerSearchArray){
-		
-		$layerCount = 0;
-		// erste Schleife geht über die Datensätze
-	    for ($i = 0; $i < count($matrix); $i++) {
-			
-				$a =array();
-				//im Kopf der Schleife: unsortierte Layer, aber pro Datensatz (srv[$i]), deshalb der ganze Aufwand
-				foreach ($this->datasetJSON->dataset->srv[$i]->coupledResources->layer as $layer) {
-					
-					$kandidat = $layer->id;
-					
-					for($j = 0;$j < count($sorted_id_list);$j++){
-						//es wird geschaut, an welcher Stelle in der sortierten Liste sich der Layer befindet und die Position wird in array a eingefügt
-						if($kandidat == $sorted_id_list[$j]){
-							$a[] = $j;
-							
-						}
-						
-					}
-					
-				}
-				sort($a);
-				$c = 0;
-				for($p = 0;$p < count($a); $p++){
-						for($k = 0; $k < count($sorted_id_list); $k++){
-							if($k == $a[$p]){
-								
-								
-								$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$c]->id = $sorted_id_list[$k];
-								$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$c]->srv = json_decode($coupled_layers->internalResult)->wms->srv[$layerSearchArray[$sorted_id_list[$k]]];
-								
-								$c++;
-								break;
-							}
-						}
-				}
 		}
 	}
 
@@ -2288,6 +2263,29 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 				#exit;
 			}
 			fclose($h);
+		}
+	}
+
+	// recursive function to extract a layer by id from a returned hierarchical wms srv layer array search result 
+	private function findLayer($layerArray, $layerId) {
+		$e = new mb_notice("classes/class_metadata.php: method->findLayer: search for id: " . (integer)$layerId);
+		if (is_array($layerArray)) {
+			//sometimes we get a list of all sublayers - we have to iterate over them
+			// invoke recursive for each sublayer
+			foreach ($layerArray as $subLayer) {
+				if ((integer)$subLayer->id == (integer)$layerId) {
+					if (isset($subLayer)) {
+						return $subLayer;
+					}
+				} else {
+					//go to next hierarchy level
+					if (is_array($subLayer->layer)) {
+						return $this->findLayer($subLayer->layer, $layerId);
+					}
+				}
+			}
+		} else {
+			$e = new mb_notice("classes/class_metadata.php: method->findLayer: layer object is not an array!");
 		}
 	}
 
