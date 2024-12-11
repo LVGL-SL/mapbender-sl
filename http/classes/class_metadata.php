@@ -334,8 +334,8 @@ class searchMetadata
 						$this->orderBy = " ORDER BY wms_timestamp DESC ";
 						break;
 					//Ticket 6655: Changed order of Datasetsearch subservices 
-					case "intern":
-						$this->orderBy = " ORDER BY wms_id,layer_title ASC";					
+					case "intern":					
+						$this->orderBy = " ORDER BY wms_id,layer_id ASC";
 						break;
 					default:
 						$this->orderBy = " ORDER BY load_count DESC";
@@ -765,45 +765,45 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 
 
 */
-			// $layer_id_sorted = array();
+			$layer_id_sorted = array();
 			
-			// foreach (json_decode($coupledLayers->internalResult)->wms->srv as $server) {
-			// 	foreach ($server->layer as $layer) {
+			foreach (json_decode($coupledLayers->internalResult)->wms->srv as $server) {
+				foreach ($server->layer as $layer) {
 				
-			// 		$layer_id_sorted[] = $layer->id;
+					$layer_id_sorted[] = $layer->id;
 			
-			// 	}
-			// }
+				}
+			}
 			
-			// $this->sortMetadataJSON($datasetMatrix,$layer_id_sorted,$coupledLayers,$layerSearchArray) ;
+			$this->sortMetadataJSON($datasetMatrix,$layer_id_sorted,$coupledLayers,$layerSearchArray) ;
 			
 			
 			
 			//insert objects into dataset result list
 			for ($i = 0; $i < count($datasetMatrix); $i++) {
-				$layerCount = 0;
-				foreach ($this->datasetJSON->dataset->srv[$i]->coupledResources->layer as $layer) {
+				// $layerCount = 0;
+				// foreach ($this->datasetJSON->dataset->srv[$i]->coupledResources->layer as $layer) {
 					
-					//first add whole srv result
-					$subTree = json_decode($coupledLayers->internalResult)->wms->srv[$layerSearchArray[$layer->id]];
-					$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv = $subTree;
-					# not only add the service object, but also the layer title, ...
-					# maybe it is easier to get the right layer and add this as the "root" layer object instead of the whole subtree
-					// extract layer with id from subtree
-					if (is_array($subTree->layer) && isset($layer->id)) {
-						$coupledLayer = $this->findLayer($subTree->layer, $layer->id);
+				// 	//first add whole srv result
+				// 	$subTree = json_decode($coupledLayers->internalResult)->wms->srv[$layerSearchArray[$layer->id]];
+				// 	$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv = $subTree;
+				// 	# not only add the service object, but also the layer title, ...
+				// 	# maybe it is easier to get the right layer and add this as the "root" layer object instead of the whole subtree
+				// 	// extract layer with id from subtree
+				// 	if (is_array($subTree->layer) && isset($layer->id)) {
+				// 		$coupledLayer = $this->findLayer($subTree->layer, $layer->id);
 					
-						//reinitialize layer array
-						if ($coupledLayer != false) {
-							//delete sublayers from found layer !
-							unset($coupledLayer->layer);
-							$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv->layer = array();
-							$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv->layer[0] = $coupledLayer; 
-						}
-					}
-					//$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv = json_decode($coupledLayers->internalResult)->wms->srv[$layerSearchArray[$layer->id]];
-					$layerCount++;
-				}
+				// 		//reinitialize layer array
+				// 		if ($coupledLayer != false) {
+				// 			//delete sublayers from found layer !
+				// 			unset($coupledLayer->layer);
+				// 			$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv->layer = array();
+				// 			$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv->layer[0] = $coupledLayer; 
+				// 		}
+				// 	}
+				// 	//$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv = json_decode($coupledLayers->internalResult)->wms->srv[$layerSearchArray[$layer->id]];
+				// 	$layerCount++;
+				// }
 				$featuretypeCount = 0;
 				foreach ($this->datasetJSON->dataset->srv[$i]->coupledResources->featuretype as $ft) {
 					$this->datasetJSON->dataset->srv[$i]->coupledResources->featuretype[$featuretypeCount]->srv = json_decode($coupledFeaturetypes->internalResult, true)->wfs->srv[$featuretypeSearchArray[$ft->id]];
@@ -835,7 +835,32 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 			}
 		}
 	}
-
+	private function sortMetadataJSON($matrix, $sorted_id_list, $coupled_layers, $layerSearchArray) {
+		$sorted_id_map = array_flip($sorted_id_list);
+		$coupled_layers_srv = json_decode($coupled_layers->internalResult)->wms->srv;
+	
+		for ($i = 0; $i < count($matrix); $i++) {
+			$layers = $this->datasetJSON->dataset->srv[$i]->coupledResources->layer;
+			$sorted_layers = array();
+	
+			foreach ($layers as $layer) {
+				$layer_id = $layer->id;
+				if (isset($sorted_id_map[$layer_id])) {
+					$position = $sorted_id_map[$layer_id];
+					$sorted_layers[$position] = $layer_id;
+				}
+			}
+	
+			ksort($sorted_layers);
+			$c = 0;
+	
+			foreach ($sorted_layers as $position => $layer_id) {
+				$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$c]->id = $layer_id;
+				$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$c]->srv = $coupled_layers_srv[$layerSearchArray[$layer_id]];
+				$c++;
+			}
+		}
+	}
 
 	private function generateApplicationMetadataJSON($res, $n)
 	{
@@ -1007,7 +1032,13 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 					$this->wmsJSON->wms->srv[$j]->layer[0]->maxScale = $legendInfo['maxScale'];
 					//pull downloadOptions as json with function from other script: php/mod_getDownloadOptions.php
 					$downloadOptionsCs = str_replace("{", "", str_replace("}", "", str_replace("}{", ",", $legendInfo['downloadOptions'])));
-					$downloadOptions = json_decode(getDownloadOptions(explode(',', $downloadOptionsCs), $this->protocol . "://" . $this->hostName . "/mapbender/"));
+					if (!isset($functionResults[$downloadOptionsCs])) {
+						$downloadOptions =
+	   json_decode(getDownloadOptions(explode(',', $downloadOptionsCs), $this->protocol . "://" . $this->hostName . "/mapbender/"));
+	   					$functionResults[$downloadOptionsCs] = $downloadOptions; // Store the result
+					}else{
+						$downloadOptions =$functionResults[$downloadOptionsCs]; // Retrieve the stored result
+					}
 					$this->wmsJSON->wms->srv[$j]->layer[0]->downloadOptions = $downloadOptions;
 
 					if ($subLayers[$rootIndex]['layer_name'] == '') {
