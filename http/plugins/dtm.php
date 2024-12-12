@@ -9,9 +9,8 @@
 require_once dirname(__FILE__)."/../../conf/altitudeProfile.conf";
 
 # Use constants from configuration file
-#$imageFile = "/opt/geoportal/mapbender/http/img/altitude_profile/Mobilemap_DHM/dhm_sl.tif";
-$imageFile = "/data2/DGM1/DGM1_OD_1.tif";
-$tmpFile = "/opt/geoportal/mapbender/http/tmp/". md5(uniqid(mt_rand(), true));;
+$imageFile = ALTITUDE_PROFILE_DTM_IMAGE_FILE;
+$tmpFile = ALTITUDE_PROFILE_DTM_TEMP_DIR. md5(uniqid(mt_rand(), true));
 # Use frontend user input from POST
 $json_unsafe = $_POST['xyz'];
 $array = json_decode($json_unsafe);
@@ -26,13 +25,12 @@ for ($i = 0; $i < count($array); $i = $i + 3) {
 }
 $output = "";
 
-if($array[2] == 25832){
+if($array[2] == ALTITUDE_PROFILE_DTM_IMAGE_FILE_EPSG){
     exec('cat '.$tmpFile.' | gdallocationinfo -geoloc -valonly '.$imageFile, $output);
 }
 else{
     exec('cat '.$tmpFile.' | gdallocationinfo -valonly -l_srs EPSG:'.$array[2].' '.$imageFile, $output);
 }
-//file_put_contents("/opt/geoportal/mapbender/http/tmp/t2", $output, FILE_APPEND);
 for ($i = 0; $i < count($array); $i = $i + 3) {
     $array[$i + 2] =  round($output[$i / 3],2);
 }

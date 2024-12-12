@@ -2,6 +2,7 @@ var jsonPoints = [];
 var paintPoints = false;
 var uebergeben = false;
 var create = false;
+var min_point_distance = 1.000; // in meters
 var string_cursor = "";
 $.widget("mapbender.mb_hohe", {
 	options: {
@@ -271,7 +272,7 @@ $.widget("mapbender.mb_hohe", {
 		//ungefähr 1500 Punkte werden für die Strecke verwendet.
 		var distance = gesamtlaenge / 1500.0;
 		//if (distance < 1) distance = 10;
-		if (distance < 1) distance = 1.000;
+		if (distance < min_point_distance) distance = min_point_distance;
 		var ar = [];
 		for (var i = 0; i < len - 1; i++) {
 			ar = ar.concat(this._mache_punkte_strecke(jsonPoints[i], jsonPoints[i + 1], distance, jsonPoints[i + 1].abstand));

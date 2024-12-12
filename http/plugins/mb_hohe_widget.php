@@ -501,13 +501,15 @@ sie werden hier hervorgehoben gezeicnet.
 
 
         ctx.fillStyle = "#888888";
-        for(var i = 0;i< points_count; i++)
-           if(points[i].stuetzpunkt)
-               ctx.fillRect(points[i].x-2,points[i].y-1,4,4);
+        if (points && points.length > 0) {
+            for (var i = 0; i < points.length; i++) {
+                if(points[i].stuetzpunkt) {
+                    ctx.fillRect(points[i].x - 2, points[i].y - 1, 4, 4);
+                }
+            }
+        }
+    };
 
-        ctx.fillStyle = "#888888";
-
-    }
 
 //zeichne Fadenkreuz
     var draw_Points = function(mark) {
