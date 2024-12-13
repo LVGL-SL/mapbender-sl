@@ -291,22 +291,41 @@ $.widget("mapbender.mb_hohe", {
 			sende[j + 2] = -1;
 			j += 3;
 		}
-		sende[2] = this._srs.split(":")[1];
-		var myJsonString = JSON.stringify(sende);	
-		
-		
-		
-	
-var div = document.createElement('div');
-div.setAttribute('style', 'z-index: 100;position: absolute;');
-var img = document.createElement('img');
-img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg width="'+document.body.clientWidth +'" height="'+document.body.clientHeight +'" viewBox="'+ (- document.body.clientWidth/2) +' '+ 60 +' '+document.body.clientWidth +' '+document.body.clientHeight +'" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="40" width="60" height="80" opacity="1"><animate id="a" begin="0;b.end-0.25s" attributeName="opacity" dur="0.75s" values="1;.2" fill="freeze"/></rect><rect x="90" y="40" width="60" height="80" opacity=".4"><animate begin="a.begin+0.15s" attributeName="opacity" dur="0.75s" values="1;.2" fill="freeze"/></rect><rect x="170" y="40" width="60" height="80" opacity=".3"><animate id="b" begin="a.begin+0.3s" attributeName="opacity" dur="0.75s" values="1;.2" fill="freeze"/></rect></svg>');
-div.append(img);
-document.body.append(div);	
-	
-var data = new FormData()
-data.append('action', 'getheigth')
-data.append('stringxyz', myJsonString )
+		if (this._srs != 'EPSG:31466') {
+			j = 0;
+			var source = new Proj4js.Proj(this._srs);
+			var dest = new Proj4js.Proj('EPSG:31466');
+
+			//sende wird an den Server geschickt: nur EPSG:31466	
+			if (source.readyToUse && dest.readyToUse) {
+				for (var i = 0; i < jsonPoints.length; i++) {
+					p_x = sende[j];
+					p_y = sende[j + 1];
+					var p2 = new Proj4js.Point(p_x, p_y);
+					p2 = Proj4js.transform(source, dest, p2);
+					sende[j] = p2.x;
+					sende[j + 1] = p2.y;
+					j += 3;
+				}
+			}
+			else
+				alert('Es ist ein Fehler aufgetreten. Bitte Zeichnen Sie die Strecke neu.');
+		}
+
+		var myJsonString = JSON.stringify(sende);
+		var div = document.createElement('div');
+		div.setAttribute('style', 'position: absolute;top: calc(50% - 75px);left: calc(50% - 120px);');
+		var img = document.createElement('img');
+		img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg"><rect x="10" y="40" width="60" height="80" opacity="1"><animate id="a" begin="0;b.end-0.25s" attributeName="opacity" dur="0.75s" values="1;.2" fill="freeze"/></rect><rect x="90" y="40" width="60" height="80" opacity=".4"><animate begin="a.begin+0.15s" attributeName="opacity" dur="0.75s" values="1;.2" fill="freeze"/></rect><rect x="170" y="40" width="60" height="80" opacity=".3"><animate id="b" begin="a.begin+0.3s" attributeName="opacity" dur="0.75s" values="1;.2" fill="freeze"/></rect></svg>');
+		div.append(img);
+		document.querySelector('.ownSuperClass').append(div);
+		$(document.querySelector('#hoheCancelButton')).button('disable');	
+		this.deactivate();
+		Mapbender.bindPanEvents();
+
+		var data = new FormData()
+		data.append('action', 'getheigth')
+		data.append('stringxyz', myJsonString )
 
 this._fetchdata(data,div);	
 		
@@ -348,14 +367,16 @@ const re = await response.text();
 			
 			
 			this._draw(undefined, {
-			not_clicked: true
+				not_clicked: true
 		});
- 
- 
-  return  re;
-},
-		
-	
+
+		// Enable the NEW button and PanEvents after processing is complete		
+		//Mapbender.bindPanEvents();
+		$(document.querySelector('#hoheNewButton')).button('enable');
+
+		return  re;
+	},
+
 	/*
 	Diese Funktion fügt Punkte zwischen zwei Stuetzpunkten (geklickten) p1 und p2 ein.
 	p1 gehört dazu.
