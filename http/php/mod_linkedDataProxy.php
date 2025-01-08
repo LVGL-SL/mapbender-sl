@@ -1753,7 +1753,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 					$ftAllowedAttributesArray = array ();
 					foreach ( $ftElementArray as $ftElement ) {
 						// $e = new mb_exception($ftElement->name ." - " .$ftElement->type);
-					    if (in_array((string)$ftElement->type, array("string", "xsd:string", "int"))) {
+					    if (in_array((string)$ftElement->type, array("string", "xsd:string", "int", "xsd:decimal", "decimal"))) {
 							$ftAllowedAttributesArray [] = $ftElement->name;
 						}
 					}
@@ -1929,7 +1929,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							$e = new mb_exception("php/mod_linkedDataProxy.php: Feature count was not successful - nothing returned!");
 							
 							if ($f == "json") {
-							     header ( "application/json" );
+							     header ( "Content-Type: application/json" );
 							     echo json_encode ( $returnObject );
 							     die ();
 							}
@@ -1947,7 +1947,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							$returnObject->success = false;
 							$returnObject->message = "Requested page exceeds number of max pages!";
 							if ($f == "json") {
-								header ( "application/json" );
+								header ( "Content-Type: application/json" );
 								echo json_encode ( $returnObject );
 							}
 							$e = new mb_exception("php/mod_linkedDataProxy.php: Requested page exceeds number of max pages!");

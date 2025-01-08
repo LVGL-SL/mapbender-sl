@@ -432,8 +432,8 @@ class Wfs_2_0_Factory extends WfsFactory {
 				//Ticket #7275:  
 				//Actually the correct xpath would be: $allowedValuesArray = $this->getValue($xpath, '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="GetFeature"]/ows:Parameter[@name="outputFormat"]/ows:AllowedValues', $wfs20Cap);
 				//Since there is an issue with esri services that include many outputFormats in this node which are actually not working 
-				//Won't fix for now  
-				$allowedValuesArray = $this->getValue($xpath, '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="GetFeature"]/ows:Parameter[@name="outputFormat"]/ows:AllowedValues', $wfs20Cap);
+				//Won't fix for now  - Old path used again because of the reason above
+				$allowedValuesArray = $this->getValue($xpath, '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Parameter[@name="outputFormat"]/ows:AllowedValues', $wfs20Cap);
 				$wfsOutputFormatsArray = $xpath->query('./ows:Value', $allowedValuesArray);
 				foreach ($wfsOutputFormatsArray as $allowedValue) {
 					$outputFormat1 = $this->getValue($xpath, './text()', $allowedValue);

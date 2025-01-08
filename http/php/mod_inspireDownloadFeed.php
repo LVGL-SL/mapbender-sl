@@ -1701,8 +1701,9 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 					// $gFLink .= "&srsName=".$mapbenderMetadata[$i]->featuretype_srs;
 					//TODO check if other epsg string should be used!
 					//$crsObject->identifier;
-					if (count($mapbenderMetadata[$i]->output_formats) >= 1 && strtoupper($mapbenderMetadata[$i]->geometry_field_name[0] !== "SHAPE")) {
+					if (count($mapbenderMetadata[$i]->output_formats) >= 1 && strtoupper($mapbenderMetadata[$i]->geometry_field_name[0]) !== "SHAPE") {
 						//use first output format which have been found - TODO - check if it should be pulled from featuretype instead from wfs 
+						#Ticket #7671: Further analysis for "Windpotenziale"-Issue Another bracketbug
 						$gFLink .= "&outputFormat=".rawurlencode($mapbenderMetadata[$i]->output_formats[0]);
 					}
 					//Ticket: 7322 - Due to registration issues with complex wfs services
@@ -1784,7 +1785,9 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 					}
 					//$resourceFormat = "application/gml+xml";
 					//first format from wfs server
+					//Ticket 7671: Place to possibly qorkaround arcgis service issues with outputFormats if registration should be changed to read all Formats
 					$resourceFormat = $mapbenderMetadata[$i]->output_formats[0];
+					//}
 				break;
 				case "metadata":
 					$ressourceDataFeedEntryTitle = $ressourceTitle." - generiert über Downloadlinks aus Metadatensatz";
@@ -2462,6 +2465,8 @@ function fillMapbenderMetadata($dbResult, $generateFrom,$dbResult2 = NULL) {
 						//set default output format to gml2 TODO - check if senseful
 						//Ticket 7275: Fallback Value (primarily necessary for WFS 2.0.0 (arcgis server)) 
 						//due to incorrect outputFormat-Values in capabilties
+						//Ticket 7671: INFO: Current Problem: Fallback is only used when outputformats empty...
+						//Shape condition in other places can't be used here 1:1 .. Either adapt or change registration/update back 
 						$mapbenderMetadata[$indexMapbenderMetadata]->output_formats[0] = "application/gml+xml; version=3.2";//"text/xml; subtype=gml/2.1.2";
 					}
 					$mapbenderMetadata[$indexMapbenderMetadata]->output_formats = array_unique($mapbenderMetadata[$indexMapbenderMetadata]->output_formats);

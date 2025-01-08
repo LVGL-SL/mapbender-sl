@@ -49,9 +49,20 @@
 		
 		var f = 1;
 		jQuery(this).find('dt').each(function(){
-			jQuery(this).css({'width':dtHeight,'top':dtTop,'margin-left':dtOffset});	
+			//Ticket: #7739 Firefox CSS Issues in Administration GUI
+			if(jQuery.browser.mozilla && parseInt(navigator.userAgent.match(/Firefox\/(\d+)/)[1]) >= 120){
+				jQuery(this).css({'width':dtHeight,'top':dtTop,'margin-left':dtOffset, 'transform-origin':"20px 0px"});
+			}else{
+				jQuery(this).css({'width':dtHeight,'top':dtTop,'margin-left':dtOffset});
+			}	
 			if(settings.slideNum == true){
-				jQuery('<span class="slide-number">'+0+f+'</span>').appendTo(this);
+				//jQuery('<span class="slide-number">'+0+f+'</span>').appendTo(this);
+				//Fix Firefox CSS Issues in Administration GUI by Carsten Sommer (lvgl-cs)
+				if(jQuery.browser.mozilla && parseInt(navigator.userAgent.match(/Firefox\/(\d+)/)[1]) >= 120){
+					jQuery(this).css({'width':dtHeight,'top':dtTop,'margin-left':dtOffset, 'transform-origin':"20px 0px"});
+				}else{
+					jQuery(this).css({'width':dtHeight,'top':dtTop,'margin-left':dtOffset});
+				}
 				if(jQuery.browser.msie){	
 					var slideNumLeft = parseInt(jQuery(this).find('.slide-number').css('left')) - 14;
 					jQuery(this).find('.slide-number').css({'left': slideNumLeft})

@@ -114,10 +114,14 @@
 		}
 
 		//#6327 Fix cookie params for chrome issues in case of owsproxy execution
+		//Ticket #7782 -> Adapted because of issues with owsproxy and changes in apache config
 		if (strpos($_SERVER["SCRIPT_URI"], "owsproxy")){
 			session_set_cookie_params([
-				'secure' => 1,
 				'samesite' => "None"
+			]);
+		}else{
+			session_set_cookie_params([
+				'samesite' => "Lax"
 			]);
 		}
 

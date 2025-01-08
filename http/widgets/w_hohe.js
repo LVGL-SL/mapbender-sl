@@ -2,6 +2,7 @@ var jsonPoints = [];
 var paintPoints = false;
 var uebergeben = false;
 var create = false;
+var min_point_distance = 1.000; // in meters
 var string_cursor = "";
 $.widget("mapbender.mb_hohe", {
 	options: {
@@ -267,19 +268,17 @@ $.widget("mapbender.mb_hohe", {
 	_mache_punkte: function () {
 		var len = jsonPoints.length;
 
-		var gesamtlaenge = this._totalDistance;
-
+		var gesamtlaenge = this._totalDistance_;
 		//ungefähr 1500 Punkte werden für die Strecke verwendet.
 		var distance = gesamtlaenge / 1500.0;
-		if (distance < 10) distance = 10;
+		//if (distance < 1) distance = 10;
+		if (distance < min_point_distance) distance = min_point_distance;
 		var ar = [];
 		for (var i = 0; i < len - 1; i++) {
 			ar = ar.concat(this._mache_punkte_strecke(jsonPoints[i], jsonPoints[i + 1], distance, jsonPoints[i + 1].abstand));
 		}
 		ar.push(jsonPoints[len - 1]);
 		jsonPoints = ar;
-
-
 		this._canvas.clear();
 		this._measurePoints = [];
 		var sende = [];
@@ -292,27 +291,7 @@ $.widget("mapbender.mb_hohe", {
 			sende[j + 2] = -1;
 			j += 3;
 		}
-		if (this._srs != 'EPSG:31466') {
-			j = 0;
-			var source = new Proj4js.Proj(this._srs);
-			var dest = new Proj4js.Proj('EPSG:31466');
-
-			//sende wird an den Server geschickt: nur EPSG:31466	
-			if (source.readyToUse && dest.readyToUse) {
-				for (var i = 0; i < jsonPoints.length; i++) {
-					p_x = sende[j];
-					p_y = sende[j + 1];
-					var p2 = new Proj4js.Point(p_x, p_y);
-					p2 = Proj4js.transform(source, dest, p2);
-					sende[j] = p2.x;
-					sende[j + 1] = p2.y;
-					j += 3;
-				}
-			}
-			else
-				alert('Es ist ein Fehler aufgetreten. Bitte Zeichnen Sie die Strecke neu.');
-		}
-
+		sende[2] = this._srs.split(":")[1];
 		var myJsonString = JSON.stringify(sende);	
 		
 		
@@ -359,7 +338,7 @@ const re = await response.text();
 		
 		paintPoints = true;
 		div.remove();
-		this._trigger("new",null,null);
+		
 		uebergeben = true;
         var l = jsonPoints.length;
 		
@@ -475,7 +454,7 @@ const re = await response.text();
 		}
 		//bei this._totalDistance_  entfällt der doppelt geklickte Punkt.		
 		this._totalDistance_ = this._totalDistance;
-		this._totalDistance += this._currentDistance;
+		//this._totalDistance += this._currentDistance;
 		this._currentDistance = 0;
 		this._draw(data.pos, {
 			not_clicked: false
@@ -502,7 +481,6 @@ const re = await response.text();
 		if (!$(this.element).data("mb_hohe")) {
 			return;
 		}
-
 		var len = jsonPoints.length;
 		if ((len === 0) && (!paintPoints)) {
 			if (this._map.getSrs() != this._srs)
@@ -511,22 +489,9 @@ const re = await response.text();
 		}
 		//Koordinatensystem wurde umgeschaltet:
 		if (this._map.getSrs() != this._srs) {
-			var source = new Proj4js.Proj(this._srs);
-			var dest = new Proj4js.Proj(this._map.getSrs());
-			//jeder Punkt zum Zeichnen wird umprojiziert	
-			if (source.readyToUse && dest.readyToUse) {
-				for (var i = 0; i < len; i++) {
-					var p = jsonPoints[i];
-					var p2 = new Proj4js.Point(p.pos.x, p.pos.y);
-					p2 = Proj4js.transform(source, dest, p2);
-					p.pos = p2;
-					p.mousePos = this._map.convertRealToPixel(p.pos);
-					jsonPoints[i] = p;
-				}
-			}
-			else
-				alert('Es ist ein Fehler aufgetreten,bitte Zeichnen Sie die Strecke neu');
-			this._srs = this._map.getSrs();
+			this._trigger("new",null,null);
+			//this.destroy();
+			return;
 		}
 
 		//hier wird getestet, ob ein Punkt in der Bounding Box liegt, sonst wird das Diagramm grau gezeichnet
@@ -619,7 +584,6 @@ const re = await response.text();
 
 	// delete everything
 	destroy: function () {
-
 		this.deactivate();
 		this._canvas.clear();
 		this._measurePoints = [];
@@ -629,7 +593,7 @@ const re = await response.text();
 		create = false;
 		this._$canvas.remove();
 		this.element.unbind("onwheel",$.proxy(this, "_measure"));
-		this._map.events.afterMapRequest.unregister($.proxy(this._redraw, this));
+		//this._map.events.afterMapRequest.unregister($.proxy(this._redraw, this));
 		$.Widget.prototype.destroy.apply(this, arguments); // default destroy
 		$(this.element).data("mb_hohe", null);
 	}

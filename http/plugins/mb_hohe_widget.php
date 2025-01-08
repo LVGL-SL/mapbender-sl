@@ -133,7 +133,7 @@ var MeasureApi = function (o) {
 
                  }
 //drawButton();
-
+		
 	};
 
 	var finishMeasure = function () {
@@ -159,7 +159,7 @@ var MeasureApi = function (o) {
     switch (event.which) {
         case 1:
             //alert('Left Mouse button pressed.');
-			resetII();
+			//resetII();
             break;
         case 2:
 		    
@@ -187,7 +187,7 @@ var MeasureApi = function (o) {
                                 .unbind("mb_hohecleardia", clearJsonArray)
 								.unbind("mb_hoheupdate", updateView)
                                 .unbind("mb_measurelastpointadded", finishMeasure)
-								.unbind("mb_hohenew", reset)
+								.unbind("mb_hohenew", resetII)
 								.unbind("mousedown")
 								
 								.unbind("mb_measurereinitialize", reinitializeMeasure);
@@ -229,7 +229,7 @@ var MeasureApi = function (o) {
 								.bind("mb_hohelastpointadded", finishMeasure)
 								.bind("mb_hohereinitialize", reinitializeMeasure)
 								.bind("click", changeDialogContent)								
-								.bind("mb_hohenew", reset);
+								.bind("mb_hohenew", resetII);
 		}
 
 		if (!inProgress) {
@@ -250,7 +250,7 @@ var MeasureApi = function (o) {
                                 .unbind("mb_hohecleardia", clearJsonArray)
 								.unbind("mb_hoheupdate", updateView)
                                 .unbind("mb_measurelastpointadded", finishMeasure)
-								.unbind("mb_hohenew", reset)
+								.unbind("mb_hohenew", resetII)
 								.unbind("mousedown")
 								.unbind("mb_measurereinitialize", reinitializeMeasure);
 		}
@@ -299,7 +299,7 @@ var width = 600;
 var height = 250;
 var y_0 = height -30;
 var y_oben = 20;
-var font = "12px Arial"
+var font = "12px Arial";
 var color_coord ='#99BF86';
 var color_coord_halb = '#A3C1A7';//#838A87
 var color_coord_garnicht = '#A3ABA7';
@@ -309,6 +309,9 @@ var c = document.getElementById("can")
 var ctx = c.getContext("2d");
 ctx.width = 500;
 
+const linGrad2 = ctx.createLinearGradient(0, 0, 0, 150);
+linGrad2.addColorStop(0, "#99BF86");
+linGrad2.addColorStop(1, "rgb(153 191 134 / 10%)");
 
 
 var testButton = function(x,y) {
@@ -461,8 +464,11 @@ l dient als Ausgabe von Text
             ctx.lineTo(30 + i * dist, height - 17);
             ctx.fillText(m_or_km(stop_meter / 10 * i, stop_meter), 16 + i * dist, height - 3);
             ctx.lineWidth = 1;
-            ctx.strokeStyle = color_coord;
+            ctx.strokeStyle = color_coord;	//ctx.clearRect(0, 0, 6500, 300);
             ctx.stroke();
+			
+
+		
         }
     };
 
@@ -476,10 +482,12 @@ Anpassung der Einheit der x - Achse des Diagramms
 */
 
     var m_or_km = function(teil,gesamt) {
-
+        
         if(gesamt > 999) {
             return "" + (Math.floor((teil/1000) * 10) / 10) + " km";
         }
+		else if (gesamt < 20)
+			return "" + teil.toFixed(1) + " m";
         else
             return "" + Math.floor(teil) + " m";
     }
@@ -493,13 +501,15 @@ sie werden hier hervorgehoben gezeicnet.
 
 
         ctx.fillStyle = "#888888";
-        for(var i = 0;i< points_count; i++)
-           if(points[i].stuetzpunkt)
-               ctx.fillRect(points[i].x-2,points[i].y-1,4,4);
+        if (points && points.length > 0) {
+            for (var i = 0; i < points.length; i++) {
+                if(points[i].stuetzpunkt) {
+                    ctx.fillRect(points[i].x - 2, points[i].y - 1, 4, 4);
+                }
+            }
+        }
+    };
 
-        ctx.fillStyle = "#888888";
-
-    }
 
 //zeichne Fadenkreuz
     var draw_Points = function(mark) {
@@ -566,6 +576,18 @@ er wird farblich gezeichnet je nach dem ob die zwei Punkte in der BBox sind oder
 
 		for (var i = 1; i < points_count; i++) {
 			if(i == 1) {
+				
+				ctx.lineWidth = 0.8;
+				ctx.beginPath();
+				ctx.moveTo(points[0].x, points[0].y);
+				ctx.lineTo(points[i].x, points[i].y);
+				ctx.closePath();
+                ctx.stroke();
+				
+				
+				
+				
+				ctx.lineWidth = 0.01;
 				ctx.beginPath();
 				ctx.moveTo(30, height - 20);
 				ctx.lineTo(30, points[0].y);
@@ -573,16 +595,15 @@ er wird farblich gezeichnet je nach dem ob die zwei Punkte in der BBox sind oder
 				ctx.lineTo(points[i].x,height - 20);
 				ctx.lineTo(30, height - 20);
 				ctx.closePath();
-
 				if(points[i - 1].ist_in_BBox && points[i].ist_in_BBox)
-					ctx.fillStyle = color_coord;
+					ctx.fillStyle = linGrad2;//color_coord;
+					
 				else if(points[i - 1].ist_in_BBox || points[i].ist_in_BBox)
 					ctx.fillStyle = color_coord_halb;
 				else ctx.fillStyle = color_coord_garnicht;
 				
 				ctx.fill();
 
-				ctx.lineWidth = 0.1;
 				if(points[i - 1].ist_in_BBox && points[i].ist_in_BBox)
 					ctx.strokeStyle = color_coord;
 				else if(points[i - 1].ist_in_BBox || points[i].ist_in_BBox)
@@ -594,25 +615,29 @@ er wird farblich gezeichnet je nach dem ob die zwei Punkte in der BBox sind oder
 				continue;
 			
 			}
-			
+			ctx.lineWidth = 0.8;
+			ctx.beginPath();
+			ctx.lineTo(points[i].x, points[i].y);
+			ctx.lineTo(points[i-1].x, points[i-1].y);
+			ctx.closePath();
+			ctx.stroke();
 			
 			ctx.beginPath();
 			ctx.lineTo(points[i].x, points[i].y);
 			ctx.lineTo(points[i].x,height - 20);
-			ctx.lineTo(points[i-1].x,height - 20);
+			ctx.lineTo(points[i-1].x,height - 20);	
 			ctx.lineTo(points[i-1].x, points[i-1].y);
 			ctx.closePath();
 			if(points[i - 1].ist_in_BBox && points[i].ist_in_BBox)
-				ctx.fillStyle = color_coord;
+				ctx.fillStyle = linGrad2;
 			else if(points[i - 1].ist_in_BBox || points[i].ist_in_BBox)
 				ctx.fillStyle = color_coord_halb;
 			else
-
  				ctx.fillStyle = color_coord_garnicht;
 
 			ctx.fill();
 
-			ctx.lineWidth = 0.1;
+			ctx.lineWidth = 0.01;//0.1
 			if(points[i - 1].ist_in_BBox && points[i].ist_in_BBox)
 				ctx.strokeStyle = color_coord;
 			else if(points[i - 1].ist_in_BBox || points[i].ist_in_BBox)
@@ -639,8 +664,7 @@ er wird farblich gezeichnet je nach dem ob die zwei Punkte in der BBox sind oder
 
         ctx.clearRect(0, 0, 700, 250);
         ctx.fillText("Sie koennen mit Klicken eine Strecke in die Kartei zeichnen. Beim letzten Punkt bitte ein Doppelklick.",9,15);
-		ctx.fillText("Nach dem Erstellen koennen Sie ueber die Strecke fahren und bekommen die Hoehe angezeigt.",9,30);
-		ctx.fillText("Nach dem Erstellen können Sie mit einenm Click in die Karte das Diagramm zurücksetzen.",9,60);
+		ctx.fillText("Nach dem Erstellen koennen Sie ueber die Strecke fahren und bekommen die Hoehe angezeigt.",9,30);		
 		draw_stuetzpunkte();
 		
     	
