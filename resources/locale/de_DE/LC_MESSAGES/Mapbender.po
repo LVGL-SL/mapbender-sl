@@ -4455,3 +4455,6 @@ msgstr "Ein Gastnutzer ist nicht berechtigt Daten herunterzuladen!"
 msgid "Dataset not found in catalogue!"
 msgstr "Datensatz wurde nicht im Katalog gefunden!"
 
+msgid "The external service does not provide data for the position you selected."
+msgstr "Der externe Dienst liefert für die von Ihnen gewählte Position keine Daten."
+
