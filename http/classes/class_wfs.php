@@ -1039,7 +1039,7 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 			case "2.0.2":
 				$typeNameParameterName = "typeNames";
 				$maxFeaturesParameterName = "COUNT";
-				$featureIdParameterName = "featureID";
+				$featureIdParameterName = "resourceID";
 				if (in_array("GetFeatureById", $this->storedQueriesArray)) {
 				    $getFeatureByIdName = "GetFeatureById";
 				}
@@ -1050,7 +1050,7 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 			case "2.0.0":
 				$typeNameParameterName = "typeNames";
 				$maxFeaturesParameterName = "COUNT";
-				$featureIdParameterName = "featureID";
+				$featureIdParameterName = "resourceID";
 				if (in_array("GetFeatureById", $this->storedQueriesArray)) {
 				    $getFeatureByIdName = "GetFeatureById";
 				}
