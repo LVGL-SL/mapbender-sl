@@ -1041,7 +1041,7 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 			case "2.0.2":
 				$typeNameParameterName = "typeNames";
 				$maxFeaturesParameterName = "COUNT";
-				$featureIdParameterName = $prioritizeResourceId ? "resourceID" : "resourceID";
+				$featureIdParameterName = $prioritizeResourceId ? "resourceID" : "featureID";
 	
 				if (in_array("GetFeatureById", $this->storedQueriesArray)) {
 					$getFeatureByIdName = "GetFeatureById";
@@ -1056,7 +1056,7 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 			case "2.0.0":
 				$typeNameParameterName = "typeNames";
 				$maxFeaturesParameterName = "COUNT";
-				$featureIdParameterName = $prioritizeResourceId ? "resourceID" : "resourceID";
+				$featureIdParameterName = $prioritizeResourceId ? "resourceID" : "featureID";
 	
 				if (in_array("GetFeatureById", $this->storedQueriesArray)) {
 					$getFeatureByIdName = "GetFeatureById";
@@ -1078,8 +1078,7 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 		$getRequest = $this->getFeature .
 			$this->getConjunctionCharacter($this->getFeature) .
 			"service=WFS&request=GetFeature&version=" .
-			$version . "&" . strtolower($typeNameParameterName) . "=" . $featureTypeName .
-			"&" . $featureIdParameterName . "=" . $id;
+			$version;
 	
 		if ($outputFormat != false) {
 			$getRequest .= "&outputFormat=" . $outputFormat;
@@ -1106,29 +1105,29 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 			}
 		}
 	
-		if ($prioritizeResourceId && ($version == "2.0.0" || $version == "2.0.2")) {
+		if ($prioritizeResourceId) {
 			//Make sure max. 2 Features are requested (avoiding long execution time if ID-Parameter is not working)
-			$getRequest .= "&COUNT=2";
+			
+			$getRequestPrioritized = $getRequest . "&" . strtolower($typeNameParameterName) . "=" . $featureTypeName .
+			"&" . $featureIdParameterName . "=" . $id ."&". $maxFeaturesParameterName ."=2";
 
 			// Execute the request with resourceId prioritization
-			$xmlResponse = $this->get($getRequest);
+			$xmlResponse = $this->get($getRequestPrioritized);
 	
 			if ($this->validateSingleFeature($xmlResponse)) {
 				return $xmlResponse;
 			} else {
-				$e = new mb_notice("Validation failed, falling back to stored query logic.");
+				$e = new mb_notice("classes/class_wfs.php - getfeaturebyid - request: " . $getRequest ." - Validation failed, try falling back to stored query logic if possible.");
 			}
 		}
 	
 		if ($getFeatureByIdName != false) {
-			$getRequest = $this->getFeature .
-				$this->getConjunctionCharacter($this->getFeature) .
-				"service=WFS&request=GetFeature&version=" .
-				$this->getVersion() . "&" . strtolower($typeNameParameterName) . "=" . $featureTypeName .
+			$getRequest .= "&" . strtolower($typeNameParameterName) . "=" . $featureTypeName .
 				"&STOREDQUERY_ID=" . $getFeatureByIdName . "&ID=" . $id;
 		}else{
-			$e = new mb_exception("classes/class_wfs.php - getfeaturebyid - request failed: " . $getRequest);
-			return "";
+			//Former Logic - If Switch is not used.
+			$getRequest .= "&" . strtolower($typeNameParameterName) . "=" . $featureTypeName .
+			"&" . $featureIdParameterName . "=" . $id ."&". $maxFeaturesParameterName ."=2";
 		}
 	
 		$e = new mb_exception("classes/class_wfs.php - getfeaturebyid - request: " . $getRequest);
