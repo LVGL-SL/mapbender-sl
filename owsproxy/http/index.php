@@ -1473,7 +1473,7 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
                 $n->updateWmsFiLog("Mb2OWSPROXY - unable to load: " . $url, "text/plain", $log_id);
             }
             header("Content-Type: text/plain");
-            echo "Mb2OWSPROXY - unable to load external request - for further information please see logfile";
+            echo _mb("The external service does not provide data for the position you selected.");
         } else if (count($exception) > 0) {
             if ($log_id != null) {
                 $n->updateWmsFiLog($content, "application/xml", $log_id);
