@@ -64,7 +64,7 @@ if (featureInfoPrintButton === undefined) {
   var featureInfoPrintButton = '#printPDF';
 }
 if (featureInfoShowAlert === undefined) {
-  var featureInfoShowAlert = 0; //0:noAlert,1:alert,2:divAlert,3:divAlertTransparent
+  var featureInfoShowAlert = 1; //0:noAlert,1:alert,2:divAlert,3:divAlertTransparent
 }
 
 var mod_featureInfo_elName = "<?php echo $e_id;?>";
@@ -125,7 +125,7 @@ function showAlert(variant = 'default', timeoutDuration = 5000) {
         alertDiv.style.fontFamily = 'Helvetica, Arial, sans-serif';
         alertDiv.style.fontSize = '1.1em';
         alertDiv.style.letterSpacing = '1px';
-        alertDiv.innerHTML = '<p style="margin: 0px;text-align: center;">Bitte abfragbare Themen ausgewählen</p><span id="closeBtn" style="cursor: pointer;position:absolute;top:0px;right:5px;display:none;">&times;</span>';
+        alertDiv.innerHTML = '<p style="margin: 0px;text-align: center;"><?php echo _mb("Please enable some layer to be requestable or you are outside of the bounding box");?>!</p><span id="closeBtn" style="cursor: pointer;position:absolute;top:0px;right:5px;display:none;">&times;</span>';
 
         // Hinzufügen des Divs zum Body
         document.body.appendChild(alertDiv);
@@ -501,7 +501,7 @@ if (!isDragging && featureInfoEnabled) {
                         case 0:
                             break;
                         case 1:
-                            alert(unescape("Please select a layer! \n Bitte waehlen Sie eine Ebene zur Abfrage aus!"));
+                            alert("<?php echo _mb("Please enable some layer to be requestable or you are outside of the bounding box");?>!");
                             break;
                         case 2:
                             showAlert('default', 5000);
@@ -567,7 +567,7 @@ if (!isDragging && featureInfoEnabled) {
                             case 0:
                                 break;
                             case 1:
-                                alert(unescape("Please select a layer! \n Bitte waehlen Sie eine Ebene zur Abfrage aus!"));
+                                alert("<?php echo _mb("Please enable some layer to be requestable or you are outside of the bounding box");?>!");
                                 break;
                             case 2:
                                 showAlert('default', 5000);
