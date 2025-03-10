@@ -291,28 +291,12 @@ $.widget("mapbender.mb_hohe", {
 			sende[j + 2] = -1;
 			j += 3;
 		}
-		if (this._srs != 'EPSG:31466') {
-			j = 0;
-			var source = new Proj4js.Proj(this._srs);
-			var dest = new Proj4js.Proj('EPSG:31466');
-
-			//sende wird an den Server geschickt: nur EPSG:31466	
-			if (source.readyToUse && dest.readyToUse) {
-				for (var i = 0; i < jsonPoints.length; i++) {
-					p_x = sende[j];
-					p_y = sende[j + 1];
-					var p2 = new Proj4js.Point(p_x, p_y);
-					p2 = Proj4js.transform(source, dest, p2);
-					sende[j] = p2.x;
-					sende[j + 1] = p2.y;
-					j += 3;
-				}
-			}
-			else
-				alert('Es ist ein Fehler aufgetreten. Bitte Zeichnen Sie die Strecke neu.');
-		}
-
-		var myJsonString = JSON.stringify(sende);
+		sende[2] = this._srs.split(":")[1];
+		var myJsonString = JSON.stringify(sende);	
+		
+		
+		
+	
 		var div = document.createElement('div');
 		div.setAttribute('style', 'position: absolute;top: calc(50% - 75px);left: calc(50% - 120px);');
 		var img = document.createElement('img');
@@ -325,7 +309,7 @@ $.widget("mapbender.mb_hohe", {
 		data.append('action', 'getheigth')
 		data.append('stringxyz', myJsonString )
 
-this._fetchdata(data,div);	
+		this._fetchdata(data,div);	
 		
 		
 		
@@ -550,7 +534,6 @@ const re = await response.text();
 		jsonPoints = [];
 		paintPoints = false;
 		uebergeben = false;
-
 		// ":maps" is a Mapbender selector which
 		// checks if an element is a Mapbender map
 		this.element = this.element.filter(":maps");

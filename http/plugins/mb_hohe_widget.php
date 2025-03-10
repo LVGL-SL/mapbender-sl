@@ -40,7 +40,7 @@ var MeasureApi = function (o) {
 			dialogClass: "ownSuperClass",
             autoOpen: false,
 			position: [20,80],
-            width : 'auto',
+            width : 700,		
             height: 'auto',
             title: 'Höhenprofil',
             buttons: [
@@ -168,7 +168,7 @@ var MeasureApi = function (o) {
 				.unbind("mb_hohecleardia", clearJsonArray)
 				.unbind("mb_hoheupdate", updateView)
 				.unbind("mb_measurelastpointadded", finishMeasure)
-				.unbind("mb_hohenew", reset)
+				.unbind("mb_hohenew", resetII)
 				.unbind("mousedown")
 				.unbind("mb_measurereinitialize", reinitializeMeasure);
 		}
@@ -281,13 +281,11 @@ var MeasureApi = function (o) {
     var c = document.getElementById("can");
     var ctx = c.getContext("2d");
     ctx.width = 500;
-    var testButton = function(x,y) {
-        if ((620 <= x) && (x <= 620 + 70) &&  (220 <= y )&& (y <= 220 + 20)){
-            resetII();
-            return true;
-            }
-        else return false;
-    };
+
+    const linGrad2 = ctx.createLinearGradient(0, 0, 0, 150);
+    linGrad2.addColorStop(0, "#99BF86");
+    linGrad2.addColorStop(1, "rgb(153 191 134 / 10%)");
+
 
 /*
  
