@@ -297,18 +297,19 @@ $.widget("mapbender.mb_hohe", {
 		
 		
 	
-var div = document.createElement('div');
-div.setAttribute('style', 'z-index: 100;position: absolute;');
-var img = document.createElement('img');
-img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg width="'+document.body.clientWidth +'" height="'+document.body.clientHeight +'" viewBox="'+ (- document.body.clientWidth/2) +' '+ 60 +' '+document.body.clientWidth +' '+document.body.clientHeight +'" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="40" width="60" height="80" opacity="1"><animate id="a" begin="0;b.end-0.25s" attributeName="opacity" dur="0.75s" values="1;.2" fill="freeze"/></rect><rect x="90" y="40" width="60" height="80" opacity=".4"><animate begin="a.begin+0.15s" attributeName="opacity" dur="0.75s" values="1;.2" fill="freeze"/></rect><rect x="170" y="40" width="60" height="80" opacity=".3"><animate id="b" begin="a.begin+0.3s" attributeName="opacity" dur="0.75s" values="1;.2" fill="freeze"/></rect></svg>');
-div.append(img);
-document.body.append(div);	
-	
-var data = new FormData()
-data.append('action', 'getheigth')
-data.append('stringxyz', myJsonString )
+		var div = document.createElement('div');
+		div.setAttribute('style', 'position: absolute;top: calc(50% - 75px);left: calc(50% - 120px);');
+		var img = document.createElement('img');
+		img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg"><rect x="10" y="40" width="60" height="80" opacity="1"><animate id="a" begin="0;b.end-0.25s" attributeName="opacity" dur="0.75s" values="1;.2" fill="freeze"/></rect><rect x="90" y="40" width="60" height="80" opacity=".4"><animate begin="a.begin+0.15s" attributeName="opacity" dur="0.75s" values="1;.2" fill="freeze"/></rect><rect x="170" y="40" width="60" height="80" opacity=".3"><animate id="b" begin="a.begin+0.3s" attributeName="opacity" dur="0.75s" values="1;.2" fill="freeze"/></rect></svg>');
+		div.append(img);
+		document.querySelector('.ownSuperClass').append(div);
+		this.deactivate();
 
-this._fetchdata(data,div);	
+		var data = new FormData()
+		data.append('action', 'getheigth')
+		data.append('stringxyz', myJsonString )
+
+		this._fetchdata(data,div);	
 		
 		
 		
@@ -348,14 +349,13 @@ const re = await response.text();
 			
 			
 			this._draw(undefined, {
-			not_clicked: true
+				not_clicked: true
 		});
- 
- 
-  return  re;
-},
-		
-	
+		$('#hoheNewButton').button('enable');
+
+		return  re;
+	},
+
 	/*
 	Diese Funktion fügt Punkte zwischen zwei Stuetzpunkten (geklickten) p1 und p2 ein.
 	p1 gehört dazu.
@@ -534,7 +534,6 @@ const re = await response.text();
 		jsonPoints = [];
 		paintPoints = false;
 		uebergeben = false;
-
 		// ":maps" is a Mapbender selector which
 		// checks if an element is a Mapbender map
 		this.element = this.element.filter(":maps");
@@ -593,7 +592,7 @@ const re = await response.text();
 		create = false;
 		this._$canvas.remove();
 		this.element.unbind("onwheel",$.proxy(this, "_measure"));
-		//this._map.events.afterMapRequest.unregister($.proxy(this._redraw, this));
+		this._map.events.afterMapRequest.unregister($.proxy(this._redraw, this));
 		$.Widget.prototype.destroy.apply(this, arguments); // default destroy
 		$(this.element).data("mb_hohe", null);
 	}
