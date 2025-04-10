@@ -142,7 +142,10 @@ netgis.map =
 						// Hybrid layer has different grid coords
 						var y = -zxy[ 2 ] - 1;
 						
-						return netgis.config.URL_BACKGROUND_HYBRID + "/" + zxy[ 0 ] + "/" + zxy[ 1 ] + "/" + y + ".jpeg";
+						//Ticket #8251: Karte_SL Mapproxy
+						//return netgis.config.URL_BACKGROUND_HYBRID + "/" + zxy[ 0 ] + "/" + zxy[ 1 ] + "/" + y + ".jpeg";
+						return netgis.config.URL_BACKGROUND_HYBRID + "/" + zxy[ 0 ] + "/" + zxy[ 1 ] + "/" + y + ".png";
+
 					}
 				}
 			);
@@ -163,7 +166,7 @@ netgis.map =
 					url: netgis.config.URL_BACKGROUND_AERIAL + "?",
 					params:
 					{
-						"LAYERS":		"rp_dop",
+						"LAYERS":		"sl_dop",
 						"FORMAT":		"image/jpeg",
 						"TRANSPARENT":	"false",
 						"VERSION":		"1.1.1"
