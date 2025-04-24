@@ -231,7 +231,7 @@ var MeasureApi = function (o) {
 								.unbind("mb_hoheupdate", updateView)
                                 .unbind("mb_measurelastpointadded", finishMeasure)
 								.unbind("mb_hohenew", resetII)
-								.unbind("mousedown")
+								//.unbind("mousedown")
 								.unbind("mb_measurereinitialize", reinitializeMeasure);
 		}
                 ctx.clearRect(0, 0, 600, 250);
