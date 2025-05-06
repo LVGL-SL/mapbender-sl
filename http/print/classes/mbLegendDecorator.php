@@ -37,7 +37,8 @@ class mbLegendDecorator extends mbTemplatePdfDecorator
             new mb_exception("invalid legend url:" . json_encode($wmsLegendArray));
             return;
         }
-        for ($i = 0; $i < count($wmsLegendArray); $i++) {
+        //Ticket #8266: Reversing legend order in print module  
+        for ($i = count($wmsLegendArray) -1 ; $i >= 0; $i--) {
             $layerLegendObj = $wmsLegendArray[$i];
             if (!is_object($layerLegendObj)) {
                 continue;

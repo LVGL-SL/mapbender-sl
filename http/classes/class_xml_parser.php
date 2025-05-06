@@ -162,13 +162,17 @@ class XMLParser {
     private static function parseData($data, $name, $path, $context, $recursive, $asArray = false) {
         if(!is_object($data)) return array();
         $tmp = array();
-        
-        if($context == null) {
-            $nodes = self::$xp->query($path);
-        } else {
-            $nodes = self::$xp->query($path, $context);
+        //Ticket #8114 - Exception was raised when the storedQuery response was invalid
+        try {
+            if($context == null) {
+                $nodes = self::$xp->query($path);
+            } else {
+                $nodes = self::$xp->query($path, $context);
+            }
+        } catch (\Exception $e) {
+            new mb_exception("Error querying XML: " . $e->getMessage());
+            return $tmp;
         }
-        
         if($nodes) {
             foreach($nodes as $node) {
                 $dataRecTmp = array();

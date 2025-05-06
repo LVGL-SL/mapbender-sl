@@ -782,7 +782,7 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
     			}
     			$postData .="<wfs:Query ";
     			if($destSrs) {
-    				$postData .= "srsName=\"" . $srsName . "\" ";
+    				$postData .= "srsName=\"" . $destSrs . "\" ";
     			}
     			//add namespace
     			if (strpos($featureTypeName, ":") !== false) {
@@ -793,7 +793,8 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
     			}
     			$postData .= $typeNameParameterName."=\"" . $featureTypeName . "\"  >";
     			$postData .= $filter ."</wfs:Query>";
-    			$postData .= "</wfs:GetFeature>";		
+    			$postData .= "</wfs:GetFeature>";	
+				#$e = new mb_exception("POST for count: " . $postData);	
     			$resultOfCount = $this->post($this->getFeature, $postData); //from class_ows!
                 	break;
 		    case "GET":
@@ -822,6 +823,7 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 						$url .= "&FILTER=".urlencode($filter);
 					}
     			}
+				#$e = new mb_exception("URL for count by GET: " . $url);
     			//auth is already integrated in ows class
     			//do request
     			$resultOfCount = $this->get($url); //from class_ows!
@@ -833,11 +835,19 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 			$exceptionTest =  new SimpleXMLElement($resultOfCount);
 			if ($exceptionTest == false) {
 				throw new Exception('Cannot parse WFS number of hits request!');
-				return false;
 			}
 		}
 		catch (Exception $e) {
     			$e = new mb_exception($e->getMessage());
+				if ($method == "GET") {
+					$e = new mb_exception("request for count: " . $url);
+				}
+				if ($method == "POST") {
+					$e = new mb_exception("post url: " . $this->getFeature);
+					$e = new mb_exception("post data: " . $postData);
+				}
+	
+				$e = new mb_exception("returned result: " . $resultOfCount);
 		}
 		switch ($version) {
 			case "2.0.0":
@@ -1035,7 +1045,9 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 			$version = $version;
 		}
 	
+	
 		$getFeatureByIdName = false;
+	
 	
 		switch ($version) {
 			case "2.0.2":
@@ -1043,30 +1055,44 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 				$maxFeaturesParameterName = "COUNT";
 				$featureIdParameterName = $prioritizeResourceId ? "resourceID" : "featureID";
 	
+				$featureIdParameterName = $prioritizeResourceId ? "resourceID" : "featureID";
+	
 				if (in_array("GetFeatureById", $this->storedQueriesArray)) {
+					$getFeatureByIdName = "GetFeatureById";
 					$getFeatureByIdName = "GetFeatureById";
 				}
 	
+	
 				if (in_array("urn:ogc:def:query:OGC-WFS::GetFeatureById", $this->storedQueriesArray)) {
+					$getFeatureByIdName = "urn:ogc:def:query:OGC-WFS::GetFeatureById";
 					$getFeatureByIdName = "urn:ogc:def:query:OGC-WFS::GetFeatureById";
 				}
 	
+	
 				break;
+	
 	
 			case "2.0.0":
 				$typeNameParameterName = "typeNames";
 				$maxFeaturesParameterName = "COUNT";
 				$featureIdParameterName = $prioritizeResourceId ? "resourceID" : "featureID";
 	
+				$featureIdParameterName = $prioritizeResourceId ? "resourceID" : "featureID";
+	
 				if (in_array("GetFeatureById", $this->storedQueriesArray)) {
+					$getFeatureByIdName = "GetFeatureById";
 					$getFeatureByIdName = "GetFeatureById";
 				}
 	
+	
 				if (in_array("urn:ogc:def:query:OGC-WFS::GetFeatureById", $this->storedQueriesArray)) {
+					$getFeatureByIdName = "urn:ogc:def:query:OGC-WFS::GetFeatureById";
 					$getFeatureByIdName = "urn:ogc:def:query:OGC-WFS::GetFeatureById";
 				}
 	
+	
 				break;
+	
 	
 			default:
 				$typeNameParameterName = "typeName";
@@ -1080,26 +1106,40 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 			"service=WFS&request=GetFeature&version=" .
 			$version;
 	
+	
+		$getRequest = $this->getFeature .
+			$this->getConjunctionCharacter($this->getFeature) .
+			"service=WFS&request=GetFeature&version=" .
+			$version;
+	
 		if ($outputFormat != false) {
 			$getRequest .= "&outputFormat=" . $outputFormat;
+			$getRequest .= "&outputFormat=" . $outputFormat;
 		}
+	
 	
 		if ($srsName != false) {
 			$crs = new Crs($srsName);
 			$alterAxisOrder = $crs->alterAxisOrder("wfs_" . $version);
+			$alterAxisOrder = $crs->alterAxisOrder("wfs_" . $version);
 			$srsId = $crs->identifierCode;
+	
 	
 			switch ($version) {
 				case "2.0.2":
 					$getRequest .= "&SRSNAME=http://www.opengis.net/def/crs/EPSG/0/" . $srsId;
+					$getRequest .= "&SRSNAME=http://www.opengis.net/def/crs/EPSG/0/" . $srsId;
 					break;
 				case "2.0.0":
+					$getRequest .= "&SRSNAME=urn:ogc:def:crs:EPSG::" . $srsId;
 					$getRequest .= "&SRSNAME=urn:ogc:def:crs:EPSG::" . $srsId;
 					break;
 				case "1.1.0":
 					$getRequest .= "&SRSNAME=urn:ogc:def:crs:EPSG::" . $srsId;
+					$getRequest .= "&SRSNAME=urn:ogc:def:crs:EPSG::" . $srsId;
 					break;
 				case "1.0.0":
+					$getRequest .= "&SRSNAME=EPSG:" . $srsId;
 					$getRequest .= "&SRSNAME=EPSG:" . $srsId;
 					break;
 			}

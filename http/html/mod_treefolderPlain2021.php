@@ -1040,9 +1040,9 @@ function initArray(){
 								var c_menu="[";
 								if(reverse=="true"){
 									if(menu.indexOf("wms_down")!=-1 && ii!= mb_mapObj[i].wms.length-1)c_menu+="menu_move_up,";
-									if(menu.indexOf("wms_up")!=-1 && parentObj!="")c_menu+="menu_move_down,";
+									if(menu.indexOf("wms_up")!=-1 && ii!=0)c_menu+="menu_move_down,";
 								} else {
-									if(menu.indexOf("wms_up")!=-1 && parentObj!="")c_menu+="menu_move_up,";
+									if(menu.indexOf("wms_up")!=-1 && ii!=0)c_menu+="menu_move_up,";
 									if(menu.indexOf("wms_down")!=-1 && ii!= mb_mapObj[i].wms.length-1)c_menu+="menu_move_down,";
 								}
 								if(menu.indexOf("remove")!=-1)c_menu+="menu_delete,";
@@ -1077,8 +1077,7 @@ function initArray(){
 									if(reverse=="true"){
 										if(menu.indexOf("layer_down")!=-1 && iii!= mb_mapObj[i].wms[ii].objLayer.length-1)c_menu+="menu_move_up,";
 										if(menu.indexOf("layer_up")!=-1 && iii!=1)c_menu+="menu_move_down,";
-									}
-									else{
+									} else {
 										if(menu.indexOf("layer_up")!=-1 && iii!=1)c_menu+="menu_move_up,";
 										if(menu.indexOf("layer_down")!=-1 && iii!= mb_mapObj[i].wms[ii].objLayer.length-1)c_menu+="menu_move_down,";
 									}

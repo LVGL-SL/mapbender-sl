@@ -1511,7 +1511,7 @@ if ($withChilds) {
 	$subLayer = createLayerElement($doc, $wmsId, $row, $wms_row, $AuthorityName, $mapbenderMetadataUrlUrl);
 }
 $layer->appendChild($subLayer);
-header("Content-type: application/xhtml+xml; charset=UTF-8");
+header("Content-type:application/xml ; charset=UTF-8");
 header ( "Access-Control-Allow-Origin: *" );
 echo $doc->saveXml();
 ?>

@@ -19,5 +19,3 @@ INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, contex
 
 -- Position change of Geopackge Downloader //scaleText -> width: 97px TODO
 UPDATE gui_element SET e_left=145, e_top = 185  WHERE e_id = 'sdi_download_widget' AND fkey_gui_id = 'Geoportal-SL' ;
-
-CREATE UNIQUE INDEX mv_search_dataset_unique ON mv_search_dataset (user_id, dataset_id, metadata_id);

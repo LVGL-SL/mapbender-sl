@@ -586,12 +586,12 @@ function fillSectionList(featureCollection, k) {
           //console.log(encodeURIComponent(url))
           //console.log(url)
           //console.log(feature.attributes.title)
-          if(encodeURIComponent(url).includes(selected_format)){
+          //if(encodeURIComponent(url).includes(selected_format)){
             //DlSet.urls.push(btoa(encodeURIComponent(url)));
             //DlSet.names.push(btoa(feature.attributes.title));
             DlSet.urls.push(encodeURIComponent(url));
             DlSet.names.push(feature.attributes.title);
-          }
+          //}
 
       					$("#download_link").remove();
 

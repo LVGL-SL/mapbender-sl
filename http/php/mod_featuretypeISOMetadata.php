@@ -89,9 +89,9 @@ if (isset($_REQUEST['ID']) & $_REQUEST['ID'] != "") {
 	$testMatch = NULL;
 }
 
-if ($_REQUEST['SERVICETYPE'] == "wfs" || $_REQUEST['SERVICETYPE'] == "ogcapifeatures") {
+if ($_REQUEST['SERVICETYPE'] == "wfs" || $_REQUEST['SERVICETYPE'] == "ogcapifeatures" |  $_REQUEST['SERVICETYPE'] == "ogcapifeatures_wfs" ) {
     $serviceType = $_REQUEST['SERVICETYPE'];
-    if ($serviceType == 'ogcapifeatures') {
+    if ($serviceType == 'ogcapifeatures' | $_REQUEST['SERVICETYPE'] == "ogcapifeatures_wfs") {
         $serviceTypeTitle = "OGC API Features";
     }
 }
@@ -139,12 +139,12 @@ if (isset($_REQUEST['VALIDATE']) and $_REQUEST['VALIDATE'] != "true") {
 	die();
 }
 
-if ($serviceType == "ogcapifeatures") {
-    if ($behindRewrite) {
-	$ogcApiFeaturesUrl = $schema."://".FULLY_QUALIFIED_DOMAIN_NAME."/".$rewritePath;
-    } else {
-	$ogcApiFeaturesUrl = MAPBENDER_PATH."/php/mod_linkedDataProxy.php?";
-    }
+if ($serviceType == "ogcapifeatures" | $serviceType == "ogcapifeatures_wfs") {
+	if ($behindRewrite) {
+		$ogcApiFeaturesUrl = $schema . "://" . $_SERVER ['HTTP_HOST'] . "/" . $rewritePath;
+	} else {
+		$ogcApiFeaturesUrl = MAPBENDER_PATH . "/php/mod_linkedDataProxy.php?";
+	}
 }
 //some needfull functions to pull metadata out of the database!
 function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
@@ -179,6 +179,13 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
                 . " WHERE featuretype_id = $1"
                 . " AND ft.fkey_wfs_id = wfs.wfs_id";
 	}
+        if ($serviceType == "ogcapifeatures_wfs") {
+            $sql = "SELECT wfs.uuid as wfs_uuid,wfs.wfs_title,wfs.wfs_alternate_title,wfs.wfs_abstract,wfs.wfs_id,wfs.fees,wfs.accessconstraints"
+                . ",wfs.individualname,wfs.positionname,wfs.providername,wfs.deliverypoint,wfs.city,wfs.wfs_timestamp"
+                . ",wfs.wfs_timestamp_create,wfs.wfs_owner,wfs.administrativearea,wfs.postalcode,wfs.voice"
+                . ",wfs.facsimile,wfs.wfs_owsproxy,wfs.electronicmailaddress,wfs.country,wfs.fkey_mb_group_id"
+                . ",wfs.wfs_version FROM wfs WHERE wfs_id = $1";
+        }
 	$v = array((integer)$recordId);
 	$t = array('i');
 	$res = db_prep_query($sql,$v,$t);
@@ -204,6 +211,10 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
 	    $uuidHash = md5($mbMeta['uuid']."ogcapifeatures");
             $fileIdentifier = substr($uuidHash, 0, 8)."-".substr($uuidHash, 7, 4)."-".substr($uuidHash, 11, 4)."-".substr($uuidHash, 15, 4)."-".substr($uuidHash, 19, 12);
 	    break;
+        case "ogcapifeatures_wfs":
+            $uuidHash = md5($mbMeta['uuid']."ogcapifeatures_wfs");
+            $fileIdentifier = substr($uuidHash, 0, 8)."-".substr($uuidHash, 7, 4)."-".substr($uuidHash, 11, 4)."-".substr($uuidHash, 15, 4)."-".substr($uuidHash, 19, 12);
+            break;   
     }
     $xmlBuilder->addValue($MD_Metadata, './gmd:fileIdentifier/gco:CharacterString', $fileIdentifier);
     
@@ -253,10 +264,15 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
     /*$xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/@uuid',
             isset($mbMeta['wfs_uuid']) ? $mbMeta['wfs_uuid'] : "wfs uuid not given");*/
-    $xmlBuilder->addValue($MD_Metadata,
+    if ($serviceType  == "ogcapifeatures_wfs") {
+        $xmlBuilder->addValue($MD_Metadata,
+            './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString',
+            isset($mbMeta['wfs_title']) ? $mbMeta['wfs_title']." - ".$serviceTypeTitle : "title not given");
+    } else {
+        $xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString',
             isset($mbMeta['wfs_title']) ? $mbMeta['wfs_title']." - ".$mbMeta['featuretype_title']." - ".$serviceTypeTitle : "title not given");
-
+    }
     
 	//Create date elements B5.2-5.4 - format will be only a date - no dateTime given
 	//Do things for B 5.2 date of publication
@@ -312,10 +328,17 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
             './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString',
             isset($mbMeta['uuid']) ? "http://www.geoportal.rlp.de/featuretype/" . $mbMeta['uuid']: "no id found");*/
 
-    $xmlBuilder->addValue($MD_Metadata,
+
+    if ($serviceType  == "ogcapifeatures_wfs") {
+        $xmlBuilder->addValue($MD_Metadata,
+            './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:abstract/gco:CharacterString',
+            isset($mbMeta['wfs_abstract']) ? $mbMeta['wfs_abstract'] : "not yet defined");
+    } else {
+        $xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:abstract/gco:CharacterString',
             isset($mbMeta['wfs_abstract']) || isset($mbMeta['featuretype_abstract']) ? $mbMeta['wfs_abstract'].":".$mbMeta['featuretype_abstract'] : "not yet defined");
 
+    }
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:pointOfContact/gmd:CI_ResponsibleParty/gmd:individualName/gco:CharacterString',
             $mbMeta['individualname']);
@@ -331,14 +354,17 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
             isset($mbMeta['city']) ? $mbMeta['city'] : 'city not known');
     
     //add optional administrativeArea
-    $sql = "SELECT keyword.keyword FROM keyword, wfs_featuretype_keyword ftk WHERE ftk.fkey_featuretype_id=$1 AND ftk.fkey_keyword_id=keyword.keyword_id";
-    $v = array((integer)$recordId);
-    $t = array('i');
-    $res = db_prep_query($sql, $v, $t);
-    $keywordsArray = array();
-    while ($row = db_fetch_array($res)) {
-        if (isset($row['keyword']) && $row['keyword'] != "") {
-            $keywordsArray[] = $row['keyword'];
+
+    if ($serviceType  != "ogcapifeatures_wfs") {
+        $sql = "SELECT keyword.keyword FROM keyword, wfs_featuretype_keyword ftk WHERE ftk.fkey_featuretype_id=$1 AND ftk.fkey_keyword_id=keyword.keyword_id";
+        $v = array((integer)$recordId);
+        $t = array('i');
+        $res = db_prep_query($sql, $v, $t);
+        $keywordsArray = array();
+        while ($row = db_fetch_array($res)) {
+                if (isset($row['keyword']) && $row['keyword'] != "") {
+                    $keywordsArray[] = $row['keyword'];
+                }
         }
     }
     if (defined('ADMINISTRATIVE_AREA') && ADMINISTRATIVE_AREA != '') {
@@ -370,19 +396,22 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
 	$v = array((integer)$recordId);
 	$t = array('i');
 	$res = db_prep_query($sql,$v,$t);
-    $pos = 1;
+        $pos = 1;
+
 	//a special keyword for service type wfs as INSPIRE likes it ;-)
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword['.$pos.']/gco:CharacterString',
             "infoFeatureAccessService");
-	while ($row = db_fetch_array($res)) {
-                if ($row['keyword'] !== null && $row['keyword'] !== '') {
-                        $pos++;
-                        $xmlBuilder->addValue($MD_Metadata,
-                        './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword['.$pos.']/gco:CharacterString',
-                        $row['keyword']);
+        if ($serviceType  != "ogcapifeatures_wfs") {
+                while ($row = db_fetch_array($res)) {
+                        if ($row['keyword'] !== null && $row['keyword'] !== '') {
+                                $pos++;
+                                $xmlBuilder->addValue($MD_Metadata,
+                                './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword['.$pos.']/gco:CharacterString',
+                                $row['keyword']);
+                        }
                 }
-	}
+        }
 	//check opendata license
 	if (DEFINED("OPENDATAKEYWORD") && OPENDATAKEYWORD != '') {
 	    $sql = "SELECT wfs_id, termsofuse.isopen from wfs LEFT OUTER JOIN";
@@ -402,42 +431,45 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
 	        }
 	    }
 	}
-	//pull special keywords from custom categories:	
-        //Ticket #7189 Fixed bug that category keywords were not added here - especially to include "inspireidentifiziert" in ogc api and ogc wfs interface metadata
-	$sql = "SELECT DISTINCT custom_category.custom_category_key as keyword, custom_category.custom_category_code_de FROM custom_category, wfs_featuretype_custom_category ftcc WHERE ftcc.fkey_featuretype_id = $1 AND ftcc.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0";
-	$v = array((integer)$recordId);
-	$t = array('i');
-	$res = db_prep_query($sql,$v,$t);
-	$e = new mb_notice("look for custom categories: ");
-        // hvdBaseURI from config or fallback
-        if (DEFINED("HVD_BASE_URI") && HVD_BASE_URI != '') {
-                $hvdBaseUri = HVD_BASE_URI;
-        }else {
-                $hvdBaseUri= "http://data.europa.eu/bna/";
-        }
-        $hvdKeywordList = array();
-	while ($row = db_fetch_array($res)) {
-        $pos++;
-	if ($row['keyword'] !== null && $row['keyword'] !== '') {
-                if (strpos($row['keyword'], $hvdBaseUri ) === 0){
-                        // $xmlBuilder->addValue($MD_Metadata,
-                        // './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword['.$pos.']/gco:CharacterString',
-                        // $row['custom_category_code_de']);
-                       $hvdKeywordList[$row['keyword']] =  $row['custom_category_code_de'];
-
-                }else{
-                        $xmlBuilder->addValue($MD_Metadata,
-                        './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword['.$pos.']/gco:CharacterString',
-                        $row['keyword']);
+        if ($serviceType  != "ogcapifeatures_wfs") {
+                //pull special keywords from custom categories:	
+                //Ticket #7189 Fixed bug that category keywords were not added here - especially to include "inspireidentifiziert" in ogc api and ogc wfs interface metadata
+                $sql = "SELECT DISTINCT custom_category.custom_category_key as keyword, custom_category.custom_category_code_de FROM custom_category, wfs_featuretype_custom_category ftcc WHERE ftcc.fkey_featuretype_id = $1 AND ftcc.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0";
+                $v = array((integer)$recordId);
+                $t = array('i');
+                $res = db_prep_query($sql,$v,$t);
+                $e = new mb_notice("look for custom categories: ");
+                // hvdBaseURI from config or fallback
+                if (DEFINED("HVD_BASE_URI") && HVD_BASE_URI != '') {
+                        $hvdBaseUri = HVD_BASE_URI;
+                }else {
+                        $hvdBaseUri= "http://data.europa.eu/bna/";
                 }
+                $hvdKeywordList = array();
+                while ($row = db_fetch_array($res)) {
+                $pos++;
+                if ($row['keyword'] !== null && $row['keyword'] !== '') {
+                        if (strpos($row['keyword'], $hvdBaseUri ) === 0){
+                                // $xmlBuilder->addValue($MD_Metadata,
+                                // './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword['.$pos.']/gco:CharacterString',
+                                // $row['custom_category_code_de']);
+                        $hvdKeywordList[$row['keyword']] =  $row['custom_category_code_de'];
+
+                        }else{
+                                $xmlBuilder->addValue($MD_Metadata,
+                                './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword['.$pos.']/gco:CharacterString',
+                                $row['keyword']);
+                        }
 
 
-		}
-	}
-        $descriptiveKeywordsHVD = xml_helper_utils::generateDescriptiveKeywords($xmlBuilder->getDoc(),$hvdKeywordList, 'custom');
-        //xml_helper_utils::appendElementAfterElementByXPath($MD_Metadata, $descriptiveKeywordsHVD, './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords');
-        xml_helper_utils::removeElementsWithDuplicateValue($MD_Metadata, './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gco:CharacterString');
-        xml_helper_utils::removeEmptyElementsByXPath($MD_Metadata, '//gmd:keyword');
+                        }
+                }
+                $descriptiveKeywordsHVD = xml_helper_utils::generateDescriptiveKeywords($xmlBuilder->getDoc(),$hvdKeywordList, 'custom');
+                //xml_helper_utils::appendElementAfterElementByXPath($MD_Metadata, $descriptiveKeywordsHVD, './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords');
+                xml_helper_utils::removeElementsWithDuplicateValue($MD_Metadata, './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gco:CharacterString');
+                xml_helper_utils::removeEmptyElementsByXPath($MD_Metadata, '//gmd:keyword');
+        
+        }
 
 
 	//Part B 3 INSPIRE Category
@@ -471,6 +503,9 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
     	case "ogcapifeatures":
     		$serviceTypeVersion = "ogcapifeatures";
     		break;
+        case "ogcapifeatures_wfs":
+                $serviceTypeVersion = "ogcapifeatures";
+                break;    
     	default:
     		$serviceTypeVersion = "undefined";
     		break;
@@ -480,11 +515,14 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
             './gmd:identificationInfo/srv:SV_ServiceIdentification/srv:serviceTypeVersion/gco:CharacterString',
             $serviceTypeVersion);
      
-	//Geographical Extent
-	$bbox = array(-180, -90, 180, 90);
-	if (isset($mbMeta['bbox']) && $mbMeta['bbox'] != '') {
-		$bbox = explode(',',$mbMeta['bbox']);
-	}
+    //Geographical Extent
+    $bbox = array("-180.0", "-90.0", "180.0", "90.0");
+    if ($serviceType  != "ogcapifeatures_wfs" && isset($mbMeta['bbox']) && $mbMeta['bbox'] != '') {
+	$bbox = explode(',',$mbMeta['bbox']);
+    }
+    //$e = new mb_exception("php/mod_featuretypeISOMetadata.php: bbox: ". json_encode($bbox));
+    //$e = new mb_exception("php/mod_featuretypeISOMetadata.php: bbox: ". $bbox[0]);
+    //if ($serviceType  != "ogcapifeatures_wfs") {
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/srv:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox/gmd:westBoundLongitude/gco:Decimal',
             $bbox[0]);
@@ -497,8 +535,9 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/srv:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox/gmd:northBoundLatitude/gco:Decimal',
             $bbox[3]);
-
+    //}
 	//read all metadata entries:
+        if ($serviceType  != "ogcapifeatures_wfs") {
 	$i=0;
 	$sql = <<<SQL
 
@@ -508,6 +547,17 @@ WHERE fkey_featuretype_id = $recordId ) as relation ON
 mb_metadata.metadata_id = relation.fkey_metadata_id WHERE mb_metadata.origin IN ('capabilities','external','metador')
 
 SQL;
+        } else {
+                $i=0;
+                $sql = <<<SQL
+
+                SELECT metadata_id, uuid, link, linktype, md_format, origin, datasetid, datasetid_codespace FROM mb_metadata 
+                INNER JOIN (SELECT * from ows_relation_metadata 
+                WHERE fkey_featuretype_id IN (SELECT featuretype_id FROM wfs_featuretype WHERE fkey_wfs_id = $recordId) ) as relation ON 
+                mb_metadata.metadata_id = relation.fkey_metadata_id WHERE mb_metadata.origin IN ('capabilities','external','metador')
+                
+                SQL;    
+        }
 	$res_metadataurl = db_query($sql);
 	if ($res_metadataurl != false) {
         $xmlBuilder->addValue($MD_Metadata,
@@ -520,18 +570,23 @@ SQL;
             './gmd:identificationInfo/srv:SV_ServiceIdentification/srv:couplingType/srv:SV_CouplingType',
             "tight");
 	}
-   
+        
    switch ($serviceType) {
         case "wfs":
-	    	$url = $mapbenderServiceUrl.$mbMeta['featuretype_id']."&REQUEST=GetCapabilities&SERVICE=WFS&VERSION=".$mbMeta['wfs_version'];
-		    $protocol = "OGC:WFS-".$mbMeta['wfs_version']."-http-get-feature";
-		    $operation = "GetCapabilities";
+	    $url = $mapbenderServiceUrl.$mbMeta['featuretype_id']."&REQUEST=GetCapabilities&SERVICE=WFS&VERSION=".$mbMeta['wfs_version'];
+	    $protocol = "OGC:WFS-".$mbMeta['wfs_version']."-http-get-feature";
+	    $operation = "GetCapabilities";
             break;
-		case "ogcapifeatures":
+	case "ogcapifeatures":
             $url = $ogcApiFeaturesUrl."/".$mbMeta['wfs_id']."";
-		    $protocol = "OGC:API:Features";
-		    $operation = "getApiDescription";
+	    $protocol = "OGC:API:Features";
+	    $operation = "getApiDescription";
             break;
+        case "ogcapifeatures_wfs":
+            $url = $ogcApiFeaturesUrl."/".$mbMeta['wfs_id']."";
+            $protocol = "OGC:API:Features";
+            $operation = "getApiDescription";
+            break;    
     } 
 
     $xmlBuilder->addValue($MD_Metadata,
@@ -604,12 +659,16 @@ SQL;
     $url = '';
     switch ($serviceType) {
         case "wfs":
-	        $url = $mapbenderServiceUrl.$mbMeta['featuretype_id']."&REQUEST=GetCapabilities&SERVICE=WFS&VERSION=".$mbMeta['wfs_version'];
-	        $protocol = "OGC:WFS-".$mbMeta['wfs_version']."-http-get-feature";
+	    $url = $mapbenderServiceUrl.$mbMeta['featuretype_id']."&REQUEST=GetCapabilities&SERVICE=WFS&VERSION=".$mbMeta['wfs_version'];
+	    $protocol = "OGC:WFS-".$mbMeta['wfs_version']."-http-get-feature";
             break;
 	case "ogcapifeatures":
             $url = $ogcApiFeaturesUrl."/".$mbMeta['wfs_id']."/collections/".$mbMeta['featuretype_name'];
-	        $protocol = "OGC:API:Features";
+	    $protocol = "OGC:API:Features";
+            break;
+        case "ogcapifeatures_wfs":
+            $url = $ogcApiFeaturesUrl."/".$mbMeta['wfs_id'];
+            $protocol = "OGC:API:Features";
             break;
     }   
 
@@ -623,15 +682,15 @@ SQL;
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:protocol/gco:CharacterString',
             $protocol);
- 
-    $xmlBuilder->addValue($MD_Metadata,
-            './gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:name/gco:CharacterString',
-            $mbMeta['featuretype_name']);   
+    if ($serviceType  != "ogcapifeatures_wfs") {
+        $xmlBuilder->addValue($MD_Metadata,
+                './gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:name/gco:CharacterString',
+                $mbMeta['featuretype_name']);   
 
-    $xmlBuilder->addValue($MD_Metadata,
-            './gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:description/gco:CharacterString',
-            $mbMeta['featuretype_abstract']);    
-    
+        $xmlBuilder->addValue($MD_Metadata,
+                './gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:description/gco:CharacterString',
+                $mbMeta['featuretype_abstract']);    
+    }
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:scope/gmd:DQ_Scope/gmd:level/gmd:MD_ScopeCode/@codeList',
             'http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_ScopeCode');
