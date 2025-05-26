@@ -35,7 +35,7 @@ switch ($ajaxResponse->getMethod()) {
 				$problemUrls[] = $i;
 			}
 		}
-		$listOfProblemUrls = implode($problemUrls,",");
+		$listOfProblemUrls = implode(",",$problemUrls);
 		$mapUrls = $mapUrlsNew;			
 		$img = new weldMaps2JPEG(implode("___",$mapUrls), PREVIEW_DIR."/".$wmcId."_wmc_preview.jpg");
 		if(!$img) {

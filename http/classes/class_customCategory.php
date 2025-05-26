@@ -17,10 +17,10 @@ class CustomCategory {
  				$whereArray[] = "custom_category_hidden is null";
  			}
  			if (is_array($originIdFilter) && count($originIdFilter) > 0) {
- 				$whereArray[] = "fkey_custom_category_origin_id IN (".implode($originIdFilter, ',').")";
+ 				$whereArray[] = "fkey_custom_category_origin_id IN (".implode(',', $originIdFilter).")";
  			}
  			if (is_array($oidFilter) && count($idFilter) > 0) {
- 				$whereArray[] = "custom_category_id IN (".implode($idFilter, ',').")";
+ 				$whereArray[] = "custom_category_id IN (".implode(',', $idFilter).")";
  			}
  		}
  		$whereArray[] = "deletedate IS NULL";
