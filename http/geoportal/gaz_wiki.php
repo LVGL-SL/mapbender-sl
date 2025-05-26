@@ -70,8 +70,8 @@ if(count($lists)==0) {//no results returned
 	echo $xml->saveXML();
 } else {
 	//parse title matches 
-	while(list( , $node) = each($lists)) {
-     		$e = new mb_notice('/api/query/search/p/@title: '.$node);
+	foreach($lists as $node) {
+		$e = new mb_notice('/api/query/search/p/@title: '.$node);
 		$link = $surl.$node;
 		$title = $node;
 		$m = $xml->createElement('member');
