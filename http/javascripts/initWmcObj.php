@@ -194,7 +194,7 @@ Look in wmc xml ****************************************************************
 /*
 ************************************************************************************
 */
-$wmcGetApi = WmcFactory::createFromXml($wmc->toXml());
+$wmcGetApi = (new WmcFactory())->createFromXml($wmc->toXml());
 //$e = new mb_exception("javascripts/initWmcObj.php: write initial wmc obj to {TMPDIR}/class_wmc0.json");//
 //json_encode($wmcGetApi);//: ".json_encode($wmcGetApi));
 /*if($h = fopen(TMPDIR . "/tmp_wmc0.json","w")){
