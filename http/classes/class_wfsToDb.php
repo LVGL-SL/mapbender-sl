@@ -348,7 +348,7 @@ class WfsToDb {
         		
 			
 			   
-			$res_metadata_id = db_prep_query($sql,$v,$t);
+			$res_metadata_id = db_prep_query($sql,$v,$t);
 			
         		$sql = "DELETE FROM ows_relation_metadata WHERE fkey_featuretype_id IN " ;
         		$sql .= "(SELECT featuretype_id FROM wfs_featuretype WHERE fkey_wfs_id = $1)";
@@ -1739,7 +1739,7 @@ SQL;
         		
 			
 			   
-			$res_metadata_id = db_prep_query($sql,$v,$t);
+			$res_metadata_id = db_prep_query($sql,$v,$t);
 			
         		$sql = "DELETE FROM ows_relation_metadata WHERE fkey_featuretype_id IN " ;
         		$sql .= "(SELECT featuretype_id FROM wfs_featuretype WHERE fkey_wfs_id = $1)";
