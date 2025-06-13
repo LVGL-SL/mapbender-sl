@@ -2258,7 +2258,7 @@ function transformMultipolygon($multiPolygonSql, $fromCRS, $toCRS, $metadataUuid
     //flip coordinates, cause georss needs north/east!!!!!
     if ($metadataUuid != false && $polygonFilter != false) {
         //https://gis.stackexchange.com/questions/396367/postgis-find-outers-and-inners-inside-multipolygon-geometries
-        $sql = "SELECT identifier, (dumped).geom AS poly, ((dumped).path)[1] AS path_poly, st_box2d(st_flipcoordinates((dumped).geom)) as wgs84bbox FROM (";
+        $sql = "SELECT identifier, (dumped).geom AS poly, ((dumped).path)[1] AS path_poly, box2d(st_flipcoordinates((dumped).geom)) as wgs84bbox FROM (";
         $sql .= "SELECT (ST_Dump (p_geom)) AS dumped, identifier FROM (SELECT 1::integer AS identifier, ST_TRANSFORM(";
         $sql .= $multiPolygonSql;
         $sql .= ", " . intval($toCRS). ")";
@@ -2272,7 +2272,7 @@ function transformMultipolygon($multiPolygonSql, $fromCRS, $toCRS, $metadataUuid
         return $wgs84bboxArray;
         
     } else {
-        $sql = "SELECT identifier, (dumped).geom AS poly, ((dumped).path)[1] AS path_poly, st_box2d(st_flipcoordinates((dumped).geom)) as wgs84bbox FROM (";
+        $sql = "SELECT identifier, (dumped).geom AS poly, ((dumped).path)[1] AS path_poly, box2d(st_flipcoordinates((dumped).geom)) as wgs84bbox FROM (";
         $sql .= "SELECT (ST_Dump (p_geom)) AS dumped, identifier FROM (SELECT 1::integer AS identifier, ST_TRANSFORM(";
         $sql .= $multiPolygonSql;
         $sql .= ", " . intval($toCRS). ")";
