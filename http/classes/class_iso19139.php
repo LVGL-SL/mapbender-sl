@@ -3043,7 +3043,23 @@ SQL;
 		$res_update = db_prep_query($update_service_sql, $update_values, $value_types);
 
 		return $res_update;
+	}
 
+	// Ticket #7070
+	public static function getCoupledResources(int $metadataId): array {
+		$result = array();
+		$resourceTypes = array("featuretype" => "wfs_featuretype", "layer" => "layer");
+		$categories = array("md_topic", "inspire", "custom");
 
+		foreach ($resourceTypes as $resourceType => $tablePrefix) {
+			foreach ($categories as $cat) {
+				$sql = "SELECT fkey_{$resourceType}_id FROM {$tablePrefix}_{$cat}_category WHERE fkey_metadata_id = $metadataId";
+				$res = db_query($sql);
+				while ($row = pg_fetch_row($res)) {
+					array_push($result, array("resourceType" => $resourceType, "resourceId" => $row[0]));
+				}
+			}
+		}
+		return array_unique($result, SORT_REGULAR);
 	}
 }
