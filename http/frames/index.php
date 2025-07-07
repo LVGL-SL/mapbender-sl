@@ -142,7 +142,7 @@ $t = array('s');
 $res = db_prep_query($sql,$v,$t);
 $row = db_fetch_array($res);
 //$e = new mb_notice("count row: ".count($row['var_name']));
-if (count($row['var_name']) == 1) {
+if (isset($row['var_name'])) {
 	$activatedGuiHtmlCache = $row['var_value'];
 	if ($activatedGuiHtmlCache == 'true') {
 		$activatedGuiHtmlCache = true;

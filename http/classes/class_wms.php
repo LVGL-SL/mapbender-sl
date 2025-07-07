@@ -1662,6 +1662,7 @@ class wms {
 				array_push($newLayer->layer_epsg, $currentLayerEpsg);
 			}
 		}
+		if (is_countable($currentLayer["epsg"]))
 		for ($i = 0; $i < count($currentLayer["epsg"]); $i++) {
 			if (!in_array($currentLayer["epsg"][$i], $tmpEpsgArray)) {
 				$newLayer->layer_epsg[]= array(

@@ -841,7 +841,7 @@ SQL;
 	    while ($row = db_fetch_array($res)){
 	        $logId[] = $row['log_id'];
 	    }
-	    if (count($logId) > 0) {
+	    if (isset($logId)) {
 	        return $logId[0];
 	    } else {
 	        return false;

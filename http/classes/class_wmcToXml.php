@@ -413,6 +413,7 @@ class WmcToXml {
 			$wms_epsg[1] = $currentWms->gui_wms_epsg;
 		}
 
+		if (is_countable($currentWms->gui_epsg))
 		for ($j = 0; $j < count($currentWms->gui_epsg); $j++) {
 			if (!in_array($currentWms->gui_epsg[$j], $wms_epsg)){
 				array_push($wms_epsg, $currentWms->gui_epsg[$j]);

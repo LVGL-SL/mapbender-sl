@@ -2146,7 +2146,7 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 		$childLayers = $this->filter_by_value($subLayers, 'layer_parent', $rootLayerPos); //the root layer position in the sublayer array was located before. In this step, all layers will be pulled out of sublayer, where root layer position is parent object
 		$countsublayer = 0;
 		//if child exists create a new layer array for these 
-		if (count($childLayers) != 0) {
+		if (!empty($childLayers)) {
 			$servObject->layer = array();
 		}
 		foreach ($childLayers as $child) {
