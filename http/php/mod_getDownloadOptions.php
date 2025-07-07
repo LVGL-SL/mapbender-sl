@@ -252,14 +252,14 @@ die();*/
 						//get count of current fts
 						$m = count($downloadOptions->{$idList[$i]}->option[$serviceIdIndex]->featureType);
 						$downloadOptions->{$idList[$i]}->option[$serviceIdIndex]->featureType[$m] = $row['resource_id'];
-						$downloadOptions->{$idList[$i]}->option[$serviceIdIndex]->featureType[$m]->name = $row['resource_name'];
+						// $downloadOptions->{$idList[$i]}->option[$serviceIdIndex]->featureType[$m]->name = $row['resource_name'];
 					}
 					if (!$wfsRequestObjectExists){
 						$downloadOptions->{$idList[$i]}->option[$j]->type = "wfsrequest";
 						$downloadOptions->{$idList[$i]}->option[$j]->serviceId = $row['service_id']; //wfs_id
 						$downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = $row['service_uuid'];
 						$downloadOptions->{$idList[$i]}->option[$j]->featureType[0] = $row['resource_id'];
-                        $downloadOptions->{$idList[$i]}->option[$j]->featureType[0]->name = $row['resource_name'];
+                        // $downloadOptions->{$idList[$i]}->option[$j]->featureType[0]->name = $row['resource_name'];
 						$downloadOptions->{$idList[$i]}->option[$j]->format = $row['format'];
 						//new 2019/07
 						$downloadOptions->{$idList[$i]}->option[$j]->serviceType = "download";
