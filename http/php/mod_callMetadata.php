@@ -817,6 +817,7 @@ $queryJSON->searchFilter = (object) array();
 $queryJSON->searchFilter->origURL = $searchURL;
 #$queryJSON->searchFilter->classes = (object) array();
 for($i=0; $i<count($searchResourcesArray);$i++){
+	$queryJSON->searchFilter->classes[$i] = new stdClass();
 //fill in the different search classes into the filter - the client can generate the headers out of this information
 	$queryJSON->searchFilter->classes[$i]->title = $resourceCategories[$searchResourcesArray[$i]];
 	$queryJSON->searchFilter->classes[$i]->name = $searchResourcesArray[$i];
@@ -833,6 +834,7 @@ for($i=0; $i < count($classificationElements); $i++){
 			$funcName = "get_".$classificationElements[$i]['name']."Array";
 			${$classificationElements[$i]['name']."Array"} = $funcName(explode(',',${$classificationElements[$i]['name']}),$languageCode);
 		}
+		$queryJSON->searchFilter->{$classificationElements[$i]['name']} = new stdClass();
 		$queryJSON->searchFilter->{$classificationElements[$i]['name']}->title = $classificationElements[$i]['name2show'];
 		//check if the filter has subfilters - if not delete the whole filter from query
 		if ($classificationElements[$i]['list'] == false) { //the object has no subsets - like bbox or time filters
@@ -865,6 +867,7 @@ for($i=0; $i < count($classificationElements); $i++){
 			//loop for the subcategories
 			for($j=0; $j < count($queryArray); $j++){
 				//$e = new mb_exception('mod_callMetadata.php: queryArrayi: '.$queryArray[$j]);
+				$queryJSON->searchFilter->{$classificationElements[$i]['name']}->item[$j] = new stdClass();
 				if ($classificationElements[$i]['source'] == 'database') {
 					$identArray = ${$classificationElements[$i]['name']."Array"};
 					$identArray = flipDiagonally($identArray);
@@ -900,10 +903,12 @@ for($i=0; $i < count($classificationElements); $i++){
 
 //generate filter for different maxResults entries
 //$preDefinedMaxResults
+$queryJSON->searchFilter->maxResults = new stdClass();
 if ($_REQUEST["maxResults"] == '') {
 	$queryJSON->searchFilter->maxResults->header = $maxResultsTitle['header'];
 	$queryJSON->searchFilter->maxResults->title = $preDefinedMaxResults[0];
 	for ($i=0; $i<(count($preDefinedMaxResults)-1); $i++) {
+		$queryJSON->searchFilter->maxResults->item[$i] = new stdClass();
 		$queryJSON->searchFilter->maxResults->item[$i]->title = $preDefinedMaxResults[$i+1];
 		$queryJSON->searchFilter->maxResults->item[$i]->url = $searchURL."&maxResults=".$preDefinedMaxResults[$i+1];
 	}
@@ -914,6 +919,7 @@ if ($_REQUEST["maxResults"] == '') {
 		//delete entry from array
 		//$preDefinedMaxResultsRed = deleteEntry($preDefinedMaxResults, $maxResults);
 		for ($i=0; $i<(count($preDefinedMaxResults)); $i++) {
+			$queryJSON->searchFilter->maxResults->item[$i] = new stdClass();
 			$queryJSON->searchFilter->maxResults->item[$i]->title = $preDefinedMaxResults[$i];
 			$queryJSON->searchFilter->maxResults->item[$i]->url = $searchURL."&maxResults=".$preDefinedMaxResults[$i];
 		} 
@@ -921,6 +927,7 @@ if ($_REQUEST["maxResults"] == '') {
 		$queryJSON->searchFilter->maxResults->header = $maxResultsTitle['header'];
 		$queryJSON->searchFilter->maxResults->title = $maxResults;
 		for ($i=0; $i<(count($preDefinedMaxResults)); $i++) {
+			$queryJSON->searchFilter->maxResults->item[$i] = new stdClass();
 			$queryJSON->searchFilter->maxResults->item[$i]->title = $preDefinedMaxResults[$i];
 			$queryJSON->searchFilter->maxResults->item[$i]->url = $searchURL."&maxResults=".$preDefinedMaxResults[$i];
 		} 
@@ -929,7 +936,10 @@ if ($_REQUEST["maxResults"] == '') {
 
 //generate filter for different order possibilities
 
-//$queryJSON->searchFilter = (object) array();
+$queryJSON->searchFilter->orderFilter = new stdClass();
+$queryJSON->searchFilter->orderFilter->item[0] = new stdClass();
+$queryJSON->searchFilter->orderFilter->item[1] = new stdClass();
+$queryJSON->searchFilter->orderFilter->item[2] = new stdClass();
 if ($_REQUEST["orderBy"] == '') {
 //echo "<br>orderBy:>".$_REQUEST["orderBy"]."<<br>";
 	$queryJSON->searchFilter->orderFilter->header = $orderByTitle['header'];

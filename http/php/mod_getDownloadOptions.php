@@ -232,7 +232,10 @@ echo $row['service_id']." - ".$row['resource_type']."<br>";
 $j++;
 }
 die();*/
+		if (!isset($downloadOptions)) $downloadOptions = new stdClass();
+		$downloadOptions->{$idList[$i]} = new stdClass();
 		while ($row = db_fetch_assoc($res)) {
+			$downloadOptions->{$idList[$i]}->option[$j] = new stdClass();
 			switch ($row['resource_type']) {		
 				case "wfs":
 					$serviceIdIndex = false;

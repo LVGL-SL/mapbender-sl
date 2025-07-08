@@ -1562,6 +1562,7 @@ class wms {
 		$newLayer->gui_layer_title = $currentLayer["title"];
 		//if layer is built from wmc, there will only be a string given for each dataurl/metadataurl
 		if (is_string($currentLayer["layer_dataurl"])) {
+			if (!isset($newLayer->layer_dataurl[0])) $newLayer->layer_dataurl[0] = new stdClass();
 			$newLayer->layer_dataurl[0]->href = $currentLayer["layer_dataurl"];
 		} else {
 			$newLayer->layer_dataurl = $currentLayer["layer_dataurl"];
@@ -3785,6 +3786,7 @@ SQL;
 					} else {
 						$downloadOptionsUrl = "../php/mod_getDownloadOptions.php?outputFormat=html&id=".str_replace('{','',str_replace('}','',str_replace('}{',',',$row2["downloadoptions"])));
 					}
+					if (!isset($this->objLayer[$layer_cnt]->layer_dataurl[0])) $this->objLayer[$layer_cnt]->layer_dataurl[0] = new stdClass();
 					$this->objLayer[$layer_cnt]->layer_dataurl[0]->href = $downloadOptionsUrl;
 				}
 				//load all metadataUrl elements from mb_metadata

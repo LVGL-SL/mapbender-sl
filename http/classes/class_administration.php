@@ -2710,6 +2710,7 @@ SQL;
 	}
         $res = db_prep_query($sql,$v,$t);
 	$row = db_fetch_array($res);
+		$returnObject = new stdClass();
         if ($row["uuid"] != false) {
 	    $returnObject->uuid = $row["uuid"];
 	    $returnObject->orgaId = $row["orga_id"];
