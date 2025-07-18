@@ -70,7 +70,10 @@ var ButtonApi = function (o) {
         height: o.dialogHeight,
         dialogClass: o.target + "-dialog",
 		open: function() {
-            Mapbender.disableFeatureInfo();
+			//Ticket #8401: Only deactivate feature info if the target is not gazetteerFlst
+			if(o.target[0] !== 'gazetteerFlst'){ 
+            	Mapbender.disableFeatureInfo();
+			}
         },
 		close: function() {
 			$button.removeClass("myOnClass");
