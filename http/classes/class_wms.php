@@ -337,6 +337,9 @@ class wms {
 		
 		for ($i = 0; $i < count($this->objLayer); $i++) {
 			for ($j = 0; $j < count($this->objLayer[$i]->layer_style); $j++) {
+				if (!isset($this->objLayer[$i])) { $this->objLayer[$i] = new stdClass(); }
+				if (!isset($this->objLayer[$i]->layer_style)) { $this->objLayer[$i]->layer_style = array(); }
+				if (!isset($this->objLayer[$i]->layer_style[$j])) { $this->objLayer[$i]->layer_style[$j] = array(); }
 				$this->objLayer[$i]->layer_style[$j]["legendurl"] = 
 					$this->updateOwsProxyUrl($this->objLayer[$i]->layer_style[$j]["legendurl"]);
 			}
@@ -957,6 +960,8 @@ class wms {
 					$parent[$element['level']+1] = $cnt_layer;
 					$myParent[$cnt_layer]= $parent[$element['level']];
 					$this->addLayer($cnt_layer,$myParent[$cnt_layer]);
+					// ensure object exists for this layer index
+					$this->ensureObjLayer($cnt_layer);
 					$this->objLayer[$cnt_layer]->layer_queryable = $element['attributes']['queryable'];
 				}
 				if ($element['type'] == "close") {
@@ -988,18 +993,30 @@ class wms {
 			}
 			if($section == "style"){
 				if(mb_strtoupper($element['tag']) == "NAME"){
+					if (!isset($this->objLayer[$cnt_layer])) { $this->objLayer[$cnt_layer] = new stdClass(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_style)) { $this->objLayer[$cnt_layer]->layer_style = array(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_style[$cnt_styles])) { $this->objLayer[$cnt_layer]->layer_style[$cnt_styles] = array(); }
 					$this->objLayer[$cnt_layer]->layer_style[$cnt_styles]["name"] = ($element['value'] ? $element['value'] : 'default');
 				}
 				if(mb_strtoupper($element['tag']) == "TITLE"){
+					if (!isset($this->objLayer[$cnt_layer])) { $this->objLayer[$cnt_layer] = new stdClass(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_style)) { $this->objLayer[$cnt_layer]->layer_style = array(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_style[$cnt_styles])) { $this->objLayer[$cnt_layer]->layer_style[$cnt_styles] = array(); }
 					$this->objLayer[$cnt_layer]->layer_style[$cnt_styles]["title"] = ($element['value'] ? $element['value'] : '');
 				}
 	      			if(mb_strtoupper($element['tag']) == "LEGENDURL" && $element['type'] == "open"){
 					$legendurl = true;
 				}
 				if($legendurl && mb_strtoupper($element['tag']) == "FORMAT"){
+					if (!isset($this->objLayer[$cnt_layer])) { $this->objLayer[$cnt_layer] = new stdClass(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_style)) { $this->objLayer[$cnt_layer]->layer_style = array(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_style[$cnt_styles])) { $this->objLayer[$cnt_layer]->layer_style[$cnt_styles] = array(); }
 					$this->objLayer[$cnt_layer]->layer_style[$cnt_styles]["legendurlformat"] = $element['value'];
 				}
 				if($legendurl && mb_strtoupper($element['tag']) == "ONLINERESOURCE"){
+					if (!isset($this->objLayer[$cnt_layer])) { $this->objLayer[$cnt_layer] = new stdClass(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_style)) { $this->objLayer[$cnt_layer]->layer_style = array(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_style[$cnt_styles])) { $this->objLayer[$cnt_layer]->layer_style[$cnt_styles] = array(); }
 					$this->objLayer[$cnt_layer]->layer_style[$cnt_styles]["legendurl"] = $element['attributes']["xlink:href"];
 				}
 				if(mb_strtoupper($element['tag']) == "LEGENDURL" && $element['type'] == "close"){
@@ -1015,6 +1032,9 @@ class wms {
 				//parse all identifiers from capabilities - but actually we have no way to store them into the database!
 				//the information will be only available by the instrinsic ows_relation_metadata after the registration process!
 				if(mb_strtoupper($element['tag']) == "IDENTIFIER"){
+					if (!isset($this->objLayer[$cnt_layer])) { $this->objLayer[$cnt_layer] = new stdClass(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_identifier)) { $this->objLayer[$cnt_layer]->layer_identifier = array(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_identifier[$cnt_identifier])) { $this->objLayer[$cnt_layer]->layer_identifier[$cnt_identifier] = new stdClass(); }
 					$this->objLayer[$cnt_layer]->layer_identifier[$cnt_identifier]->identifier = $element['value'];
 					//if class is invoked with special identifier (e.g. to search some layer in caps) - activate this layer - 
 					//set it to be visible (only needed for js mapobject!) - INSPIRE special
@@ -1022,49 +1042,62 @@ class wms {
 					    if ($datasetId == $element['value']) {
 					        $e = new mb_exception("classes/class_wms.php: found a layer with searched identifier in wms - its name is: ".$this->objLayer[$cnt_layer]->layer_name);
 					        //only set the identifier if a requested datasetId was found
-					        $this->objLayer[$cnt_layer]->layer_identifier[$cnt_identifier]->visible = true;
+							if (!isset($this->objLayer[$cnt_layer]->layer_identifier[$cnt_identifier])) { $this->objLayer[$cnt_layer]->layer_identifier[$cnt_identifier] = new stdClass(); }
+							$this->objLayer[$cnt_layer]->layer_identifier[$cnt_identifier]->visible = true;
 					    }
 					}
 					$cnt_identifier++;
 				}
 				if(mb_strtoupper($element['tag']) == "TITLE"){
+					if (!isset($this->objLayer[$cnt_layer])) { $this->objLayer[$cnt_layer] = new stdClass(); }
 					$this->objLayer[$cnt_layer]->layer_title = $this->stripEndlineAndCarriageReturn($element['value']);
 				}
 				if(mb_strtoupper($element['tag']) == "ABSTRACT"){
+					if (!isset($this->objLayer[$cnt_layer])) { $this->objLayer[$cnt_layer] = new stdClass(); }
 					$this->objLayer[$cnt_layer]->layer_abstract = $this->stripEndlineAndCarriageReturn($element['value']);
 				}
 				if(mb_strtoupper($element['tag']) == "KEYWORD"){
+					if (!isset($this->objLayer[$cnt_layer])) { $this->objLayer[$cnt_layer] = new stdClass(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_keyword)) { $this->objLayer[$cnt_layer]->layer_keyword = array(); }
 					array_push($this->objLayer[$cnt_layer]->layer_keyword, trim($element['value']));
 					//add vocabulary attribut to keyword object
 					//read attribute
 					if (isset($element['attributes']['vocabulary'])) {
 						switch ($element['attributes']['vocabulary']) {
 							case "ISO 19115:2003":
+								if (!isset($this->objLayer[$cnt_layer]->layer_keyword_vocabulary)) { $this->objLayer[$cnt_layer]->layer_keyword_vocabulary = array(); }
 								array_push($this->objLayer[$cnt_layer]->layer_keyword_vocabulary, "ISO 19115:2003");
 								//add id for isoCategory
 								if (is_int($topicCatHash[trim($element['value'])])) {
+									if (!isset($this->objLayer[$cnt_layer]->layer_md_topic_category_id)) { $this->objLayer[$cnt_layer]->layer_md_topic_category_id = array(); }
 									$this->objLayer[$cnt_layer]->layer_md_topic_category_id[] = (integer)$topicCatHash[trim($element['value'])];
 								}
 							break;
 							case "GEMET - INSPIRE themes":
+								if (!isset($this->objLayer[$cnt_layer]->layer_keyword_vocabulary)) { $this->objLayer[$cnt_layer]->layer_keyword_vocabulary = array(); }
 								array_push($this->objLayer[$cnt_layer]->layer_keyword_vocabulary, "GEMET - INSPIRE themes, version 1.0");
 								//check if keyword is a key in mapbenders inspire keywords and add it to mapbenders inspire categories
 								if (is_int($inspireCatHash[trim($element['value'])])) {
+									if (!isset($this->objLayer[$cnt_layer]->layer_inspire_category_id)) { $this->objLayer[$cnt_layer]->layer_inspire_category_id = array(); }
 									$this->objLayer[$cnt_layer]->layer_inspire_category_id[] = (integer)$inspireCatHash[trim($element['value'])];
 								}
 							break;
 							case "http://www.mapbender.org":
+								if (!isset($this->objLayer[$cnt_layer]->layer_keyword_vocabulary)) { $this->objLayer[$cnt_layer]->layer_keyword_vocabulary = array(); }
 								array_push($this->objLayer[$cnt_layer]->layer_keyword_vocabulary, "http://www.mapbender.org");
 								//check if keyword is a key in mapbenders inspire keywords and add it to mapbenders inspire categories
 								if (is_int($customCatHash[trim($element['value'])])) {
+									if (!isset($this->objLayer[$cnt_layer]->layer_custom_category_id)) { $this->objLayer[$cnt_layer]->layer_custom_category_id = array(); }
 									$this->objLayer[$cnt_layer]->layer_custom_category_id[] = (integer)$customCatHash[trim($element['value'])];
 								}
 							break;
 							default:
+								if (!isset($this->objLayer[$cnt_layer]->layer_keyword_vocabulary)) { $this->objLayer[$cnt_layer]->layer_keyword_vocabulary = array(); }
 								array_push($this->objLayer[$cnt_layer]->layer_keyword_vocabulary, "none");
 							break;
 						}
 					} else {
+						if (!isset($this->objLayer[$cnt_layer]->layer_keyword_vocabulary)) { $this->objLayer[$cnt_layer]->layer_keyword_vocabulary = array(); }
 						array_push($this->objLayer[$cnt_layer]->layer_keyword_vocabulary, "none");
 					}
 				}
@@ -1074,9 +1107,13 @@ class wms {
 					$cnt_dataurl++;
 				}
 				if($dataurl && mb_strtoupper($element['tag']) == "FORMAT"){
+					if (!isset($this->objLayer[$cnt_layer])) { $this->objLayer[$cnt_layer] = new stdClass(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_dataurl)) { $this->objLayer[$cnt_layer]->layer_dataurl = array(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_dataurl[$cnt_dataurl])) { $this->objLayer[$cnt_layer]->layer_dataurl[$cnt_dataurl] = new stdClass(); }
 					$this->objLayer[$cnt_layer]->layer_dataurl[$cnt_dataurl]->format = $element['value'];
 				}
 				if($dataurl && mb_strtoupper($element['tag']) == "ONLINERESOURCE"){
+					if (!isset($this->objLayer[$cnt_layer]->layer_dataurl[$cnt_dataurl])) { $this->objLayer[$cnt_layer]->layer_dataurl[$cnt_dataurl] = new stdClass(); }
 					$this->objLayer[$cnt_layer]->layer_dataurl[$cnt_dataurl]->href = $element['attributes']["xlink:href"]; //TODO exchange the parsing with a real xml parsing cause namespaces will make problems!
 				}
 			    	if(mb_strtoupper($element['tag']) == "DATAURL" && $element['type'] == "close"){
@@ -1085,12 +1122,16 @@ class wms {
 				if(mb_strtoupper($element['tag']) == "METADATAURL" && $element['type'] == "open"){
 					$metadataurl = true;
 					$cnt_metadataurl++;
+					if (!isset($this->objLayer[$cnt_layer]->layer_metadataurl)) { $this->objLayer[$cnt_layer]->layer_metadataurl = array(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_metadataurl[$cnt_metadataurl])) { $this->objLayer[$cnt_layer]->layer_metadataurl[$cnt_metadataurl] = new stdClass(); }
 					$this->objLayer[$cnt_layer]->layer_metadataurl[$cnt_metadataurl]->type = $element['attributes']["type"];
 				}
 				if($metadataurl && mb_strtoupper($element['tag']) == "FORMAT"){
+					if (!isset($this->objLayer[$cnt_layer]->layer_metadataurl[$cnt_metadataurl])) { $this->objLayer[$cnt_layer]->layer_metadataurl[$cnt_metadataurl] = new stdClass(); }
 					$this->objLayer[$cnt_layer]->layer_metadataurl[$cnt_metadataurl]->format = $element['value'];
 				}
 				if($metadataurl && mb_strtoupper($element['tag']) == "ONLINERESOURCE"){
+					if (!isset($this->objLayer[$cnt_layer]->layer_metadataurl[$cnt_metadataurl])) { $this->objLayer[$cnt_layer]->layer_metadataurl[$cnt_metadataurl] = new stdClass(); }
 					$this->objLayer[$cnt_layer]->layer_metadataurl[$cnt_metadataurl]->href = $element['attributes']["xlink:href"];
 				}
 			    	if(mb_strtoupper($element['tag']) == "METADATAURL" && $element['type'] == "close"){
@@ -1115,16 +1156,28 @@ class wms {
 				}
 				if($section_bbox == "ex_geographicboundingbox" && mb_strtoupper($element['tag']) == "WESTBOUNDLONGITUDE"){
 					$cnt_epsg++;
+					if (!isset($this->objLayer[$cnt_layer])) { $this->objLayer[$cnt_layer] = new stdClass(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_epsg)) { $this->objLayer[$cnt_layer]->layer_epsg = array(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg])) { $this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg] = array(); }
 					$this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg]["epsg"] = "EPSG:4326";
 					$this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg]["minx"] = trim($element['value']);
 				}
 				if($section_bbox == "ex_geographicboundingbox" && mb_strtoupper($element['tag']) == "SOUTHBOUNDLATITUDE"){
+					if (!isset($this->objLayer[$cnt_layer])) { $this->objLayer[$cnt_layer] = new stdClass(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_epsg)) { $this->objLayer[$cnt_layer]->layer_epsg = array(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg])) { $this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg] = array(); }
 					$this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg]["miny"] = trim($element['value']);
 				}
 				if($section_bbox == "ex_geographicboundingbox" && mb_strtoupper($element['tag']) == "EASTBOUNDLONGITUDE"){
+					if (!isset($this->objLayer[$cnt_layer])) { $this->objLayer[$cnt_layer] = new stdClass(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_epsg)) { $this->objLayer[$cnt_layer]->layer_epsg = array(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg])) { $this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg] = array(); }
 					$this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg]["maxx"] = trim($element['value']);
 				}
 				if($section_bbox == "ex_geographicboundingbox" && mb_strtoupper($element['tag']) == "NORTHBOUNDLATITUDE"){
+					if (!isset($this->objLayer[$cnt_layer])) { $this->objLayer[$cnt_layer] = new stdClass(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_epsg)) { $this->objLayer[$cnt_layer]->layer_epsg = array(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg])) { $this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg] = array(); }
 					$this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg]["maxy"] = trim($element['value']);
 				}
 				if(mb_strtoupper($element['tag']) == "GEOGRAPHICBOUNDINGBOX" && $element['type'] == "close"){
@@ -1132,6 +1185,9 @@ class wms {
 				}						      
 				if(mb_strtoupper($element['tag']) == "LATLONBOUNDINGBOX"){
 					$cnt_epsg++;
+					if (!isset($this->objLayer[$cnt_layer])) { $this->objLayer[$cnt_layer] = new stdClass(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_epsg)) { $this->objLayer[$cnt_layer]->layer_epsg = array(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg])) { $this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg] = array(); }
 					$this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg]["epsg"] = "EPSG:4326";
 					$this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg]["minx"] = $element['attributes']['minx'];
 					$this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg]["miny"] = $element['attributes']['miny'];
@@ -1139,8 +1195,11 @@ class wms {
 					$this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg]["maxy"] = $element['attributes']['maxy'];
 				}
 				if(mb_strtoupper($element['tag']) == "BOUNDINGBOX" && $element['attributes']['SRS'] != "EPSG:4326"
-										&& $this->wms_version != "1.3.0"){
+									&& $this->wms_version != "1.3.0"){
 					$cnt_epsg++;
+					if (!isset($this->objLayer[$cnt_layer])) { $this->objLayer[$cnt_layer] = new stdClass(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_epsg)) { $this->objLayer[$cnt_layer]->layer_epsg = array(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg])) { $this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg] = array(); }
 					$this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg]["epsg"] = $element['attributes']['SRS'];
 					$this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg]["minx"] = $element['attributes']['minx'];
 					$this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg]["miny"] = $element['attributes']['miny'];
@@ -1153,8 +1212,11 @@ class wms {
 				}
 				#WMS 1.3.0
 				if(mb_strtoupper($element['tag']) == "BOUNDINGBOX" && $element['attributes']['CRS'] == "EPSG:4326"
-										&& $this->wms_version == "1.3.0"){
+								&& $this->wms_version == "1.3.0"){
 					$cnt_epsg++;
+					if (!isset($this->objLayer[$cnt_layer])) { $this->objLayer[$cnt_layer] = new stdClass(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_epsg)) { $this->objLayer[$cnt_layer]->layer_epsg = array(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg])) { $this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg] = array(); }
 					$this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg]["epsg"] = $element['attributes']['CRS'];
 					$this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg]["minx"] = $element['attributes']['miny'];
 					$this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg]["miny"] = $element['attributes']['minx'];
@@ -1163,8 +1225,11 @@ class wms {
 				}
 				#WMS 1.3.0
 				if(mb_strtoupper($element['tag']) == "BOUNDINGBOX" && $element['attributes']['CRS'] != "EPSG:4326"
-										&& $this->wms_version == "1.3.0"){
+								&& $this->wms_version == "1.3.0"){
 					$cnt_epsg++;
+					if (!isset($this->objLayer[$cnt_layer])) { $this->objLayer[$cnt_layer] = new stdClass(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_epsg)) { $this->objLayer[$cnt_layer]->layer_epsg = array(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg])) { $this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg] = array(); }
 					$this->objLayer[$cnt_layer]->layer_epsg[$cnt_epsg]["epsg"] = $element['attributes']['CRS'];
 					$tmp_epsg = $element['attributes']['CRS'];
 					$tmp_epsg = str_replace('CRS:','',str_replace ( 'EPSG:', '', $tmp_epsg ));
@@ -1188,6 +1253,7 @@ class wms {
 				if(mb_strtoupper($element['tag']) == "SCALEHINT"){
 					if($element['attributes']['max']>1000) $max = 0; else $max = $element['attributes']['max']; 	
 					if($element['attributes']['min']>1000) $min = 0; else $min = $element['attributes']['min']; 	
+					if (!isset($this->objLayer[$cnt_layer])) { $this->objLayer[$cnt_layer] = new stdClass(); }
 					$this->objLayer[$cnt_layer]->layer_minscale = round(($min * 2004.3976484406788493955738891127));
 					$this->objLayer[$cnt_layer]->layer_maxscale = round(($max * 2004.3976484406788493955738891127));
 					$this->objLayer[$cnt_layer]->layer_minscale = sprintf("%u", $this->objLayer[$cnt_layer]->layer_minscale);
@@ -1197,9 +1263,13 @@ class wms {
 				if(mb_strtoupper($element['tag']) == "DIMENSION"){
 					$cnt_dimension++;
 					//extract dimension from capabilities
+					if (!isset($this->objLayer[$cnt_layer])) { $this->objLayer[$cnt_layer] = new stdClass(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_dimension)) { $this->objLayer[$cnt_layer]->layer_dimension = array(); }
+					if (!isset($this->objLayer[$cnt_layer]->layer_dimension[$cnt_dimension])) { $this->objLayer[$cnt_layer]->layer_dimension[$cnt_dimension] = new stdClass(); }
 					$this->objLayer[$cnt_layer]->layer_dimension[$cnt_dimension]->name = $element['attributes']['name'];
 					$this->objLayer[$cnt_layer]->layer_dimension[$cnt_dimension]->units = $element['attributes']['units'];
 					if (isset($element['attributes']['unitSymbol']) && $element['attributes']['unitSymbol'] !== "") {
+						if (!isset($this->objLayer[$cnt_layer]->layer_dimension[$cnt_dimension])) { $this->objLayer[$cnt_layer]->layer_dimension[$cnt_dimension] = new stdClass(); }
 						$this->objLayer[$cnt_layer]->layer_dimension[$cnt_dimension]->unitSymbol = $element['attributes']['unitSymbol'];
 					}
 					switch ($this->wms_version) {
@@ -1208,11 +1278,13 @@ class wms {
 							break;
 						case "1.3.0":
 							//mandatory
+							if (!isset($this->objLayer[$cnt_layer]->layer_dimension[$cnt_dimension])) { $this->objLayer[$cnt_layer]->layer_dimension[$cnt_dimension] = new stdClass(); }
 							$this->objLayer[$cnt_layer]->layer_dimension[$cnt_dimension]->extent = $element['value'];
 							//optional
 							$optionalElements = array("default", "multipleValues", "nearestValue", "current");
 							foreach ($optionalElements as $optionalElement) {
 								if (isset($element['attributes'][$optionalElement]) && $element['attributes'][$optionalElement] !== "") {
+									if (!isset($this->objLayer[$cnt_layer]->layer_dimension[$cnt_dimension])) { $this->objLayer[$cnt_layer]->layer_dimension[$cnt_dimension] = new stdClass(); }
 									$this->objLayer[$cnt_layer]->layer_dimension[$cnt_dimension]->{$optionalElement} = $element['attributes'][$optionalElement];
 								}
 							}
@@ -1233,10 +1305,14 @@ class wms {
 							$posDimensionName++;
 						}
 						//extract 
+						if (!isset($this->objLayer[$cnt_layer])) { $this->objLayer[$cnt_layer] = new stdClass(); }
+						if (!isset($this->objLayer[$cnt_layer]->layer_dimension)) { $this->objLayer[$cnt_layer]->layer_dimension = array(); }
+						if (!isset($this->objLayer[$cnt_layer]->layer_dimension[$posDimensionName])) { $this->objLayer[$cnt_layer]->layer_dimension[$posDimensionName] = new stdClass(); }
 						$this->objLayer[$cnt_layer]->layer_dimension[$posDimensionName]->extent = $element['value'];
 						$mandatoryElements = array("default", "nearestValue");	
 						foreach ($mandatoryElements as $mandatoryElement) {
 							if (isset($element['attributes'][$mandatoryElement]) && $element['attributes'][$mandatoryElement] !== "") {
+								if (!isset($this->objLayer[$cnt_layer]->layer_dimension[$posDimensionName])) { $this->objLayer[$cnt_layer]->layer_dimension[$posDimensionName] = new stdClass(); }
 								$this->objLayer[$cnt_layer]->layer_dimension[$posDimensionName]->{$mandatoryElement} = $element['attributes'][$mandatoryElement];
 							}
 						}
@@ -1306,6 +1382,7 @@ class wms {
 	function getLayerInfo() {
 	    $resultArray = array();
 	    for($i=0; $i<count($this->objLayer); $i++){
+	        $this->ensureObjLayer($i);
 	        $resultArray[] = array (
                 //"id" => $this->objLayer[$i]->layer_id,
                 "pos" => $this->objLayer[$i]->layer_pos,
@@ -1366,6 +1443,7 @@ class wms {
 			}
 		}
 		for($i=0;$i<count($this->objLayer);$i++){
+			$this->ensureObjLayer($i);
 			if(count($this->objLayer[$i]->layer_epsg) == 0 && count($this->objLayer[0]->layer_epsg) > 0){
 				$this->objLayer[$i]->layer_epsg = $this->objLayer[0]->layer_epsg; 
 			}
@@ -1398,6 +1476,7 @@ class wms {
 			}
 		}
 		for($i=0;$i<count($this->data_format);$i++){
+			$this->ensureObjLayer($i);
 			if(mb_strtolower($this->data_type[$i]) == 'map' && mb_strtoupper($this->data_format[$i]) == mb_strtoupper($map_default)){
 				$this->gui_wms_mapformat = mb_strtolower($map_default);
 				$map_default_ok = true;
@@ -1494,6 +1573,7 @@ class wms {
 			echo $this->data_type[$i]. " -> ".$this->data_format[$i]. "<br>";
 		}
 		for($i=0; $i<count($this->objLayer); $i++){
+			$this->ensureObjLayer($i);
 			echo "<hr>";
 			echo "id: <b>".$this->objLayer[$i]->layer_id ."</b> parent: <b>".$this->objLayer[$i]->layer_parent."</b> name: <b>".$this->objLayer[$i]->layer_name;
 			echo "</b> title: <b>".$this->objLayer[$i]->layer_title. "</b> queryable: <b>".$this->objLayer[$i]->layer_queryable."</b> minScale: <b>". $this->objLayer[$i]->layer_minscale."</b> maxScale: <b>".$this->objLayer[$i]->layer_maxscale."</b>";
@@ -1532,7 +1612,18 @@ class wms {
 		}
 	} 
 	  function addLayer($id,$parent){	
-		$this->objLayer[count($this->objLayer)] = new layer($id,$parent);
+		// create new layer object at the end of the array
+		$newIndex = count($this->objLayer);
+		$this->objLayer[$newIndex] = new layer($id,$parent);
+		// ensure the requested index $id exists and points to the same object
+		if (!isset($this->objLayer[$id])) {
+			$this->objLayer[$id] = $this->objLayer[$newIndex];
+		}
+	  }
+
+	  // ensure that an objLayer entry exists for given index
+	  function ensureObjLayer($idx) {
+		if (!isset($this->objLayer[$idx])) { $this->objLayer[$idx] = new stdClass(); }
 	  }
 	  /**
 	   * private function
@@ -1555,6 +1646,7 @@ class wms {
 
 		// set layer data
 		$layerIndex = count($this->objLayer) - 1;
+		$this->ensureObjLayer($layerIndex);
 		$newLayer = $this->objLayer[$layerIndex];
 		$newLayer->layer_uid = $currentLayer["extension"]["LAYER_ID"];
 		$newLayer->layer_name = $currentLayer["name"];
@@ -1562,16 +1654,19 @@ class wms {
 		$newLayer->gui_layer_title = $currentLayer["title"];
 		//if layer is built from wmc, there will only be a string given for each dataurl/metadataurl
 		if (is_string($currentLayer["layer_dataurl"])) {
-			if (!isset($newLayer->layer_dataurl[0])) $newLayer->layer_dataurl[0] = new stdClass();
+			if (!isset($newLayer->layer_dataurl) || !is_array($newLayer->layer_dataurl)) { $newLayer->layer_dataurl = array(); }
+			if (!isset($newLayer->layer_dataurl[0])) { $newLayer->layer_dataurl[0] = new stdClass(); }
 			$newLayer->layer_dataurl[0]->href = $currentLayer["layer_dataurl"];
 		} else {
 			$newLayer->layer_dataurl = $currentLayer["layer_dataurl"];
 		}
 		if (is_string($currentLayer["layer_metadataurl"])) {
+			if (!isset($newLayer->layer_metadataurl) || !is_array($newLayer->layer_metadataurl)) { $newLayer->layer_metadataurl = array(); }
+			if (!isset($newLayer->layer_metadataurl[0])) { $newLayer->layer_metadataurl[0] = new stdClass(); }
 			$newLayer->layer_metadataurl[0]->href = $currentLayer["layer_metadataurl"];
 		} else {
 			$newLayer->layer_metadataurl = $currentLayer["layer_metadataurl"];
-		}	
+		}
 		//$newLayer->gui_layer_dataurl_href = $currentLayer["dataurl"];
 		$newLayer->layer_pos = $currentLayer["extension"]["LAYER_POS"];
 		$newLayer->layer_queryable = $currentLayer["queryable"];
@@ -1749,6 +1844,7 @@ class wms {
 		}
 		//do the things for each layer
 		for($i=0; $i<count($this->objLayer); $i++){
+			$this->ensureObjLayer($i);
 //debug
 //$e = new mb_exception("layer: ".$this->objLayer[$i]->layer_title." - layer_featuretype_coupling: ". $this->objLayer[$i]->layer_featuretype_coupling);
 			if($parent){
@@ -1898,6 +1994,7 @@ class wms {
 			echo "wms_add_data_type_format('". $this->data_type[$i] ."','". $this->data_format[$i] ."');";		
 		}
 		for($i=0; $i<count($this->objLayer); $i++){
+			$this->ensureObjLayer($i);
 			if($this->objLayer[$i]->layer_name == $layer_name || $this->objLayer[$i]->layer_pos == 0){
 				if($parent){
 					echo "parent.";
@@ -2213,6 +2310,7 @@ VALUES
 ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
 
 SQL;
+		$this->ensureObjLayer($i);
 		if($this->objLayer[$i]->layer_id != null){
 			$tmpPos =  $this->objLayer[$i]->layer_id;
 		}
@@ -2315,6 +2413,7 @@ SQL;
 			$e = new mb_exception("Not found: ".$this->objLayer[$i]->layer_name);
 			return;	
 		}	
+		$this->ensureObjLayer($i);
 		//don't update title, abstract when not explicitly demanded thru $this->overwrite == true
 		$sql = "UPDATE layer SET ";
 		$sql .= "layer_pos = $1, ";
@@ -2404,6 +2503,7 @@ SQL;
 		$sql .= "gui_layer_status, gui_layer_selectable, gui_layer_visible, gui_layer_queryable, ";
 		$sql .= "gui_layer_querylayer,gui_layer_minscale,gui_layer_maxscale, gui_layer_priority, gui_layer_style, gui_layer_title) ";
 		$sql .= "VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)";
+		$this->ensureObjLayer($i);
 		if(count($this->objLayer[$i]->layer_style)>0){
 			$layer_style_name = $this->objLayer[$i]->layer_style[0]["name"];
 		}
@@ -2426,6 +2526,7 @@ SQL;
 		$sql .= "gui_layer_status, gui_layer_selectable, gui_layer_visible, gui_layer_queryable, ";
 		$sql .= "gui_layer_querylayer,gui_layer_minscale,gui_layer_maxscale, gui_layer_priority, gui_layer_style, gui_layer_title) ";
 		$sql .= "VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)";
+		$this->ensureObjLayer($i);
 		if(count($this->objLayer[$i]->layer_style)>0){
 			$layer_style_name = $this->objLayer[$i]->layer_style[0]["name"];
 		}
@@ -2669,6 +2770,7 @@ SQL;
 		$v = array($this->objLayer[$i]->db_id);
 		$t = array('i');
 		$res = db_prep_query($sql,$v,$t);
+		$this->ensureObjLayer($i);
 		//1. fill in srs from layers with given bboxes from capabilities
 		for($j=0; $j<count($this->objLayer[$i]->layer_epsg);$j++){
 			$sql = "INSERT INTO layer_epsg (fkey_layer_id, epsg, minx, miny, maxx, maxy) ";
@@ -2760,6 +2862,7 @@ SQL;
 		$v = array($this->objLayer[$i]->db_id);
 		$t = array('i');
 		$res = db_prep_query($sql,$v,$t);
+		$this->ensureObjLayer($i);
 		for($j=0; $j<count($this->objLayer[$i]->layer_style);$j++){
 			$sql = "INSERT INTO layer_style (fkey_layer_id, name, title, legendurl, legendurlformat) ";
 			$sql .= "VALUES($1,$2,$3,$4,$5)";
@@ -2778,6 +2881,7 @@ SQL;
 	function insertLayerCategories($i){
 		global $con;
 		$types = array("md_topic", "inspire", "custom");
+		$this->ensureObjLayer($i);
 		foreach ($types as $cat) {
 			$sql = "DELETE FROM layer_{$cat}_category WHERE fkey_layer_id = $1 AND fkey_metadata_id ISNULL";
 			$v = array($this->objLayer[$i]->db_id);
@@ -2809,6 +2913,7 @@ SQL;
 		$v = array($this->objLayer[$i]->db_id);
 		$t = array('i');
 		$res = db_prep_query($sql,$v,$t);
+		$this->ensureObjLayer($i);
 		$k = $this->objLayer[$i]->layer_keyword;
 		for($j=0; $j<count($k); $j++){
 			$keyword_id = "";	
@@ -2863,6 +2968,7 @@ SQL;
 		$res = db_prep_query($sql,$v,$t);
 		$e = new mb_notice("class_wms.php:  count dataurl: ".count($this->objLayer[$i]->layer_dataurl));
 		//for each dataurl entry do something
+		$this->ensureObjLayer($i);
 		for($j=0; $j<count($this->objLayer[$i]->layer_dataurl);$j++){
 			//push single elements into database
 			//generate random number
@@ -3763,6 +3869,8 @@ SQL;
 			while($row2 = db_fetch_array($res_layer)){
 				$this->addLayer($row2["layer_pos"],$row2["layer_parent"]);
 				$layer_cnt=count($this->objLayer)-1;
+				// ensure object for this layer index
+				$this->ensureObjLayer($layer_cnt);
 				$this->objLayer[$layer_cnt]->layer_uid = $layer_id;
 				$this->objLayer[$layer_cnt]->layer_name = administration::convertIncomingString($row2["layer_name"]);
 				$this->objLayer[$layer_cnt]->layer_title = administration::convertIncomingString($row2["layer_title"]);			
@@ -3773,6 +3881,8 @@ SQL;
 				$res_dataUrl = db_prep_query($sql,$v,$t);
 				$count_dataUrl = 0;
 				while($row3 = db_fetch_array($res_dataUrl)){
+					if (!isset($this->objLayer[$layer_cnt]->layer_dataurl) || !is_array($this->objLayer[$layer_cnt]->layer_dataurl)) { $this->objLayer[$layer_cnt]->layer_dataurl = array(); }
+					if (!isset($this->objLayer[$layer_cnt]->layer_dataurl[$count_dataUrl])) { $this->objLayer[$layer_cnt]->layer_dataurl[$count_dataUrl] = new stdClass(); }
 					$this->objLayer[$layer_cnt]->layer_dataurl[$count_dataUrl]->href = $row3["datalink_url"];
 					//$this->objLayer[$layer_cnt]->layer_dataurl[$count_dataUrl]->type = $row3["linktype"];
 					$this->objLayer[$layer_cnt]->layer_dataurl[$count_dataUrl]->format = $row3["datalink_format"];
@@ -3890,10 +4000,14 @@ SQL;
 			$res_style = db_prep_query($sql,$v,$t);
 			$count_layer_style = 0;
 			while($row2 = db_fetch_array($res_style)){
+				if (!isset($this->objLayer[$layer_cnt])) { $this->objLayer[$layer_cnt] = new stdClass(); }
+				if (!isset($this->objLayer[$layer_cnt]->layer_style)) { $this->objLayer[$layer_cnt]->layer_style = array(); }
+				if (!isset($this->objLayer[$layer_cnt]->layer_style[$count_layer_style])) { $this->objLayer[$layer_cnt]->layer_style[$count_layer_style] = array(); }
 				$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["name"] = $row2["name"] ? $row2["name"] : "default";
 				$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["title"]=$row2["title"];
 				if($wmsowsproxy != ""){
 					if($row2["legendurl"]!=''){
+						if (!isset($this->objLayer[$layer_cnt]->layer_style[$count_layer_style])) { $this->objLayer[$layer_cnt]->layer_style[$count_layer_style] = array(); }
 						$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["legendurl"]=$owsproxyurl.
 						"REQUEST=getlegendgraphic&VERSION=".$this->wms_version."&LAYER=".$this->objLayer[$layer_cnt]->layer_name."&FORMAT=".$row2["legendurlformat"].
 						"&STYLE=".$row2["name"];
@@ -4079,6 +4193,8 @@ SQL;
 		while($row2 = db_fetch_array($res_layer)){
 			$this->addLayer($row2["layer_pos"],$row2["layer_parent"]);
 			$layer_cnt=count($this->objLayer)-1;
+			// ensure object for this layer index
+			$this->ensureObjLayer($layer_cnt);
 			$this->objLayer[$layer_cnt]->layer_uid = $row2["layer_id"];
 			$this->objLayer[$layer_cnt]->layer_name = administration::convertIncomingString($row2["layer_name"]);
 			$this->objLayer[$layer_cnt]->layer_title = administration::convertIncomingString($row2["layer_title"]);
@@ -4092,6 +4208,8 @@ SQL;
 			$res_dataUrl = db_prep_query($sql,$v,$t);
 			$count_dataUrl = 0;
 			while($row3 = db_fetch_array($res_dataUrl)){
+				if (!isset($this->objLayer[$layer_cnt]->layer_dataurl) || !is_array($this->objLayer[$layer_cnt]->layer_dataurl)) { $this->objLayer[$layer_cnt]->layer_dataurl = array(); }
+				if (!isset($this->objLayer[$layer_cnt]->layer_dataurl[$count_dataUrl])) { $this->objLayer[$layer_cnt]->layer_dataurl[$count_dataUrl] = new stdClass(); }
 				$this->objLayer[$layer_cnt]->layer_dataurl[$count_dataUrl]->href = $row3["datalink_url"];
 				//$this->objLayer[$layer_cnt]->layer_dataurl[$count_dataUrl]->type = $row3["linktype"];
 				$this->objLayer[$layer_cnt]->layer_dataurl[$count_dataUrl]->format = $row3["datalink_format"];
@@ -4294,10 +4412,14 @@ WHERE keyword_id = fkey_keyword_id AND fkey_layer_id = $1";
 			$res_style = db_prep_query($sql,$v,$t);
 			$count_layer_style = 0;
 			while($row2 = db_fetch_array($res_style)){
+				if (!isset($this->objLayer[$layer_cnt])) { $this->objLayer[$layer_cnt] = new stdClass(); }
+				if (!isset($this->objLayer[$layer_cnt]->layer_style)) { $this->objLayer[$layer_cnt]->layer_style = array(); }
+				if (!isset($this->objLayer[$layer_cnt]->layer_style[$count_layer_style])) { $this->objLayer[$layer_cnt]->layer_style[$count_layer_style] = array(); }
 				$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["name"]=$row2["name"];
 				$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["title"]=$row2["title"];
 				if($wmsowsproxy != ""){
 					if($row2["legendurl"]!=''){
+						if (!isset($this->objLayer[$layer_cnt]->layer_style[$count_layer_style])) { $this->objLayer[$layer_cnt]->layer_style[$count_layer_style] = array(); }
 						$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["legendurl"]=$owsproxyurl.
 						"REQUEST=getlegendgraphic&VERSION=".$this->wms_version."&LAYER=".$this->objLayer[$layer_cnt]->layer_name."&FORMAT=".$row2["legendurlformat"].
 						"&STYLE=".$row2["name"];
