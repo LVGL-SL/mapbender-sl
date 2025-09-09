@@ -46,6 +46,12 @@ if (isset($configObject) && isset($configObject->rewrite_path) && $configObject-
 } else {
     $rewritePath = "linkedDataProxy";
 }
+// Ticket #8797
+if (isset($configObject) && isset($configObject->datasource_url) && $configObject->datasource_url != "") {
+    $datasourceUrl = $configObject->datasource_url;
+} else {
+    $datasourceUrl = URL_SCHEME . "://" . FULLY_QUALIFIED_DOMAIN_NAME . "/";
+}
 $con = db_connect(DBSERVER,OWNER,PW);
 db_select_db(DB,$con);
 global $serviceType;
@@ -141,7 +147,9 @@ if (isset($_REQUEST['VALIDATE']) and $_REQUEST['VALIDATE'] != "true") {
 
 if ($serviceType == "ogcapifeatures" | $serviceType == "ogcapifeatures_wfs") {
 	if ($behindRewrite) {
-		$ogcApiFeaturesUrl = $schema . "://" . $_SERVER ['HTTP_HOST'] . "/" . $rewritePath;
+                // Ticket #8797: metadata export calls this script as https://localhost/...
+                // so we use datasource_url from linkedDataProxy.json instead of $_SERVER["HTTP_HOST"]
+		$ogcApiFeaturesUrl = $datasourceUrl . $rewritePath;
 	} else {
 		$ogcApiFeaturesUrl = MAPBENDER_PATH . "/php/mod_linkedDataProxy.php?";
 	}
