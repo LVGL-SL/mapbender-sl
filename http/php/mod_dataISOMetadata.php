@@ -152,6 +152,15 @@ if (in_array($mb_metadata['origin'], array("external", "capabilities")) && isset
             if ($remoteDate > $cachedDate || strtolower($_GET['forceUpdate']) === 'true') {
                 $e = new mb_notice("classes/class_iso19139.php: remote metadata is newer than cache - update it!");
                 $newMetadata->updateMetadataById($mb_metadata['metadata_id'], false);
+				// Ticket #7070: added calls to insertKeywordsAndCategories and inheritContactAndLicenceInformation
+				$coupledResources = Iso19139::getCoupledResources($mb_metadata['metadata_id']);
+				foreach ($coupledResources as $coupledResource) {
+					$resourceType = $coupledResource["resourceType"];
+					$resourceId = $coupledResource["resourceId"];
+					$newMetadata->insertKeywordsAndCategoriesIntoDB($mb_metadata['metadata_id'], $resourceType, $resourceId);
+					$newMetadata->inheritContactAndLicenceInformation($mb_metadata['metadata_id'], $resourceType, $resourceId, true, true);
+				}
+
                 $res = db_prep_query($sql, $v, $t);
                 if (!$res) {
                     echo "No record with uuid " . $recordId . " found in mapbender database!";
@@ -605,7 +614,7 @@ function fillISO19139($iso19139, $recordId)
 	$MD_Metadata->setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
 	$MD_Metadata->setAttribute("xmlns:gml", "http://www.opengis.net/gml");
 	$MD_Metadata->setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
-
+	$MD_Metadata->setAttribute("xmlns:gmx", "http://www.isotc211.org/2005/gmx");
 	//generate fileidentifier part (metadata record identification) 
 	$identifier = $iso19139->createElement("gmd:fileIdentifier");
 	$identifierString = $iso19139->createElement("gco:CharacterString");

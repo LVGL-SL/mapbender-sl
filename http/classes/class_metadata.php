@@ -971,13 +971,28 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 					if ($this->internalProcessCoupledWMS){
 						$rootIndex = $index;
 					}else{
+						//This functions returns itself if the root layer is not initally selected - and by that not found
 						$rootIndex = $this->getLayerParent($subLayersFlip, $index);
 					}
 					$rootLayerPos = $subLayers[$rootIndex]['layer_pos'];
+					//This rootLayerID is not necessarily the layer with layer_pos = 0 - because of the search result - it is just the "root" of the selected layer in the search result overview - there it can be itself				
 					$rootLayerId = $subLayers[$rootIndex]['layer_id'];
+					//Retrieval of the actual root layer id - with layer_pos = 0 - to identify the wms service
+					if( $rootLayerPos == 0){
+						$wmsRootLayerId = $rootLayerId;
+					}else {
+						$sql = "SELECT layer_id FROM layer WHERE fkey_wms_id = $1 AND layer_pos = 0";
+						$v = array((int) $subLayers[$rootIndex]['wms_id']);
+						$t = array("i");
+						$res = db_prep_query($sql, $v, $t);
+						$row = db_fetch_array($res);
+						$wmsRootLayerId = $row['layer_id'];
+					}
 					array_push($layerIdArray, $rootLayerId);
 					//Create object for wms service level
 					$this->wmsJSON->wms->srv[$j]->id = (int) $subLayers[$rootIndex]['wms_id'];
+					$this->wmsJSON->wms->srv[$j]->wmsRootLayerId = $wmsRootLayerId;
+					$this->wmsJSON->wms->srv[$j]->wmsGetCapabilitiesUrl = $this->protocol . "://" . $this->hostName . "/mapbender/php/wms.php?layer_id=" . $wmsRootLayerId . "&VERSION=1.1.1&SERVICE=WMS&REQUEST=GetCapabilities&withChilds=1";
 					$this->wmsJSON->wms->srv[$j]->title = $subLayers[$rootIndex]['wms_title'];
 					$this->wmsJSON->wms->srv[$j]->abstract = $subLayers[$rootIndex]['wms_abstract'];
 					$this->wmsJSON->wms->srv[$j]->date = date("d.m.Y", $subLayers[$rootIndex]['wms_timestamp']);

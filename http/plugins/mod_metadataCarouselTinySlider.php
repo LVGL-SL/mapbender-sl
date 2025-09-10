@@ -152,7 +152,7 @@ var metadataCarouselTinySlider = function() {
 
     that.initForm();
     this.loadMore = function(){
-    that.removeEvent();
+        that.removeEvent();
         //load next page
         $.ajax({url: searchUrl+"searchText=*&searchResources=wmc&searchPages="+(parseInt(currentPage) + parseInt(1))+"&maxResults="+maxResults+that.resourceFilterString, async: false, success: function(result){
             result.wmc.srv.forEach(that.addElementToSlider);
@@ -169,7 +169,9 @@ var metadataCarouselTinySlider = function() {
                 that.executeJavaScript({method:"loadWmc", parameters:{id:resourceId}});
             });
         }});
-        that.mainSlider.goTo(parseInt(currentPage * slidesPerSide) + 1);
+        // Ticket #8429
+        // this is confusing: currentPage references pages containing 6 elements (starting at index 1), but slidesPerSide [sic] is only 3 and mainSlider.goTo() expects the index of a single element
+        that.mainSlider.goTo((currentPage - 1) * (slidesPerSide * 2) - 2);
         that.addEvent();
     }
 

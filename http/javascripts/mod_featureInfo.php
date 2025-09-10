@@ -211,6 +211,8 @@ function mod_featureInfo_click(){
         if (el) {
                 $(el).bind("click", mod_featureInfo_event)
                         .css("cursor", "help");
+                //Ticket #8401: FeatureInfo needs to be explicitely activatable during gazetteer search
+                Mapbender.enableFeatureInfo();    
         }
 }
 function mod_featureInfo_disable(){
@@ -219,6 +221,8 @@ function mod_featureInfo_disable(){
         if (el) {
                 $(el).unbind("click", mod_featureInfo_event)
                         .css("cursor", "default");
+                //Ticket #8401: FeatureInfo needs to be explicitely deactivatable during gazetteer search
+                Mapbender.disableFeatureInfo();  
                 $("#featureInfo1").removeClass("myOnClass");
         }
 }

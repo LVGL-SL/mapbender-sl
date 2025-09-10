@@ -4458,3 +4458,9 @@ msgstr "Datensatz wurde nicht im Katalog gefunden!"
 msgid "The external service does not provide data for the position you selected."
 msgstr "Der externe Dienst liefert für die von Ihnen gewählte Position keine Daten."
 
+msgid "Collection"
+msgstr "Gruppe"
+
+msgid "Open in Mapclient"
+msgstr "Im Kartenclient zeigen"
+
