@@ -682,31 +682,33 @@ if(is_array($inputGeojsonArray) && count($inputGeojsonArray) > 0 && !empty($inpu
 			    $kmls->{$geojsonTitle}->url = $geojsonTitle;
 			    $kmls->{$geojsonTitle}->display = true;
 				//Ticket 8549: In the context of compatibility changes in geojson fileuploads,
-				//this logic was fixed to allow for multiple polygons in a geojson file.
-				//but also deletes the old multipolygon features
-				$indexArrayToDeleteMultiPolygons = array();
+				//this logic was fixed to allow for multiple polygons and points in a geojson file.
+				//but also deletes the old multi-geometry features
+				$indexArrayToDeleteMultiGeometries = array();
 				foreach ($kmls->{$geojsonTitle}->data->features as $idx => $feature) {
-					//$e = new mb_exception("javascripts/initWmcObj.php: GEOJSON TYPE : ".$feature->geometry->type);
-					//explode multipolygons to polygon before further processing, because we don't support multi geometries at this time
-					if ($feature->geometry->type == 'MultiPolygon') {
-						$numberOfPolygon = 1;
-						foreach ($feature->geometry->coordinates as $polygons) {
+					if ($feature->geometry->type == 'MultiPolygon' || $feature->geometry->type == 'MultiPoint') {
+						$e = new mb_exception("javascripts/initWmcObj.php: CSINFO Multiobjecct found!");
+						$geometryType = $feature->geometry->type == 'MultiPolygon' ? 'Polygon' : 'Point';
+						$subFeatureType = substr($geometryType, 0, 1) . strtolower(substr($geometryType, 1));
+						$number = 1;
+						
+						foreach ($feature->geometry->coordinates as $coordinates) {
 							$newFeature = new stdClass();
 							$newFeature->type = "Feature";
 							$newFeature->properties = clone $feature->properties;
-							$newFeature->properties->title = $newFeature->properties->title . " - Polygon " . $numberOfPolygon;
+							$newFeature->properties->title = $newFeature->properties->title . " - " . $subFeatureType . " " . $number;
 							$newFeature->geometry = new stdClass();
-							$newFeature->geometry->coordinates = $polygons;
-							$newFeature->geometry->type = "Polygon";
+							$newFeature->geometry->coordinates = $coordinates;
+							$newFeature->geometry->type = $geometryType;
 							$kmls->{$geojsonTitle}->data->features[] = $newFeature;
 							unset($newFeature);
-							$numberOfPolygon++;
+							$number++;
 						}
-						$indexArrayToDeleteMultiPolygons[] = $idx;
+						$indexArrayToDeleteMultiGeometries[] = $idx;
 					}
 				}
-				foreach ($indexArrayToDeleteMultiPolygons as $idx) {
-					//unset the multipolygon feature
+				foreach ($indexArrayToDeleteMultiGeometries as $idx) {
+					//unset the multi-geometry feature
 					unset($kmls->{$geojsonTitle}->data->features[$idx]);
 				}
 				//reindex the array
