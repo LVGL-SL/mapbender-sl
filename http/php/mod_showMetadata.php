@@ -747,15 +747,22 @@ if ($resource == 'wmc') {
 //db select for content properties
 if ($resource == 'wfs' || $resource == 'featuretype') {
 	//get bbox and crs codes for single layer - maybe some entries ;-)
+	// Ticket #8829: also show the DefaultCRS
+	$sql = "SELECT featuretype_srs FROM wfs_featuretype WHERE featuretype_id = $1";
+	$v = array($featuretypeId);
+	$t = array('i');
+	$res = db_prep_query($sql, $v, $t);
+	$contentBboxes = array();
+	$contentBboxes[0] = array('epsg' => db_fetch_row($res)[0]);
+
 	//Ticket #8491: Info - Selects all "otherCRS" for featuretype
 	//Added distinct to select because wfs registration allowed inserting the same crs multiple times 
 	//Issue is fixed but until the registry is cleaned up this is a workaround
 	$sql = "SELECT DISTINCT * FROM wfs_featuretype_epsg WHERE fkey_featuretype_id = $1";
-	$contentBboxes = array();
 	$v = array($featuretypeId);
 	$t = array('i');
 	$res = db_prep_query($sql, $v, $t);
-	$j = 0;
+	$j = 1;
 	while ($row = db_fetch_array($res)){
 		$contentBboxes[$j] = array();
 		$contentBboxes[$j]['epsg'] = $row['epsg'];
