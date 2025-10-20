@@ -148,8 +148,10 @@ if (in_array($mb_metadata['origin'], array("external", "capabilities")) && isset
             //check if remote metadata date is newer
             $remoteDate = new DateTime($newMetadata->createDate);
             $cachedDate = new DateTime($mb_metadata['createdate']);
+			//$cachedDate->setTimezone($remoteDate->getTimezone());
 			//Ticket #6680: Added a url paramater check to give the option to force an update of the metadataset
-            if ($remoteDate > $cachedDate || strtolower($_GET['forceUpdate']) === 'true') {
+			//Ticket #8962: Fixed timezone issue by comparing timestamps directly instead of date objects - Due to timezone in mapbender defaulting to Europe/Berlin 
+            if ($remoteDate->date > $cachedDate->date || strtolower($_GET['forceUpdate']) === 'true') {
                 $e = new mb_notice("classes/class_iso19139.php: remote metadata is newer than cache - update it!");
                 $newMetadata->updateMetadataById($mb_metadata['metadata_id'], false);
 				// Ticket #7070: added calls to insertKeywordsAndCategories and inheritContactAndLicenceInformation
