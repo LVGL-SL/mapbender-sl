@@ -607,6 +607,7 @@ function fillSectionList(featureCollection, k) {
 				//Ticket #6773: For wfs outputFormat v3.2 Links are not working due to "+" being decoded to " " automatically -> Has to be encoded due to that
 				if(url.includes("+")){
 					url = url.replaceAll("+", "%2B");
+					url = url.replaceAll(";", "%3B");
 				}
                 if(DlSet.urls.length > 1){
 
