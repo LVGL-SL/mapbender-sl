@@ -542,10 +542,8 @@ function fillISO19139($iso19139, $recordId) {
 		 * $mapbenderUrl = "http://www.geoportal.rlp.de/mapbender";
 		 * }
 		 */
-		#6260: Changed path declaration to access current storage folder /var/opt/geoportal/media/preview
-		#      Also see etc/apache2/apache.cfg -- /var/opt.. Directory specification
-		//$previewFilenameText = $iso19139->createTextNode ( $mapbenderUrl . "/geoportal/preview/" . $mapbenderMetadata ['layer_id'] . "_layer_map_preview.jpg" ); // TODO use constant for absolute path
-		$previewFilenameText = $iso19139->createTextNode ( 	'https://' . FULLY_QUALIFIED_DOMAIN_NAME . PREVIEW_DIR . $mapbenderMetadata ['layer_id'] . "_layer_map_preview.jpg" ); // TODO use constant for absolute path
+		# Ticket #8476: use php script instead of absolute file path to show preview image
+		$previewFilenameText = $iso19139->createTextNode ("https://" . FULLY_QUALIFIED_DOMAIN_NAME . "/mapbender/geoportal/mod_showPreview.php?resource=layer&id=" . $mapbenderMetadata['layer_id']);
 		$fileName_cs->appendChild ( $previewFilenameText );
 		$fileName->appendChild ( $fileName_cs );
 		
