@@ -122,6 +122,9 @@ class Wfs_2_0_Factory extends WfsFactory {
 		
 		$m = 0;
 		foreach($array['storedQuery'] as $storedQuery) {
+			if (!isset($storedQueryArray[$m])) {
+				$storedQueryArray[$m] = new stdClass();
+			}
 			$storedQueryArray[$m]->id = $storedQuery['Id'];
 			$storedQueryArray[$m]->title = $storedQuery['Title'];
 			$storedQueryArray[$m]->returnFeaturetype = $storedQuery['ReturnFeatureType'];
@@ -142,9 +145,6 @@ class Wfs_2_0_Factory extends WfsFactory {
 	*/
 	protected function createFeatureTypeFromXml ($xml, $myWfs, $featureTypeName) {
 		$newFeatureType = new WfsFeatureType($myWfs);
-
-		//Ticket 7322: At least resolve first level of includes before starting logic to get deegree services working
-		$xml=$this->loadXMLStringWithIncludes($xml); //$myWfs);
 
 		$doc = new DOMDocument();
 		$doc->loadXML($xml);
@@ -172,12 +172,9 @@ class Wfs_2_0_Factory extends WfsFactory {
 			if($namespaceNode->nodeValue == $targetNamespace){
 				$targetNamespaceNode = $namespaceNode;
 			}
-			if ($newFeatureType->getNamespace($namespaceNode->localName) === null) {
+			//don't allow double entries - this maybe a parsing mistake
+			if (!in_array($namespaceNode->localName, $namespaceLookupList)) {
 				$newFeatureType->addNamespace($namespaceNode->localName, $namespaceNode->nodeValue);
-			} else {
-				new mb_notice("Skipping $namespaceNode->localName " . 
-				"- $namespaceNode->nodeValue, because an entry for " . 
-				"$namespaceNode->localName already exists.");
 			}
 		}
 	
@@ -429,10 +426,6 @@ class Wfs_2_0_Factory extends WfsFactory {
 
 				$myWfs->transaction =  html_entity_decode($this->getValue($xpath, '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="Transaction"]/ows:DCP/ows:HTTP/ows:Post/@xlink:href', $wfs20Cap));
 //get supported formats [mimetypes]
-				//Ticket #7275:  
-				//Actually the correct xpath would be: $allowedValuesArray = $this->getValue($xpath, '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="GetFeature"]/ows:Parameter[@name="outputFormat"]/ows:AllowedValues', $wfs20Cap);
-				//Since there is an issue with esri services that include many outputFormats in this node which are actually not working 
-				//Won't fix for now  - Old path used again because of the reason above
 				$allowedValuesArray = $this->getValue($xpath, '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Parameter[@name="outputFormat"]/ows:AllowedValues', $wfs20Cap);
 				$wfsOutputFormatsArray = $xpath->query('./ows:Value', $allowedValuesArray);
 				foreach ($wfsOutputFormatsArray as $allowedValue) {
@@ -467,6 +460,9 @@ class Wfs_2_0_Factory extends WfsFactory {
 					$i_mdu = 0;
 					foreach ($metadataURLArray as $metadataURL) {
 						//$e = new mb_exception("other srs: ".$otherSRS);
+						if (!isset($featuretype_metadataUrl[$i_mdu])) {
+							$featuretype_metadataUrl[$i_mdu] = new stdClass();
+						}
 						$featuretype_metadataUrl[$i_mdu]->href = $this->getValue($xpath, './@xlink:href', $metadataURL);
 						$e = new mb_notice("metadataurl: ".$featuretype_metadataUrl[$i_mdu]->href);
 						$featuretype_metadataUrl[$i_mdu]->type = $this->getValue($xpath, './@type', $metadataURL);
@@ -519,6 +515,9 @@ class Wfs_2_0_Factory extends WfsFactory {
 				foreach ($capOperations as $operation) {
 					//debug
 					#$e = new mb_notice("wfs operation: ".$operation->asXML());
+					if (!isset($wfsOperations[$k])) {
+						$wfsOperations[$k] = new stdClass();
+					}
 					$wfsOperations[$k]->name = html_entity_decode($this->getValue($xpath, './@name', $operation));
 					$wfsOperations[$k]->httpGet = html_entity_decode($this->getValue($xpath, './ows:DCP/ows:HTTP/ows:Get/@xlink:href', $operation));
 					$wfsOperations[$k]->httpPost = html_entity_decode($this->getValue($xpath, './ows:DCP/ows:HTTP/ows:Post/@xlink:href', $operation));
@@ -588,93 +587,5 @@ class Wfs_2_0_Factory extends WfsFactory {
             return null;
         }
     }
-
-
-	private function mergeSchemaNodes($targetSchemaNode, $sourceSchemaNode) {
-		// Get attributes from the source schema node
-		$sourceAttributes = [];
-		foreach ($sourceSchemaNode->attributes as $attr) {
-			$sourceAttributes[$attr->name] = $attr->value;
-		}
-	
-		// Merge attributes into the target schema node
-		foreach ($sourceAttributes as $name => $value) {
-			// Check if the attribute already exists in the target schema node
-			if (!$targetSchemaNode->hasAttribute($name)) {
-				// If not, add the attribute to the target schema node
-				$targetSchemaNode->setAttribute($name, $value);
-			}
-		}
-
-		return $targetSchemaNode;
-	}
-	
-	private function loadXMLStringWithIncludes($xmlString) { //, $aWfs) {
-		$doc = new DOMDocument();
-		$doc->loadXML($xmlString);
-	
-		// Find all include elements
-		$includeNodes = $doc->getElementsByTagName('include');
-	
-		// Iterate include elements
-		foreach ($includeNodes as $includeNode) {
-			// Check if the include node has schemaLocation attribute
-			// Possible TODO: other attributes for URLs?
-			$includeUrl = $includeNode->getAttribute('schemaLocation');
-			
-			// If schemaLocation attribute not found, try using href attribute
-			if (empty($includeUrl)) {
-				$includeUrl = $includeNode->getAttribute('href');
-			}
-
-			// If schemaLocation attribute not found, try using url attribute
-			if (empty($includeUrl)) {
-				$includeUrl = $includeNode->getAttribute('url');
-			}
-
-			if (!empty($includeUrl)) {
-	
-				// Load the included XML
-				$includedDoc = new DOMDocument();
-				$includeXML = $this->get($includeUrl); //, $aWfs->auth);
-				
-				// Check not null
-				if (!is_null($includeXML)) {
-					$includedDoc->loadXML($includeXML);
-				} else {
-					continue;
-				}
-		
-				// Import the nodes of the included XML into the main document
-				foreach ($includedDoc->documentElement->childNodes as $node) {
-					$importedNode = $doc->importNode($node, true);
-					$includeNode->parentNode->insertBefore($importedNode, $includeNode);
-				}
-		
-				// Remove the include element from the main document
-				$includeNode->parentNode->removeChild($includeNode);
-				
-				// Merge schema nodes
-				$targetSchemaNode = $doc->getElementsByTagName('schema')->item(0);
-				//$e = new mb_exception("classes/class_wfs_2_0_factory.php: CSTEST: " . $doc->saveXML());
-				$sourceSchemaNode = $includedDoc->getElementsByTagName('schema')->item(0);
-				if (!is_null($targetSchemaNode) && !is_null($sourceSchemaNode)) {
-					// Merge attributes and replace target schema node with the merged one
-					$mergedSchemaNode = $this->mergeSchemaNodes($targetSchemaNode, $sourceSchemaNode);
-					//$doc->documentElement->replaceWith($mergedSchemaNode, $targetSchemaNode);
-								 
-				}
-
-			}
-		}
-	
-		// Return the final merged XML as a string
-		return $doc->saveXML();
-	}
-	
-
-
-
-
 }
 ?>

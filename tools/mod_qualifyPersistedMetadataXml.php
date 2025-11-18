@@ -83,6 +83,9 @@ if ($handle = opendir($metadataDir)) {
 				if (in_array('inspireidentifiziert', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && !in_array('Lokal', $metadataObject->keywords) && !in_array('bplan', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset') {
 					//echo $metadataObject->title."<br>";
 					//echo $metadataDir."/".$file." has keyword inspireidentifiziert!<br>";
+					if (!isset($keywordsArray[$newKeywordsIndex])) {
+						$keywordsArray[$newKeywordsIndex] = new stdClass();
+					}
 					$keywordsArray[$newKeywordsIndex]->keyword = "Regional";
 					$keywordsArray[$newKeywordsIndex]->thesaurusTitle = "Spatial scope";
 					$keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
@@ -93,12 +96,18 @@ if ($handle = opendir($metadataDir)) {
 							$e = new mb_exception("test3");*/
 				}
 				if (in_array('bplan', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && !in_array('Lokal', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset' && in_array('inspireidentifiziert', $metadataObject->keywords)) {
+					if (!isset($keywordsArray[$newKeywordsIndex])) {
+						$keywordsArray[$newKeywordsIndex] = new stdClass();
+					}
 					$keywordsArray[$newKeywordsIndex]->keyword = "Lokal";
 					$keywordsArray[$newKeywordsIndex]->thesaurusTitle = "Spatial scope";
 					$keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
 				}
 				//workaround for hesse
 				if (in_array('mapbenderLocal', $metadataObject->keywords) && !in_array('bplan', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && !in_array('Lokal', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset' && in_array('inspireidentifiziert', $metadataObject->keywords)) {
+					if (!isset($keywordsArray[$newKeywordsIndex])) {
+						$keywordsArray[$newKeywordsIndex] = new stdClass();
+					}
 					$keywordsArray[$newKeywordsIndex]->keyword = "Lokal";
 					$keywordsArray[$newKeywordsIndex]->thesaurusTitle = "Spatial scope";
 					$keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
@@ -106,6 +115,9 @@ if ($handle = opendir($metadataDir)) {
 				//logMessages("Actual keywords: ".json_encode($metadataObject->keywords));
 				if ($injectRegistryUuid && !in_array($uuid, $metadataObject->keywords)) {  //add mapbender registry keyword
 					$newKeywordsIndex++;
+					if (!isset($keywordsArray[$newKeywordsIndex])) {
+						$keywordsArray[$newKeywordsIndex] = new stdClass();
+					}
 					$keywordsArray[$newKeywordsIndex]->keyword = $uuid;
 					$keywordsArray[$newKeywordsIndex]->thesaurusTitle = "mapbender.2.registryId";
 					$keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-10-30";
@@ -300,7 +312,7 @@ function addKeywords($metadataXml, $keywordsArray, $inspireCategoriesArray=false
             foreach ($inspireCategoryNodeList as $inspireCategoryKeyword) {
                 if (array_key_exists($inspireCategoryKeyword->nodeValue, $inspireCategoriesArray)) {
                     logMessages("Exchange " . $inspireCategoryKeyword->nodeValue . " with " . $inspireCategoriesArray[$inspireCategoryKeyword->nodeValue]);
-                    //$newElement = $metadataDomObject->createTextNode($inspireCategoriesArray[$inspireCategoryKeyword->nodeValue]);
+                    $newElement = $metadataDomObject->createTextNode($inspireCategoriesArray[$inspireCategoryKeyword->nodeValue]);
                     $gco__character_string = $metadataDomObject->createElement('gco:CharacterString');
                     $newElement = $metadataDomObject->createTextNode($inspireCategoriesArray[$inspireCategoryKeyword->nodeValue]);
                     $gco__character_string->appendChild($newElement);

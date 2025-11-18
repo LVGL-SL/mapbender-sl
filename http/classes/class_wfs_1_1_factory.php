@@ -347,6 +347,9 @@ class Wfs_1_1_Factory extends WfsFactory {
 					$i_mdu = 0;
 					foreach ($metadataURLArray as $metadataURL) {
 						//$e = new mb_exception("other srs: ".$otherSRS);
+						if (!isset($featuretype_metadataUrl[$i_mdu])) {
+							$featuretype_metadataUrl[$i_mdu] = new stdClass();
+						}
 						$featuretype_metadataUrl[$i_mdu]->href = $metadataURL;
 						$e = new mb_notice("metadataurl: ".$metadataURL);
 						$featuretype_metadataUrl[$i_mdu]->type = $metadataURL->attributes()->type;

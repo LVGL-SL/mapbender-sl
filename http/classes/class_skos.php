@@ -168,6 +168,9 @@ class Skos {
         foreach ( $xmlObject->xpath ( '/rdf:RDF/rdf:Description[skos:broader/@rdf:resource="' . $conceptUri . '"]/@rdf:about' ) as $subConcept ) {
             // $e = new mb_exception("subConcept found: ".(string)$subConcept[0]);
             
+            if (!isset($conceptObject->conceptArray[$i])) {
+                $conceptObject->conceptArray[$i] = new stdClass();
+            }
             $conceptObject->conceptArray [$i]->identifier = ( string ) $subConcept [0];
             
             // extract title of subconcept

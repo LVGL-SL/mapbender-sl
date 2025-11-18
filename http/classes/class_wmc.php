@@ -687,6 +687,9 @@ class wmc {
 		$numberOfStyles = 0;
 		while($row = db_fetch_array($resStyle)) {
 		    
+		    if (!isset($dbStyleArray[$row["fkey_layer_id"]][$numberOfStyles])) {
+			$dbStyleArray[$row["fkey_layer_id"]][$numberOfStyles] = new stdClass();
+		    }
 		    $dbStyleArray[$row["fkey_layer_id"]][$numberOfStyles]->name = $row["name"];
 		    $dbStyleArray[$row["fkey_layer_id"]][$numberOfStyles]->title = $row["title"];
 		    $dbStyleArray[$row["fkey_layer_id"]][$numberOfStyles]->legendurl = $row["legendurl"];
@@ -1892,8 +1895,6 @@ SQL;
 		array_push($wmcJsArray, "lock_maprequest = true;");
 		array_push($wmcJsArray, "eventAfterLoadWMS.trigger();"); //TODO: Why? Reload tree? Other way to do this?
 		array_push($wmcJsArray, "lock_maprequest = false;");
-// Ticket 4897: make a check of valid EPSG's		
-		array_push($wmcJsArray, "Mapbender.modules['".$this->mainMap->getFrameName()."'].checkSupportedWms2(\"".$this->mainMap->getEpsg()."\");");
 		array_push($wmcJsArray, "Mapbender.modules['".$this->mainMap->getFrameName().
 			"'].setMapRequest();");
 		if ($this->overviewMap !== null) {
@@ -2461,8 +2462,7 @@ SQL;
 							$currentLayer["abstract"] = $value;
 						}
 						if ($tag == "SRS") {
-							//Ticket #4897 Added check whether EPSG for currently chosen service is supported
-							$currentLayer["epsg"] = "";//explode(" ", $value);
+							$currentLayer["epsg"] = explode(" ", $value);
 						}
 						if ($tag == "EXTENSION" && $type == "close") {
 							$extension = false;
@@ -2596,7 +2596,6 @@ SQL;
     		// If yes, this is a new WMS. If not, append this layer
     		// to the existing WMS.
 			$matchingWmsLayerArray = $this->wmsArray[$wmsIndex]->objLayer;
-			if (is_countable($matchingWmsLayerArray))
 			for ($i = 0; $i < count($matchingWmsLayerArray); $i++) {
 				if ($matchingWmsLayerArray[$i]->layer_name == $currentLayer["name"]) {
 				    // by re-setting the index to null, a new WMS will be

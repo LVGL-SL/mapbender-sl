@@ -407,6 +407,9 @@ switch ($outputFormat) {
 					
 					$metadataIndex++;
 					//$e = new mb_exception("index: ".$metadataIndex);
+					if (!isset($inspireMonitoring['datasets'][$metadataIndex])) {
+						$inspireMonitoring['datasets'][$metadataIndex] = new stdClass();
+					}
 					$inspireMonitoring['datasets'][$metadataIndex]->datasetid = $sqlTable['datasetid'][$i];
 					$inspireMonitoring['datasets'][$metadataIndex]->title = $sqlTable['title'][$i];
 					//logit($inspireMonitoring['datasets'][$metadataIndex]->title);

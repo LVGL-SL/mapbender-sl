@@ -651,11 +651,17 @@ class Map {
 				    $newLayer->layer_name = "";
 				}
 				$newLayer->layer_title = $currentLayer->layer_title;
+				if (!isset($newLayer->layer_dataurl[0])) {
+					$newLayer->layer_dataurl[0] = new stdClass();
+				}
 				$newLayer->layer_dataurl[0]->href = $currentLayer->layer_dataurl;
 				$newLayer->layer_pos = $currentLayer->layer_pos;
 				$newLayer->layer_queryable = $currentLayer->layer_queryable;
 				$newLayer->layer_minscale = $currentLayer->layer_minscale;
 				$newLayer->layer_maxscale = $currentLayer->layer_maxscale;
+				if (!isset($newLayer->layer_metadataurl[0])) {
+					$newLayer->layer_metadataurl[0] = new stdClass();
+				}
 				$newLayer->layer_metadataurl[0]->href = $currentLayer->layer_metadataurl;
 				$newLayer->gui_layer_wms_id = $currentLayer->gui_layer_wms_id;
 //				$newLayer->gui_layer_wms_id = $wms->objLayer[0]->layer_uid;
@@ -820,7 +826,7 @@ class Map {
 		$res = db_prep_query($sql,$v,$t);
 		$row = db_fetch_array($res);
 
-		if (isset($row['var_name'])) {
+		if (count($row['var_name']) == 1) {
 			$activatedGuiHtmlCache = $row['var_value'];
 			if ($activatedGuiHtmlCache == 'true') {
 				$activatedGuiHtmlCache = true;

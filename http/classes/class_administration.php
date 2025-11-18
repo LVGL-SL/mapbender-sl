@@ -23,6 +23,8 @@ require_once dirname(__FILE__) . "/../../tools/wms_extent/extent_service.conf";
 # changed to Version 6.0.2 due to dprecated/removed functionality (php7+) TODO - check invokation of new class !!!!
 $phpversion = phpversion();
 if (strpos($phpversion, "7.") === 0) {
+    //use new mailer
+//$e = new mb_exception($phpversion);
     require(dirname(__FILE__) . "/phpmailer-6.0.2/src/PHPMailer.php");
     require(dirname(__FILE__) . "/phpmailer-6.0.2/src/SMTP.php");
     require(dirname(__FILE__) . "/phpmailer-6.0.2/src/Exception.php");
@@ -841,7 +843,7 @@ SQL;
 	    while ($row = db_fetch_array($res)){
 	        $logId[] = $row['log_id'];
 	    }
-	    if (isset($logId)) {
+	    if (count($logId) > 0) {
 	        return $logId[0];
 	    } else {
 	        return false;
@@ -2344,6 +2346,7 @@ SQL;
 				}
 				new mb_notice("content via memcacheD");
 				$content = $memcached_obj->get($filename);
+				//$memcached_obj->quit();
 				return $content;
 			break;
 			case "cache":
@@ -2628,6 +2631,9 @@ SQL;
 	$jsonResult->mapviewer_types = array();
 	$i = 0;
 	while($row = db_fetch_array($res)){
+	    if (!isset($jsonResult->mapviewer_types[$i])) {
+		$jsonResult->mapviewer_types[$i] = new stdClass();
+	    }
 	    $jsonResult->mapviewer_types[$i]->id = $row["mapviewer_id"];
 	    $jsonResult->mapviewer_types[$i]->name = $row["mapviewer_name"];
             $jsonResult->mapviewer_types[$i]->description = $row["mapviewer_description"];
@@ -2652,7 +2658,7 @@ SQL;
 	{"protocol":"http","server_port":"$_SERVER['HTTP_PORT']","server_name":"$_SERVER['HTTP_NAME']","server_path":"mapbender\/frames","server_script":"index.php","gui_param":"gui_id","wmc_param":"WMC"}
 	*/
 	if ($api->server_name == "\$_SERVER['HTTP_HOST']"){
-		$api->server_name = FULLY_QUALIFIED_DOMAIN_NAME;
+		$api->server_name = $_SERVER['HTTP_HOST'];
 	}
         if (isset($api->server_port) && $api->server_port != '' && $api->server_port != '80')  {
 	    if ($api->server_port != "\$_SERVER['HTTP_PORT']") {
@@ -2688,9 +2694,9 @@ SQL;
 	$previewUrl = $row["preview_image"];
 	if ($row["preview_image"] == '{localstorage}') {
             if (defined('MAPBENDER_PATH') && MAPBENDER_PATH != '') {
-	        return MAPBENDER_PATH . "/geoportal/mod_showPreview.php?resource=metadata&id=".$metadataId;
+	        return MAPBENDER_PATH."/geoportal/mod_showPreview.php?resource=metadata&id=".$metadataId;
 	    } else {
-	        return "http://" . FULLY_QUALIFIED_DOMAIN_NAME . "/mapbender/geoportal/mod_showPreview.php?resource=metadata&id=".$metadataId;
+	        return "http://".$_SERVER["HTTP_HOST"]."/mapbender/geoportal/mod_showPreview.php?resource=metadata&id=".$metadataId;
 	    }
 	} else {
 	    return $row["preview_image"];
@@ -2699,6 +2705,7 @@ SQL;
 
     function getCombinedApplicationMetadata($guiId, $wmcId=false) {
 	//GET first! metadata record for this combination - maybe better GET last 
+        $returnObject = new stdClass();
         if ($wmcId == false) {
 	    $sql = "SELECT uuid, title, abstract, f_get_responsible_organization_for_ressource(metadata_id, 'metadata') as orga_id FROM mb_metadata WHERE fkey_gui_id = $1 AND fkey_wmc_serial_id is null ORDER BY lastchanged DESC LIMIT 1";
 	    $v = array($guiId);
@@ -2710,7 +2717,6 @@ SQL;
 	}
         $res = db_prep_query($sql,$v,$t);
 	$row = db_fetch_array($res);
-		$returnObject = new stdClass();
         if ($row["uuid"] != false) {
 	    $returnObject->uuid = $row["uuid"];
 	    $returnObject->orgaId = $row["orga_id"];

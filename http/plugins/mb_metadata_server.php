@@ -195,7 +195,7 @@ SQL;
 		);
 		while ($row = db_fetch_row($res)) {
 			// convert NULL to '', NULL values cause datatables to crash
-			$row = array_map('strval', $row);
+			$walk = array_walk($row, create_function('&$s', '$s=strval($s);'));
 			$resultObj["data"][]= $row;
 		}
 		$ajaxResponse->setResult($resultObj);
@@ -220,7 +220,7 @@ SQL;
 		);
 		while ($row = db_fetch_row($res)) {
 			// convert NULL to '', NULL values cause datatables to crash
-			$row = array_map('strval', $row);
+			$walk = array_walk($row, create_function('&$s', '$s=strval($s);'));
 			$resultObj["data"][]= $row;
 		}
 		$ajaxResponse->setResult($resultObj);
@@ -1818,6 +1818,9 @@ SQL;
 		$resultObj = array();
 		$i = 0;
 		while ($row = db_fetch_assoc($res)) {
+			if (!isset($resultObj[$i])) {
+				$resultObj[$i] = new stdClass();
+			}
 			$resultObj[$i]->metadataId = $row['metadata_id']; //integer
 			$resultObj[$i]->metadataTitle = $row["title"]; //char
 			$i++;
@@ -1835,6 +1838,9 @@ SQL;
 		$resultObj = array();
 		$i = 0;
 		while ($row = db_fetch_assoc($res)) {
+			if (!isset($resultObj[$i])) {
+				$resultObj[$i] = new stdClass();
+			}
 			$resultObj[$i]->metadataId = $row['metadata_id']; //integer
 			$resultObj[$i]->metadataTitle = $row["title"]; //char
 			$i++;
@@ -2061,11 +2067,7 @@ SQL;
 				$e = new mb_exception("Problem while storing metadata to mb_metadata table!");
 				$e = new mb_exception($result['message']);
 				abort($result['message']);
-			} else {			   
-				//Ticket #4714: 
-			    //$result = array();
-				$result= array("alternate_title"=>"".$mbMetadata->alternate_title[0]);
-			    $ajaxResponse->setResult($result);
+			} else {
 				$ajaxResponse->setMessage("Stored metadata from external link to mapbender database!");
 				$ajaxResponse->setSuccess(true);
 				$e = new mb_notice("Stored metadata from external link to mapbender database!");
@@ -2153,8 +2155,7 @@ SQL;
 		    $info = pathinfo($filename);
 		    // get the extension of the file
 		    $ext = $info['extension'];
-		    //$new_image = dirname(__FILE__)."/".PREVIEW_DIR."/".$new_name;
-			$new_image = PREVIEW_DIR."/".$new_name;
+		    $new_image = dirname(__FILE__)."/".PREVIEW_DIR."/".$new_name;
 		    // get the ímage
 		    $image = $filename;
 		    //resize the image to 200px * 200px
@@ -2285,8 +2286,7 @@ SQL;
 		$metadataId = $ajaxResponse->getParameter("metadataId");
 		if (defined('PREVIEW_DIR') && PREVIEW_DIR != '') {
 		    $previewName = $metadataId."_metadata_preview.jpg";
-		    //$previewPath =  dirname(__FILE__)."/".PREVIEW_DIR."/".$previewName;
-			$previewPath = PREVIEW_DIR."/".$previewName;
+		    $previewPath =  dirname(__FILE__)."/".PREVIEW_DIR."/".$previewName;
 		    if (file_exists($previewPath)) {
 		        unlink($previewPath);
 			//delete {localstorage} from mb_metadata.preview_image

@@ -292,6 +292,12 @@ $ckanPackage->name = $ckanPackageRemote->result->id;
 $ckanPackage->owner_org = $orga_ident;	
 $ckanPackage->notes = "notes...";
 
+if (!isset($ckanPackage->groups)) {
+	$ckanPackage->groups = array();
+}
+if (!isset($ckanPackage->groups[0])) {
+	$ckanPackage->groups[0] = new stdClass();
+}
 $ckanPackage->groups[0]->name = "transparenzgesetz";
 $ckanPackage->state = "active";
 $ckanPackage->type = "dataset";
@@ -488,6 +494,9 @@ $e = new mb_exception("classes/class_syncCkan.php: parameter departmentId: ".$de
 	$catalogues = json_decode($departmentsArray[$index]["ckan_catalogues"])->ckan_catalogues;
         foreach ($catalogues as $catalogue) { //only one in this case
 
+		if (!isset($syncListResultRemoteCkan->external_ckan[$numberOfCatalogue])) {
+			$syncListResultRemoteCkan->external_ckan[$numberOfCatalogue] = new stdClass();
+		}
 	    $syncListResultRemoteCkan->external_ckan[$numberOfCatalogue]->name = $catalogue->ckan_name;
 	    $syncListResultRemoteCkan->external_ckan[$numberOfCatalogue]->orga_filter = $catalogue->ckan_organisation_filter;
 	    $syncListResultRemoteCkan->external_ckan[$numberOfCatalogue]->ckan_server_ip = $catalogue->ckan_server_ip;
@@ -564,6 +573,9 @@ $e = new mb_exception("classes/class_syncCkan.php: uuid from departmentArray: ".
                                 		$ckanMetadataArray[$countCkanMetadataArray]['name'] = $dataset->name;
                                 		$ckanMetadataArray[$countCkanMetadataArray]['changedate'] = $dataset->metadata_modified;
                                 		if ($listAllMetadataInJson == true) {
+								if (!isset($syncListResultRemoteCkan->external_ckan[$numberOfCatalogue]->ckan_packages[$countCkanMetadataArray])) {
+									$syncListResultRemoteCkan->external_ckan[$numberOfCatalogue]->ckan_packages[$countCkanMetadataArray] = new stdClass();
+								}
                                     			$syncListResultRemoteCkan->external_ckan[$numberOfCatalogue]->ckan_packages[$countCkanMetadataArray]->id = $dataset->name;
                                     			$syncListResultRemoteCkan->external_ckan[$numberOfCatalogue]->ckan_packages[$countCkanMetadataArray]->date_time = $dataset->metadata_modified;
                                 		}
@@ -591,6 +603,9 @@ $e = new mb_exception("classes/class_syncCkan.php: uuid from departmentArray: ".
                             $cswUuids = [];
                             foreach($externalCkanMetadataArray as $externalCkanMetadata) {
                                 if ($listAllMetadataInJson == true) {
+									if (!isset($syncListResultRemoteCkan->external_ckan[$numberOfCatalogue]->datasource_metadata[$numberRemoteCkanMetadata])) {
+										$syncListResultRemoteCkan->external_ckan[$numberOfCatalogue]->datasource_metadata[$numberRemoteCkanMetadata] = new stdClass();
+									}
                                     $syncListResultRemoteCkan->external_ckan[$numberOfCatalogue]->datasource_metadata[$numberRemoteCkanMetadata]->id = $externalCkanMetadata['uuid'];
                                     $syncListResultRemoteCkan->external_ckan[$numberOfCatalogue]->datasource_metadata[$numberRemoteCkanMetadata]->date_time = $externalCkanMetadata['changedate'];
                                 }
@@ -1306,6 +1321,9 @@ SQL;
         }
 		//Add resources (name/url/format)
 		$resourcesArray = [];
+		if (!isset($resourcesArray[0])) {
+			$resourcesArray[0] = new stdClass();
+		}
 		if (isset($resourceName) && $resourceName !=="") {
 			$resourcesArray[0]->name = $resourceName;
 		} else {
@@ -1322,6 +1340,9 @@ SQL;
 		//Add further resource (name/id/description/url/format)
 		$viewArray = [];
 
+		if (!isset($resourcesArray[1])) {
+			$resourcesArray[1] = new stdClass();
+		}
 		$resourcesArray[1]->name = "Originäre Metadaten";// für ".$row['layer_title'];
 		$resourcesArray[1]->id = $fileIdentifier."_iso19139";
 		$resourcesArray[1]->description = $ckanPackage->title." - Anzeige der originären Metadaten";
@@ -1471,6 +1492,9 @@ SQL;
     	$indexResourceArray = 0;
     	$indexViewArray = 0;
     	//add html preview for metadata
+    	if (!isset($resourcesArray[$indexResourceArray])) {
+    		$resourcesArray[$indexResourceArray] = new stdClass();
+    	}
     	$resourcesArray[$indexResourceArray]->name = "Originäre Metadaten";// für ".$row['layer_title'];
     	$resourcesArray[$indexResourceArray]->id = $metadataUuid."_iso19139";
     	$resourcesArray[$indexResourceArray]->description = $ckanPackage->title." - Anzeige der originären Metadaten";
@@ -1503,6 +1527,9 @@ SQL;
     	    if ($res) {
     	        while($row = db_fetch_array($res)) {
     	            //generate "Kartenviewer intern" resource
+    	            if (!isset($resourcesArray[$indexResourceArray])) {
+    	                $resourcesArray[$indexResourceArray] = new stdClass();
+    	            }
     	            $resourcesArray[$indexResourceArray]->name = "Onlinekarte";//: ".$row['layer_title'];
     	            $resourcesArray[$indexResourceArray]->id = $row['uuid']."_geoportalrlp_mobile";
     	            $resourcesArray[$indexResourceArray]->description = "Ebene: ".$row['layer_title']." - Vorschau im integrierten Kartenviewer";
@@ -1522,6 +1549,9 @@ SQL;
     	            $viewArray[$indexViewArray]['json'] = json_encode($viewJson);
     	            $indexViewArray++;
     	            //generate "Kartenviewer extern" resource
+    	            if (!isset($resourcesArray[$indexResourceArray])) {
+    	                $resourcesArray[$indexResourceArray] = new stdClass();
+    	            }
     	            $resourcesArray[$indexResourceArray]->name = "GeoPortal.rlp";//: ".$row['layer_title'];
     	            $resourcesArray[$indexResourceArray]->id = $row['uuid']."_geoportalrlp";
     	            $resourcesArray[$indexResourceArray]->description = "Ebene: ".$row['layer_title']." - Anzeige im GeoPortal.rlp";
@@ -1531,6 +1561,9 @@ SQL;
     	            $resourcesArray[$indexResourceArray]->format = "Webanwendung";				
     	            $indexResourceArray++;
     	            //generate wms capabilities resource 
+    	            if (!isset($resourcesArray[$indexResourceArray])) {
+    	                $resourcesArray[$indexResourceArray] = new stdClass();
+    	            }
     	            $resourcesArray[$indexResourceArray]->name = "WMS Schnittstelle";// für ".$row['layer_title'];
     	            $resourcesArray[$indexResourceArray]->id = $row['uuid']."_capabilities";
     	            $resourcesArray[$indexResourceArray]->description = "Ebene: ".$row['layer_title'];
@@ -1551,6 +1584,9 @@ SQL;
             //$e = new mb_exception("option: ".json_encode($option));	
             switch ($option->type) {
                 case "wmslayergetmap":
+                    if (!isset($resourcesArray[$indexResourceArray])) {
+                        $resourcesArray[$indexResourceArray] = new stdClass();
+                    }
                     $resourcesArray[$indexResourceArray]->name = "Download (INSPIRE)";//: ".$metadataObject->title;
                     $resourcesArray[$indexResourceArray]->id = $option->serviceUuid;
                     $resourcesArray[$indexResourceArray]->description = "Download von Rasterdaten über INSPIRE ATOM Feed: ".$metadataObject->title;
@@ -1569,6 +1605,9 @@ SQL;
                     $indexViewArray++;
                     break;
                 case "wmslayerdataurl":
+                    if (!isset($resourcesArray[$indexResourceArray])) {
+                        $resourcesArray[$indexResourceArray] = new stdClass();
+                    }
                     $resourcesArray[$indexResourceArray]->name = "Download (INSPIRE)";//: ".$metadataObject->title;
                     $resourcesArray[$indexResourceArray]->id = $option->serviceUuid;
                     $resourcesArray[$indexResourceArray]->description = $metadataObject->title." - Download von verlinkten Daten über INSPIRE ATOM Feed";
@@ -1587,6 +1626,9 @@ SQL;
                     $indexViewArray++;
                     break;
                 case "wfsrequest":
+                    if (!isset($resourcesArray[$indexResourceArray])) {
+                        $resourcesArray[$indexResourceArray] = new stdClass();
+                    }
                     $resourcesArray[$indexResourceArray]->name = "Download (INSPIRE)";//: ".$metadataObject->title;
                     $resourcesArray[$indexResourceArray]->id = $option->serviceUuid;
                     $resourcesArray[$indexResourceArray]->description = $metadataObject->title." - Download von Vektordaten (wfs-basiert) über INSPIRE ATOM Feed";
@@ -1617,6 +1659,9 @@ SQL;
                 		$numberOfServices++;
             	    } 
                     if ($numberOfServices == 1 && ($wfsVersion == "2.0.0" || $wfsVersion == "1.1.0")) {
+                        if (!isset($resourcesArray[$indexResourceArray])) {
+                            $resourcesArray[$indexResourceArray] = new stdClass();
+                        }
                         $resourcesArray[$indexResourceArray]->name = "Linked Open Data API (OGC API Features)";//: ".$metadataObject->title;
     		            $resourcesArray[$indexResourceArray]->id = $option->serviceUuid."_lod_wfs_api";
     		            $resourcesArray[$indexResourceArray]->description = $metadataObject->title." - Zugriff auf Daten über LinkedOpenData REST API (OGC API Features)";
@@ -1647,6 +1692,9 @@ SQL;
 		            }
                     break;
                 case "downloadlink":
+                    if (!isset($resourcesArray[$indexResourceArray])) {
+                        $resourcesArray[$indexResourceArray] = new stdClass();
+                    }
                     $resourcesArray[$indexResourceArray]->name = "Download (INSPIRE)";//: ".$metadataObject->title;
                     $resourcesArray[$indexResourceArray]->id = $metadataObject->uuid."_downloadlink"; //TODO - no uuid for service known in this case
                     $resourcesArray[$indexResourceArray]->description = $metadataObject->title." - Download von verlinkten Daten über INSPIRE ATOM Feed";
