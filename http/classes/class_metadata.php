@@ -66,7 +66,6 @@ class searchMetadata
 	var $hvdInspireCats;
 	var $hvdCustomCats;
 	var $internalProcessCoupledWMS = false;
-	var $internalProcessCoupledWMS = false;
 	function __construct($userId, $searchId, $searchText, $registratingDepartments, $isoCategories, $inspireThemes, $timeBegin, $timeEnd, $regTimeBegin, $regTimeEnd, $maxResults, $searchBbox, $searchTypeBbox, $accessRestrictions, $languageCode, $searchEPSG, $searchResources, $searchPages, $outputFormat, $resultTarget, $searchURL, $customCategories, $hostName, $orderBy, $resourceIds, $restrictToOpenData, $originFromHeader, $resolveCoupledResources = false, $https = false, $restrictToHvd)
 	{
 		$this->userId = (int) $userId;
