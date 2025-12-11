@@ -1,25 +1,25 @@
 <?php
 #Script to call this class: http://www.geoportal.rlp.de/mapbender/php/mod_callMetadata.php
-#Class for getting results out of the mapbender service registry 
+#Class for getting results out of the mapbender service registry
 #Resulttypes: WMS, WMS-Layer, (WFS), WFS-Featurtyps, WFS-Conf, WMC, Datasets, ...
 #Possible filters: registrating organizations, time, bbox (fully inside, intersects, fully outside), ISO Topic Categories, INSPIRE themes, INSPIRE: keywords, classification of data/service ... - maybe relevant for the german broker not for one instance, quality and actuality (maybe spatial and temporal), bbox, deegree of conformity with ir, access and use constraints, responsible parties - maybe one is enough? We must have a look at the INSPIRE Metadata IR
 #Metadata we need to fullfil the demands of INSPIRE:
 #1. INSPIRE conformity classification for WMS/WFS/WCS
 #2. Temporal Extents at WMS/WMS-Layer/WFS/WFS-Featuretype levels - for datasets if demanded - til now there is no demand defined in the guidance-paper for metadata ir
 #3. Classified access and use contraints - which classes? - Check IR Data Sharing and IR Metadata
-#4. 
+#4.
 #Every resource which should be send to INSPIRE can be filtered - but is not neccessary for a standardized approach
-#Another problem is the ranking of the different ressources. The ranking should be homogeneus. 
+#Another problem is the ranking of the different ressources. The ranking should be homogeneus.
 #Till now we rank the using of WMS Layers when Caps are requested and when s.o. load one layer into the geoportal.
-#TODO: The same things have to be done for the wfs-conf (Modules). Actually the invocation of inspire atom feeds are counted. Also the invocation of WMC documents are monitored. 
+#TODO: The same things have to be done for the wfs-conf (Modules). Actually the invocation of inspire atom feeds are counted. Also the invocation of WMC documents are monitored.
 #Classes for filtering after the results have been send to the portal:
 #1. ISO Topic Categories
 #2. INSPIRE Themes
 #3. Access and use classification
-#4. departments which provides the ressources - we need the new concept for the administration of this departments - store the addresses in the group table and give the relation - originating group in table mb_user_mb_group 
+#4. departments which provides the ressources - we need the new concept for the administration of this departments - store the addresses in the group table and give the relation - originating group in table mb_user_mb_group
 #Cause we have a authorization layer, we need the id of the requesting user which is defined in the session. If no session is set, it should be the anonymous user of the portal.
 #We need a parameter for internationalization - it should be send with the search request! Some of the Classes can be provided with different languages.
-#WMC and GeoRSS-Feeds have no or a to complex authorization info - maybe we need to test if wmc consists of info which is fully or only partually available to the anonymous user. 
+#WMC and GeoRSS-Feeds have no or a to complex authorization info - maybe we need to test if wmc consists of info which is fully or only partually available to the anonymous user.
 
 require_once(dirname(__FILE__) . "/../../core/globalSettings.php");
 require_once(dirname(__FILE__) . "/class_administration.php");
@@ -65,6 +65,7 @@ class searchMetadata
 	var $protocol;
 	var $hvdInspireCats;
 	var $hvdCustomCats;
+	var $internalProcessCoupledWMS = false;
 	var $internalProcessCoupledWMS = false;
 	function __construct($userId, $searchId, $searchText, $registratingDepartments, $isoCategories, $inspireThemes, $timeBegin, $timeEnd, $regTimeBegin, $regTimeEnd, $maxResults, $searchBbox, $searchTypeBbox, $accessRestrictions, $languageCode, $searchEPSG, $searchResources, $searchPages, $outputFormat, $resultTarget, $searchURL, $customCategories, $hostName, $orderBy, $resourceIds, $restrictToOpenData, $originFromHeader, $resolveCoupledResources = false, $https = false, $restrictToHvd)
 	{
@@ -142,7 +143,7 @@ class searchMetadata
 		$this->accessableLayers = NULL;
 		//set a time to find time consumers
 		$this->searchStartTime = $this->microtime_float();
-		//Defining of the different database categories		
+		//Defining of the different database categories
 		$this->resourceClassifications = array();
 		$this->resourceClassifications[0]['title'] = "ISO 19115"; //TODO: define the translations somewhere? - This is done in call_metadata.php before. Maybe we can get them from there? - It will be shown in the rightside categories table
 		$this->resourceClassifications[0]['tablename'] = 'md_topic_category';
@@ -213,7 +214,7 @@ class searchMetadata
 		}
 		$this->resourceClassifications[3]['requestName'] = "registratingDepartments";
 
-		//Defining of the different result categories		
+		//Defining of the different result categories
 		$this->resourceCategories = array();
 		$this->resourceCategories[0]['name'] = 'WMS';
 		$this->resourceCategories[1]['name'] = 'WFS';
@@ -334,8 +335,13 @@ class searchMetadata
 					case "date":
 						$this->orderBy = " ORDER BY wms_timestamp DESC ";
 						break;
-					//Ticket 6655: Changed order of Datasetsearch subservices 
-					case "intern":					
+					//Ticket 6655: Changed order of Datasetsearch subservices
+					case "intern":
+						$this->orderBy = " ORDER BY wms_id,layer_pos,layer_title ASC";
+						$this->internalProcessCoupledWMS = true;
+						break;
+					//Ticket 6655: Changed order of Datasetsearch subservices
+					case "intern":
 						$this->orderBy = " ORDER BY wms_id,layer_pos,layer_title ASC";
 						$this->internalProcessCoupledWMS = true;
 						break;
@@ -483,7 +489,7 @@ class searchMetadata
 		$wfsMatrix = db_fetch_all($res);
 		//sort result for accessing the right services
 		$wfsMatrix = $this->flipDiagonally($wfsMatrix);
-		//TODO check if order by db or order by php is faster! 
+		//TODO check if order by db or order by php is faster!
 		#array_multisort($wfsMatrix['wfs_id'], SORT_ASC,$wfsMatrix['featuretype_id'], SORT_ASC,$wfsMatrix['wfs_conf_id'], SORT_ASC); //have some problems - the database version is more stable
 		$wfsMatrix = $this->flipDiagonally($wfsMatrix);
 		//read out first server entry - maybe this a little bit timeconsuming TODO
@@ -609,7 +615,7 @@ class searchMetadata
 		$wmcMatrix = db_fetch_all($res);
 		//sort result for accessing the right services
 		$wmcMatrix = $this->flipDiagonally($wmcMatrix);
-		//TODO check if order by db or order by php is faster! 
+		//TODO check if order by db or order by php is faster!
 		#array_multisort($wfsMatrix['wfs_id'], SORT_ASC,$wfsMatrix['featuretype_id'], SORT_ASC,$wfsMatrix['wfs_conf_id'], SORT_ASC); //have some problems - the database version is more stable
 		$wmcMatrix = $this->flipDiagonally($wmcMatrix);
 		//read out first server entry - maybe this a little bit timeconsuming TODO
@@ -650,7 +656,7 @@ class searchMetadata
 		$datasetMatrix = db_fetch_all($res);
 		//sort result for accessing the right services
 		$datasetMatrix = $this->flipDiagonally($datasetMatrix);
-		//TODO check if order by db or order by php is faster! 
+		//TODO check if order by db or order by php is faster!
 		#array_multisort($wfsMatrix['wfs_id'], SORT_ASC,$wfsMatrix['featuretype_id'], SORT_ASC,$wfsMatrix['wfs_conf_id'], SORT_ASC); //have some problems - the database version is more stable
 		$datasetMatrix = $this->flipDiagonally($datasetMatrix);
 		$allCoupledLayers = array();
@@ -723,11 +729,16 @@ class searchMetadata
 				//Ticket 6655: Changed order of Datasetsearch subservices
 				//als Argument für OrderBy wurde in dem Aufruf 'intern' gesetzt, damit die Layer nach layer_title und wms_id sortiert werden. Dafür wurde oben eine switch - Anweisung um 'intern' erweitert (Zeile 317)
 				$coupledLayers = new self($this->userId, 'dummysearch', '*', null, null, null, null, null, null, null, $countUniqueLayers, null, null, null, $this->languageCode, null, 'wms', 1, 'json', 'internal', null, null, $this->hostName, 'intern', implode(',', $uniqueAllCoupledLayers), $this->restrictToOpenData, $this->originFromHeader, false, $this->https, $this->restrictToHvd);
+				//Ticket 6655: Changed order of Datasetsearch subservices
+				//als Argument für OrderBy wurde in dem Aufruf 'intern' gesetzt, damit die Layer nach layer_title und wms_id sortiert werden. Dafür wurde oben eine switch - Anweisung um 'intern' erweitert (Zeile 317)
+				$coupledLayers = new self($this->userId, 'dummysearch', '*', null, null, null, null, null, null, null, $countUniqueLayers, null, null, null, $this->languageCode, null, 'wms', 1, 'json', 'internal', null, null, $this->hostName, 'intern', implode(',', $uniqueAllCoupledLayers), $this->restrictToOpenData, $this->originFromHeader, false, $this->https, $this->restrictToHvd);
 				$srvCount = 0;
 				foreach (json_decode($coupledLayers->internalResult)->wms->srv as $server) {
-					
+
+
 					foreach ($server->layer as $layer) {
-						
+
+
 						$layerSearchArray[$layer->id] = $srvCount;
 						//pull inspire downloadoptions from layer information
 						foreach ($layer->downloadOptions as $downloadOption) {
@@ -737,7 +748,17 @@ class searchMetadata
 						}
 						//TODO!: do this also for the next hierachylevel - maybe invoke it recursive!!!
 						// foreach ($layer->layer as $sublayer) {
-							
+
+						// 	$layerSearchArray[$sublayer->id] = $srvCount;
+						// 	//pull inspire downloadoptions from layer information
+						// 	foreach ($sublayer->downloadOptions as $downloadOption) {
+						// 		if ($downloadOption->uuid != null) {
+						// 			$downloadOptionsArray[$downloadOption->uuid] = json_encode($downloadOption->option);
+						// 		}
+						// 	}
+						// }
+						// foreach ($layer->layer as $sublayer) {
+
 						// 	$layerSearchArray[$sublayer->id] = $srvCount;
 						// 	//pull inspire downloadoptions from layer information
 						// 	foreach ($sublayer->downloadOptions as $downloadOption) {
@@ -762,50 +783,29 @@ class searchMetadata
 			}
 /*
 //Ticket 6655: Changed order of Datasetsearch subservices
-zum Sortieren der Treffer bei Datensatzsuche nach title:	
+zum Sortieren der Treffer bei Datensatzsuche nach title:
 $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 
 
 */
 			$layer_id_sorted = array();
-			
+
 			foreach (json_decode($coupledLayers->internalResult)->wms->srv as $server) {
 				foreach ($server->layer as $layer) {
-				
+
 					$layer_id_sorted[] = $layer->id;
-			
+
 				}
 			}
-			
+
 			$this->sortMetadataJSON($datasetMatrix,$layer_id_sorted,$coupledLayers,$layerSearchArray) ;
-			
-			
-			
+
+
+
 			//insert objects into dataset result list
 			for ($i = 0; $i < count($datasetMatrix); $i++) {
-				// $layerCount = 0;
-				// foreach ($this->datasetJSON->dataset->srv[$i]->coupledResources->layer as $layer) {
-					
-				// 	//first add whole srv result
-				// 	$subTree = json_decode($coupledLayers->internalResult)->wms->srv[$layerSearchArray[$layer->id]];
-				// 	$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv = $subTree;
-				// 	# not only add the service object, but also the layer title, ...
-				// 	# maybe it is easier to get the right layer and add this as the "root" layer object instead of the whole subtree
-				// 	// extract layer with id from subtree
-				// 	if (is_array($subTree->layer) && isset($layer->id)) {
-				// 		$coupledLayer = $this->findLayer($subTree->layer, $layer->id);
-					
-				// 		//reinitialize layer array
-				// 		if ($coupledLayer != false) {
-				// 			//delete sublayers from found layer !
-				// 			unset($coupledLayer->layer);
-				// 			$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv->layer = array();
-				// 			$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv->layer[0] = $coupledLayer; 
-				// 		}
-				// 	}
-				// 	//$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv = json_decode($coupledLayers->internalResult)->wms->srv[$layerSearchArray[$layer->id]];
-				// 	$layerCount++;
-				// }
+			//Ticket 6655: Changed order of Datasetsearch subservices
+			//Some lines were deleted due to this change -> In case of issues compare this against rlp branch
 				$featuretypeCount = 0;
 				foreach ($this->datasetJSON->dataset->srv[$i]->coupledResources->featuretype as $ft) {
 					$this->datasetJSON->dataset->srv[$i]->coupledResources->featuretype[$featuretypeCount]->srv = json_decode($coupledFeaturetypes->internalResult, true)->wfs->srv[$featuretypeSearchArray[$ft->id]];
@@ -825,6 +825,8 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 					$this->datasetJSON->dataset->srv[$i]->coupledResources->inspireAtomFeeds = json_decode($downloadOptionsArray[$datasetMatrix[$i]['fileidentifier']]);
 					//Ticket 6655: Changed order of Datasetsearch subservices
 					usort($this->datasetJSON->dataset->srv[$i]->coupledResources->inspireAtomFeeds, fn($a, $b) => $a->type <=> $b->type);
+					//Ticket 6655: Changed order of Datasetsearch subservices
+					usort($this->datasetJSON->dataset->srv[$i]->coupledResources->inspireAtomFeeds, fn($a, $b) => $a->type <=> $b->type);
 				} else {
 					$downloadOptionsFromMetadata = json_decode(getDownloadOptions(array($datasetMatrix[$i]['fileidentifier']), $this->protocol . "://" . $this->hostName . "/mapbender/", $this->protocol . "://" . $this->hostName));
 					//try to load coupled atom feeds from mod_getDownloadOptions and add them to result list! (if no wms layer nor wfs featuretype is available)
@@ -833,18 +835,23 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 							$this->datasetJSON->dataset->srv[$i]->coupledResources->inspireAtomFeeds[] = $dlOption;
 						}
 					}
+
 				}
 			}
 		}
 	}
+//Ticket 6655: Changed order of Datasetsearch subservices
+//$matrix ist Matrix von oben
+//$sorted_id_list ist die nach Titeln und WMS sortierte LayerID Liste
+
 	private function sortMetadataJSON($matrix, $sorted_id_list, $coupled_layers, $layerSearchArray) {
 		$sorted_id_map = array_flip($sorted_id_list);
 		$coupled_layers_srv = json_decode($coupled_layers->internalResult)->wms->srv;
-	
+
 		for ($i = 0; $i < count($matrix); $i++) {
 			$layers = $this->datasetJSON->dataset->srv[$i]->coupledResources->layer;
 			$sorted_layers = array();
-	
+
 			foreach ($layers as $layer) {
 				$layer_id = $layer->id;
 				if (isset($sorted_id_map[$layer_id])) {
@@ -852,10 +859,10 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 					$sorted_layers[$position] = $layer_id;
 				}
 			}
-	
+
 			ksort($sorted_layers);
 			$c = 0;
-	
+
 			foreach ($sorted_layers as $position => $layer_id) {
 				$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$c]->id = $layer_id;
 				$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$c]->srv = $coupled_layers_srv[$layerSearchArray[$layer_id]];
@@ -882,7 +889,7 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 		$applicationMatrix = db_fetch_all($res);
 		//sort result for accessing the right services
 		$applicationMatrix = $this->flipDiagonally($applicationMatrix);
-		//TODO check if order by db or order by php is faster! 
+		//TODO check if order by db or order by php is faster!
 		#array_multisort($wfsMatrix['wfs_id'], SORT_ASC,$wfsMatrix['featuretype_id'], SORT_ASC,$wfsMatrix['wfs_conf_id'], SORT_ASC); //have some problems - the database version is more stable
 		$applicationMatrix = $this->flipDiagonally($applicationMatrix);
 		//read out first server entry - maybe this a little bit timeconsuming TODO
@@ -971,11 +978,10 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 					if ($this->internalProcessCoupledWMS){
 						$rootIndex = $index;
 					}else{
-						//This functions returns itself if the root layer is not initally selected - and by that not found
 						$rootIndex = $this->getLayerParent($subLayersFlip, $index);
 					}
 					$rootLayerPos = $subLayers[$rootIndex]['layer_pos'];
-					//This rootLayerID is not necessarily the layer with layer_pos = 0 - because of the search result - it is just the "root" of the selected layer in the search result overview - there it can be itself				
+					//This rootLayerID is not necessarily the layer with layer_pos = 0 - because of the search result - it is just the "root" of the selected layer in the search result overview - there it can be itself
 					$rootLayerId = $subLayers[$rootIndex]['layer_id'];
 					//Retrieval of the actual root layer id - with layer_pos = 0 - to identify the wms service
 					if( $rootLayerPos == 0){
@@ -1057,13 +1063,14 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 					$this->wmsJSON->wms->srv[$j]->layer[0]->maxScale = $legendInfo['maxScale'];
 					//pull downloadOptions as json with function from other script: php/mod_getDownloadOptions.php
 					$downloadOptionsCs = str_replace("{", "", str_replace("}", "", str_replace("}{", ",", $legendInfo['downloadOptions'])));
+					// begin of performance optimusprime by @lvgl-cs
 					if (!isset($functionResults[$downloadOptionsCs])) {
-						$downloadOptions =
-	   json_decode(getDownloadOptions(explode(',', $downloadOptionsCs), $this->protocol . "://" . $this->hostName . "/mapbender/", $this->protocol . "://" . $this->hostName));
+						$downloadOptions = json_decode(getDownloadOptions(explode(',', $downloadOptionsCs), $this->protocol . "://" . $this->hostName . "/mapbender/"));
 	   					$functionResults[$downloadOptionsCs] = $downloadOptions; // Store the result
 					}else{
 						$downloadOptions =$functionResults[$downloadOptionsCs]; // Retrieve the stored result
 					}
+					// end of performance optimusprime by @lvgl-cs
 					$this->wmsJSON->wms->srv[$j]->layer[0]->downloadOptions = $downloadOptions;
 
 					if ($subLayers[$rootIndex]['layer_name'] == '') {
@@ -1389,7 +1396,7 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 	{
 		//elements needed to exist in mb wfs,wms,wmc view or table:
 		//1. textfield - all texts - searchText
-		//2. responsible organisations - given id 
+		//2. responsible organisations - given id
 		//3. bbox - is not explicit given in the wfs metadata? Since WFS 1.1.0 a latlonbbox is present
 		//4. isoTopicCategory - is not been saved til now
 		//5. ...
@@ -1440,7 +1447,7 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 			}
 			$e = new mb_notice("class_metadata.php: spatial operator: " . $this->searchTypeBbox);
 			if ((int) $postgisSubNumber >= 3) {
-				#$spatialFilter = "(the_geom ";	
+				#$spatialFilter = "(the_geom ";
 				$e = new mb_notice("class_metadata.php: spatial operator: " . $this->searchTypeBbox);
 				if ($this->searchTypeBbox == 'outside') {
 					$spatialFilter = ' disjoint(';
@@ -1492,7 +1499,7 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 		if (strtolower($this->searchResources) !== "wmc" && $this->restrictToOpenData) {
 			array_push($whereCondArray, '(isopen = 1)');
 		}
-		//search filter for HVD classification 
+		//search filter for HVD classification
 		//
 		if (strtolower($this->searchResources) == "dataset" && $this->restrictToHvd) {
 			//FIX INSPIRE Category ids: [1,2,3]
@@ -1569,7 +1576,7 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 		if ($this->regTimeBegin != NULL && $this->regTimeEnd != NULL) {
 			$time = "(TO_TIMESTAMP(" . $this->searchResources . "_timestamp) BETWEEN '" . $this->regTimeBegin . "' AND '" . $this->regTimeEnd . "')";
 			array_push($whereCondArray, $time);
-			//only begin is set		
+			//only begin is set
 		}
 		if ($this->regTimeBegin != NULL && $this->regTimeEnd == NULL) {
 			$time = "(TO_TIMESTAMP(" . $this->searchResources . "_timestamp) > '" . $this->regTimeBegin . "')";
@@ -1585,7 +1592,7 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 			if ($this->timeBegin != NULL && $this->timeEnd != NULL) {
 				$time = "((to_timestamp('" . $this->timeBegin . "','YYYY-MM-DD'),to_timestamp('" . $this->timeEnd . "','YYYY-MM-DD')) OVERLAPS (timebegin,timeend))";
 				array_push($whereCondArray, $time);
-				//only begin is set		
+				//only begin is set
 			}
 			if ($this->timeBegin != NULL && $this->timeEnd == NULL) {
 				$time = "(timeend >= '" . $this->timeBegin . "')";
@@ -1635,12 +1642,12 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 			$whereStr = "WHERE " . $whereStr;
 		/*}
 		else if (($whereStr !== '')){
-			$whereStr = "WHERE " . $whereStr. " AND coupled_resources  ~ '[0-9]+'";			
+			$whereStr = "WHERE " . $whereStr. " AND coupled_resources  ~ '[0-9]+'";
 		}
 		else if (strtolower($this->searchResources) === "dataset")
 			$whereStr = "WHERE coupled_resources  ~ '[0-9]+' ";
 		*/
-		
+
 		$sql .= $whereStr;
 		//TODO ORDER BY in SQL - not necessary for counting things:
 		$sql .= $this->orderBy;
@@ -1664,7 +1671,7 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 	private function writeCategories($whereStr, $v, $t)
 	{
 		//generate count sql
-		//generate count of all entries	
+		//generate count of all entries
 		if ($this->searchResources != 'application') {
 			$sqlN = "SELECT count(" . $this->searchResources . "_id) from " . $this->searchView . " ";
 		} else {
@@ -1673,13 +1680,13 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 		if ($whereStr != '') {
 			$sqlN .= $whereStr;
 		}
-		//Get total number of results 
+		//Get total number of results
 		$count = db_prep_query($sqlN, $v, $t);
 		$n = db_fetch_all($count);
 		#echo "<br>N: ".var_dump($n)."<br>";
 		$n = $n[0]['count'];
 		$e = new mb_notice("class_metadata.php: Search => SQL-Request of " . $this->searchResources . " service metadata N: " . $sqlN . " Number of found objects: " . $n);
-		if ($this->searchId != 'dummysearch') { //searchId is not the default id! - it has been explicitly defined 
+		if ($this->searchId != 'dummysearch') { //searchId is not the default id! - it has been explicitly defined
 			//check if cat file already exists:
 			//filename to search for:
 			$filename = $this->tempFolder . "/" . $this->searchId . "_" . $this->searchResources . "_cat.json";
@@ -1732,7 +1739,7 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 							//order in a linear scale desc
 							$keywordCounts[$j]['count'] = $this->maxFontSize - ($j * $this->inc);
 						} else {
-							//set weight prop to count 
+							//set weight prop to count
 							$keywordCounts[$j]['count'] = $keywordCounts[$j]['count'] * $this->maxFontSize / $this->maxWeight;
 						}
 					}
@@ -2095,7 +2102,7 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 		return $asstr;
 	}
 
-	//out of php doc - test if it is faster than normal array_search	
+	//out of php doc - test if it is faster than normal array_search
 	private function fast_in_array($elem, $array)
 	{
 		$top = sizeof($array) - 1;
@@ -2160,7 +2167,7 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 	{
 		$childLayers = $this->filter_by_value($subLayers, 'layer_parent', $rootLayerPos); //the root layer position in the sublayer array was located before. In this step, all layers will be pulled out of sublayer, where root layer position is parent object
 		$countsublayer = 0;
-		//if child exists create a new layer array for these 
+		//if child exists create a new layer array for these
 		if (count($childLayers) != 0) {
 			$servObject->layer = array();
 		}
@@ -2205,7 +2212,7 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 			$servObject->layer[$countsublayer]->permission = $this->getPermissionValueForLayer($child['layer_id'], $child['wms_id']); //TODO: make this much faster!!!! - is done by collecting all accessable resources once. Maybe this has to be adopted if the count of the resources become higher
 			//call this function itself - search sublayers in the layer object.
 			$layerIdArray = $this->writeWMSChilds($layerIdArray, $child['layer_pos'], $subLayers, $servObject->layer[$countsublayer]); //TODO create a timeout condition !
-			array_push($layerIdArray, $child['layer_id']); //child have been identified and recursively written 
+			array_push($layerIdArray, $child['layer_id']); //child have been identified and recursively written
 			$countsublayer++;
 		}
 		return $layerIdArray;
@@ -2283,7 +2290,7 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 			$queryStringNew = str_replace($str2search, $str2exchange, $queryString);
 			$queryStringNew = str_replace("&&", "&", $queryStringNew);
 		} else {
-			//there are more than one filter - reduce the filter  
+			//there are more than one filter - reduce the filter
 			$objectList = "";
 			for ($i = 0; $i < count($queryArray); $i++) {
 				if ($queryArray[$i] != $string) {
@@ -2309,7 +2316,7 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 		}
 	}
 
-	// function to add a new variable or complete parameter to a GET parameter query url 
+	// function to add a new variable or complete parameter to a GET parameter query url
 	private function addToQuery($paramName, $queryString, $string, $queryList)
 	{
 		//test if string was part of query before, if so, don't extent the query
@@ -2339,7 +2346,7 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 		}
 	}
 
-	// recursive function to extract a layer by id from a returned hierarchical wms srv layer array search result 
+	// recursive function to extract a layer by id from a returned hierarchical wms srv layer array search result
 	private function findLayer($layerArray, $layerId) {
 		$e = new mb_notice("classes/class_metadata.php: method->findLayer: search for id: " . (integer)$layerId);
 		if (is_array($layerArray)) {
@@ -2362,7 +2369,7 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 		}
 	}
 
-	// function to delete one GET parameter totally from a query url 
+	// function to delete one GET parameter totally from a query url
 	private function delTotalFromQuery($paramName, $queryString)
 	{
 		$queryString = "&" . $queryString;

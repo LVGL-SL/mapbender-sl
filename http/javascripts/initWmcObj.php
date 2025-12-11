@@ -282,7 +282,7 @@ if (is_numeric($noneDefaultWmc)) {
 WMS
 */
 $e = new mb_notice("javascripts/initWmcObj.php: check WMS API");
-//private $datasetid; //new parameter to find a layer with a corresponding identifier element - solves the INSPIRE data service coupling after retrieving the ows from a dataset search via CSW interface! Only relevant, if a WMS is gioven 
+//private $datasetid; //new parameter to find a layer with a corresponding identifier element - solves the INSPIRE data service coupling after retrieving the ows from a dataset search via CSW interface! Only relevant, if a WMS is gioven
 if ($getParams['WMS']) {
 	// WMS param given as array
 	if (is_array($getParams['WMS'])) {
@@ -331,7 +331,7 @@ if ($getParams['WMS']) {
 				$resultObj["notAccessable"]["wms"] = array_merge(
 					$resultObj["notAccessable"]["wms"],
 					$multipleAssocArray['url'].' - '.$resultOfWmsParsing['message']
-					);	
+					);
 			}
 		} else {
 			//one single WMS capabilities url is given - normal case!
@@ -346,7 +346,7 @@ if ($getParams['WMS']) {
 					//$e = new mb_exception("javascripts/initWmcObj.php: look for identifier element: ".$getParams['DATASETID']);
 					//check wms url for parameter request, service, version
 					//else add missing parameter
-				     
+
 				    if (!filter_var($val, FILTER_VALIDATE_URL) === false) {
 				        //sanitize url
 				        //del all wms params from url
@@ -358,9 +358,9 @@ if ($getParams['WMS']) {
 				        //add new ones to url
 				        //$e = new mb_exception("javascripts/init.WmcObj.php: wmsurlfrom new: ".$val);
 				    }
-				  				   
+
 					$resultOfWmsParsing = $currentWms->createObjFromXML($val, false, $getParams['DATASETID']);
-					//Set zoom to extent of wms 
+					//Set zoom to extent of wms
 //$e = new mb_exception("javascripts/initWmcObj.php: wms object to add: ".json_encode($currentWms));
 					//has a layer_identifier array, cause it is created from capabilities!
 					//$e = new mb_exception("javascripts/initWmcObj.php: first layer layer_epsg: ".json_encode($currentWms->objLayer[0]->layer_epsg[0]));
@@ -376,8 +376,8 @@ if ($getParams['WMS']) {
 								$bbox->transform($wmcGetApi->mainMap->getEpsg());
 							}
 							$wmcGetApi->mainMap->setExtent($bbox);
-							//overwrite zoom to parameter 
-							break;	
+							//overwrite zoom to parameter
+							break;
 						}
 					}
 					//search for bbox of special layer - overwrite the bbox of the wms if such a layer was found!
@@ -523,7 +523,7 @@ if ($inputLayerArray) {
 			$wmcGetApi->mergeWmsArray(array($wms), $options);
 			//$time_elapsed_secs = microtime(true) - $start;
 			//$e = new mb_exception('javascripts/mod_initWmcObj.php: time for mergeWmsArray: ' . $time_elapsed_secs);
-			
+
 			// do not use "zoom" attribute of mergeWmsArray,
 			// as this would zoom to the entre WMS.
 			// Here we set extent to the layer extent only.
@@ -549,7 +549,7 @@ if ($inputLayerArray) {
 	}
 //	$time_elapsed_secs = microtime(true) - $start;
 //	$e = new mb_exception('javascripts/mod_initWmcObj.php: time for all layer: ' . $time_elapsed_secs);
-	
+
 }
 /*
 FEATURETYPE
@@ -656,7 +656,7 @@ if(is_array($inputGeojsonArray) && count($inputGeojsonArray) > 0 && !empty($inpu
 		            $isGeojson = true;
 		            break;
 		        case "FeatureCollection":
-		            //all further things are ok 
+		            //all further things are ok
 		            $isGeojson = true;
 		            break;
 		        default:
@@ -669,7 +669,7 @@ if(is_array($inputGeojsonArray) && count($inputGeojsonArray) > 0 && !empty($inpu
 		        $geojsonStyle = new Geojson_style();
 		        $styledGeojson = $geojsonStyle->addDefaultStyles(json_encode($geojson));
 		        $geojson = json_decode($styledGeojson);
-		        //add default title for geojson collection, if not given 
+		        //add default title for geojson collection, if not given
 			    if (!empty($geojson->title)) {
 					//Ticket 8549: Changing default title of geojson collection
 				    $geojsonTitle = $geojson->title . " " ._mb("Collection")." ". $i;
@@ -687,11 +687,10 @@ if(is_array($inputGeojsonArray) && count($inputGeojsonArray) > 0 && !empty($inpu
 				$indexArrayToDeleteMultiGeometries = array();
 				foreach ($kmls->{$geojsonTitle}->data->features as $idx => $feature) {
 					if ($feature->geometry->type == 'MultiPolygon' || $feature->geometry->type == 'MultiPoint') {
-						$e = new mb_exception("javascripts/initWmcObj.php: CSINFO Multiobjecct found!");
 						$geometryType = $feature->geometry->type == 'MultiPolygon' ? 'Polygon' : 'Point';
 						$subFeatureType = substr($geometryType, 0, 1) . strtolower(substr($geometryType, 1));
 						$number = 1;
-						
+
 						foreach ($feature->geometry->coordinates as $coordinates) {
 							$newFeature = new stdClass();
 							$newFeature->type = "Feature";
@@ -718,7 +717,7 @@ if(is_array($inputGeojsonArray) && count($inputGeojsonArray) > 0 && !empty($inpu
 				    $latitudes = array();
 				    $longitudes = array();
 				    foreach($kmls->{$geojsonTitle}->data->features as $feature) {
-				        $e = new mb_notice("javascripts/initWmcObj.php: GEOJSON TYPE : ".$feature->geometry->type);   
+				        $e = new mb_notice("javascripts/initWmcObj.php: GEOJSON TYPE : ".$feature->geometry->type);
 					    switch ($feature->geometry->type) {
 					        case "MultiPolygon":
 					            //$e = new mb_exception("javascripts/initWmcObj.php: Polygon found!");
@@ -754,7 +753,7 @@ if(is_array($inputGeojsonArray) && count($inputGeojsonArray) > 0 && !empty($inpu
 							    break;
 					    }
 				    }
-		        }  
+		        }
 		        $i++; //only add one geojson - if it is somewhat valid
 		    } else {
 		        $e = new mb_exception("javascripts/initWmcObj.php: some json is not a feature or a featurecollection!");
@@ -771,7 +770,7 @@ if(is_array($inputGeojsonArray) && count($inputGeojsonArray) > 0 && !empty($inpu
 			$offset = 100;
 		}
 		if ($offset !== false) {
-		    $e = new mb_exception("javascripts/initWmcObj.php: calculate new offset! "); 
+		    $e = new mb_exception("javascripts/initWmcObj.php: calculate new offset! ");
 			$averageLatitude = ($maxy - $miny) / 2;
 			$r = 6371000.0;
 			$pi = 3.14159265359;
@@ -785,7 +784,7 @@ if(is_array($inputGeojsonArray) && count($inputGeojsonArray) > 0 && !empty($inpu
 		}
 		// overwrite extend from getApi
 		$bbox = new Mapbender_bbox($minx,$miny,$maxx,$maxy,"EPSG:4326");
-		//$e = new mb_exception("javascripts/initWmcObj.php: new bbox " . json_encode($bbox)); 
+		//$e = new mb_exception("javascripts/initWmcObj.php: new bbox " . json_encode($bbox));
 		// check for current epsg and transform if needed
 		if ($wmcGetApi->mainMap->getEpsg() !== "EPSG:4326") {
 			$bbox->transform($wmcGetApi->mainMap->getEpsg());
@@ -793,7 +792,7 @@ if(is_array($inputGeojsonArray) && count($inputGeojsonArray) > 0 && !empty($inpu
 		$wmcGetApi->mainMap->setExtent($bbox);
 	}
 	//$e = new mb_exception("javascripts/initWmcObj.php: after setExtent " . $wmcGetApi->mainMap->getExtent());
-	if ($someGeojsonGiven) {  
+	if ($someGeojsonGiven) {
 	    $wmcGetApi->generalExtensionArray['kmls'] = json_encode($kmls);
 		$wmcGetApi->generalExtensionArray['kmlOrder'] = json_encode($kmlOrder);
 		$e = new mb_notice("javascripts/initWmcObj.php: kmls: ".$wmcGetApi->generalExtensionArray['kmls']);
@@ -846,7 +845,7 @@ if (true) {
 	        $applicationMetadata->metadataUrl = MAPBENDER_PATH."/php/mod_iso19139ToHtml.php?url=".urlencode(MAPBENDER_PATH."/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$applicationMetadata->fileIdentifier);
 	        $applicationMetadataJson = json_encode($applicationMetadata);
 	        //$e = new mb_exception(json_encode($applicationMetadata));
-	        //$jsonFile = new connector("http://localhost/mb_trunk/geoportal/testpolygon.json"); 
+	        //$jsonFile = new connector("http://localhost/mb_trunk/geoportal/testpolygon.json");
 	    }
     } else {
         $e = new mb_notice("Found no mapbender application metadata!");
@@ -889,9 +888,9 @@ if ($removeUnaccessableLayers == true) {
 //$e = new mb_notice("");
 $wmcGetApi = new wmc();
 // For debuggin purposes
-// New Object with merged layers and other features - why?? TODO test 
+// New Object with merged layers and other features - why?? TODO test
 //$e = new mb_exception("javascripts/initWmcObj.php: create from xml");
-$wmcGetApi->createFromXml($xml);	
+$wmcGetApi->createFromXml($xml);
 //debug
 /*$xml2 = $wmcGetApi->toXml();
 $myfile = fopen(TMPDIR . "/wmc_merged_3.xml", "w") or die("Unable to open file!");
@@ -905,7 +904,7 @@ if($h = fopen(TMPDIR . "/tmp_wmc3.json","w")){
         #exit;
     }
     fclose($h);
-} 
+}
 */
 /*
 CONSTRAINTS
@@ -1055,8 +1054,8 @@ if ($gml_string) {
 	catch (Exception $e) {
 	    	$err = new mb_exception("javascripts/initWmcObj.php: ".$e->getMessage());
 		return false;
-	}			
-	//if parsing was successful			
+	}
+	//if parsing was successful
 	if ($gml2 !== false) {
 		$gml2->addAttribute('xmlns:gml', 'http://www.opengis.net/gml');
 		$gml2->registerXPathNamespace("default", "http://www.opengis.net/gml");
@@ -1128,12 +1127,12 @@ if(is_array($zoom)) {
 }
 if (count($zoom) == 3) {
     //add zoom[2] to x and y and set bbox
-    //calculate new extent from scale -  
+    //calculate new extent from scale -
     //
     $point = array($zoom[0], $zoom[1]);
     $scale = $zoom[2];
     $newExtent = $wmcGetApi->mainMap->getBboxFromPoiScale($point, $scale);
-    //Problem: TODO setExtent does not work properly for geographic EPSGs!!! test line 519 - if a point geometry is given by geojson 
+    //Problem: TODO setExtent does not work properly for geographic EPSGs!!! test line 519 - if a point geometry is given by geojson
     //$e = new mb_exception(json_encode($newExtent));
     //$e = new mb_exception(json_encode($wmcGetApi->mainMap->getEpsg()));
     $bbox = new Mapbender_bbox(
@@ -1144,7 +1143,7 @@ if (count($zoom) == 3) {
 	   $epsg = $wmcGetApi->mainMap->getEpsg()
     );
     $wmcGetApi->mainMap->setExtent($bbox);
-    //render point at middle position 
+    //render point at middle position
 }
 if (count($zoom) == 4 || count($zoom) == 5) {
 	$e = new mb_notice("javascripts/initWmcObject.php: found EXTENT");
@@ -1156,9 +1155,9 @@ if (count($zoom) == 4 || count($zoom) == 5) {
 			$zoom[3],
 			$epsg = $zoom[4]
 		);
-		
+
 	} else {
-		//check if zoom with scale and epsg is requested 
+		//check if zoom with scale and epsg is requested
 		if (strpos(strtolower($zoom[3]), "epsg") === 0  && is_numeric($zoom[0]) && is_numeric($zoom[1]) && is_numeric($zoom[2])) {
 			$e = new mb_notice("javascripts/initWmcObject.php: SRS found in zoom parameter: ".$zoom[3]);
 			$point = array($zoom[0], $zoom[1]);
@@ -1174,7 +1173,7 @@ if (count($zoom) == 4 || count($zoom) == 5) {
 			//$wmcGetApi->mainMap->setExtent($bbox);
 			//maybe easier to guild geojson before ...
 			//calculate bbox from central point with scale (or offset in m) - depends on epsg
-		} else {		
+		} else {
 			// get current epsg from wmc bounding box
 			// ViewContext->General->BoundingBox->SRS
 			$e = new mb_notice("javascripts/initWmcObject.php: SRS found in current WMC: ".$wmcGetApi->mainMap->getEpsg());
@@ -1189,7 +1188,7 @@ if (count($zoom) == 4 || count($zoom) == 5) {
 		}
 	}
 	$e = new mb_notice("javascripts/initWmcObject.php: calculated extent: " . json_encode($bbox));
-	$wmcGetApi->mainMap->setExtent($bbox);		
+	$wmcGetApi->mainMap->setExtent($bbox);
 }
 // check if something have to be shown in disclaimer
 if (
@@ -1308,7 +1307,7 @@ if ($saveInSession == false) {
 	Mapbender::session()->delete("mb_wmc");
 	//delete also the current gui - this is handled by revertGui...
 } else {
-	//TODO: do the following only if wmc id was given by GET parameter or always - write wmc to session before initialize the client 
+	//TODO: do the following only if wmc id was given by GET parameter or always - write wmc to session before initialize the client
 	if (isset($wmc_filename) && $wmc_filename != ""){
 	    $admin->putToStorage($wmc_filename, $wmcGetApi->toXml(), TMP_WMC_SAVE_STORAGE, 3600);
         //$e = new mb_exception("javascripts/initWmcObj.php: write initial wmc to storage - filename: ".$wmc_filename);
