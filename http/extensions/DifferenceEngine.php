@@ -525,7 +525,7 @@ class Diff
    */
   function __construct($from_lines, $to_lines) {
     $eng = new _DiffEngine;
-    $this->edits = $eng->diff($from_lines, $to_lines);
+    $this->edits = $eng->diff(array_map("htmlspecialchars", $from_lines), array_map("htmlspecialchars", $to_lines));
     //$this->_check($from_lines, $to_lines);
   }
   
