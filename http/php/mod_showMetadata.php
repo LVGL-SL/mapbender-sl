@@ -1,7 +1,7 @@
 <?php
 # $Id: mod_showMetadata.php 235 2010-09-08 08:34:48Z armin11 $
 # http://www.mapbender.org/index.php/Administration
-# Copyright (C) 2002 CCGIS 
+# Copyright (C) 2002 CCGIS
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ require_once dirname(__FILE__)."/../classes/class_administration.php";
 require_once dirname(__FILE__) . "/../classes/class_user.php";
 require_once dirname(__FILE__) . "/../classes/class_wms.php";
 require_once dirname(__FILE__) . "/../classes/class_Uuid.php";
-require_once(dirname(__FILE__)."/../classes/class_owsConstraints.php"); 
+require_once(dirname(__FILE__)."/../classes/class_owsConstraints.php");
 require_once dirname(__FILE__) . "/../../tools/wms_extent/extent_service.conf";
 require_once dirname(__FILE__) . "/../extensions/phpqrcode/phpqrcode.php";
 
@@ -49,7 +49,7 @@ $linkedDataProxyUrl = $schema . "://" . $_SERVER ['HTTP_HOST'] . "/" . $rewriteP
 //GET:
 //resource: wms, layer, wfs, featuretype, wfs-conf, wmc
 //id: integer
-//outputFormat: html, xml, georss, 
+//outputFormat: html, xml, georss,
 //languageCode: de, en, fr
 //get language parameter out of mapbender session if it is set else set default language to de_DE
 $sessionLang = Mapbender::session()->get("mb_lang");
@@ -73,10 +73,10 @@ $layout = 'tabs';
 if (isset($_REQUEST["resource"]) & $_REQUEST["resource"] != "") {
 	//validate to csv integer list
 	$testMatch = $_REQUEST["resource"];
-	if (!($testMatch == 'wms' or $testMatch == 'layer' or $testMatch == 'wfs' or $testMatch == 'featuretype' or $testMatch == 'wfs-conf'  or $testMatch == 'wmc')){ 
+	if (!($testMatch == 'wms' or $testMatch == 'layer' or $testMatch == 'wfs' or $testMatch == 'featuretype' or $testMatch == 'wfs-conf'  or $testMatch == 'wmc')){
 		//echo 'resource: <b>'.$testMatch.'</b> is not valid.<br/>';
-		echo 'Parameter <b>resource</b> is not valid (wms,layer,wfs,featuretype,wfs-conf,wmc)<br/>'; 
-		die(); 		
+		echo 'Parameter <b>resource</b> is not valid (wms,layer,wfs,featuretype,wfs-conf,wmc)<br/>';
+		die();
  	}
 	$resource = $testMatch;
 	$testMatch = NULL;
@@ -84,11 +84,11 @@ if (isset($_REQUEST["resource"]) & $_REQUEST["resource"] != "") {
 if (isset($_REQUEST["id"]) & $_REQUEST["id"] != "") {
 	//validate to csv integer list
 	$testMatch = $_REQUEST["id"];
-	$pattern = '/^[\d,]*$/';		
- 	if (!preg_match($pattern,$testMatch)){ 
-		//echo 'id: <b>'.$testMatch.'</b> is not valid.<br/>'; 
-		echo 'Parameter <b>id</b> is not valid (integer or cs integer list).<br/>'; 
-		die(); 		
+	$pattern = '/^[\d,]*$/';
+ 	if (!preg_match($pattern,$testMatch)){
+		//echo 'id: <b>'.$testMatch.'</b> is not valid.<br/>';
+		echo 'Parameter <b>id</b> is not valid (integer or cs integer list).<br/>';
+		die();
  	}
 	$id = $testMatch;
 	$testMatch = NULL;
@@ -96,10 +96,10 @@ if (isset($_REQUEST["id"]) & $_REQUEST["id"] != "") {
 if (isset($_REQUEST["outputFormat"]) & $_REQUEST["outputFormat"] != "") {
 	//validate to csv integer list
 	$testMatch = $_REQUEST["outputFormat"];
-	if (!($testMatch == 'iso19139' or $testMatch == 'html' or $testMatch == 'georss')){ 
-		//echo 'outputFormat: <b>'.$testMatch.'</b> is not valid.<br/>'; 
-		echo 'Parameter <b>outputFormat</b> is not valid (iso19139,html,georss).<br/>'; 
-		die(); 		
+	if (!($testMatch == 'iso19139' or $testMatch == 'html' or $testMatch == 'georss')){
+		//echo 'outputFormat: <b>'.$testMatch.'</b> is not valid.<br/>';
+		echo 'Parameter <b>outputFormat</b> is not valid (iso19139,html,georss).<br/>';
+		die();
  	}
 	$outputFormat = $testMatch;
 	$testMatch = NULL;
@@ -107,10 +107,10 @@ if (isset($_REQUEST["outputFormat"]) & $_REQUEST["outputFormat"] != "") {
 if (isset($_REQUEST["languageCode"]) & $_REQUEST["languageCode"] != "") {
 	//validate to csv integer list
 	$testMatch = $_REQUEST["languageCode"];
-	if (!($testMatch == 'de' or $testMatch == 'fr' or $testMatch == 'en')){ 
-		//echo 'languageCode: <b>'.$testMatch.'</b> is not valid.<br/>'; 
-		echo 'Parameter <b>languageCode</b> is not valid (de,fr,en).<br/>'; 
-		die(); 		
+	if (!($testMatch == 'de' or $testMatch == 'fr' or $testMatch == 'en')){
+		//echo 'languageCode: <b>'.$testMatch.'</b> is not valid.<br/>';
+		echo 'Parameter <b>languageCode</b> is not valid (de,fr,en).<br/>';
+		die();
  	}
 	$languageCode = $testMatch;
 	$testMatch = NULL;
@@ -118,10 +118,10 @@ if (isset($_REQUEST["languageCode"]) & $_REQUEST["languageCode"] != "") {
 if (isset($_REQUEST["layout"]) & $_REQUEST["layout"] != "") {
 	//validate to csv integer list
 	$testMatch = $_REQUEST["layout"];
-	if (!($testMatch == 'tabs' or $testMatch == 'accordion' or $testMatch == 'plain')){ 
-		//echo 'layout: <b>'.$testMatch.'</b> is not valid.<br/>'; 
-		echo 'Parameter <b>layout</b> is not valid (tabs,accordion,plain).<br/>'; 
-		die(); 		
+	if (!($testMatch == 'tabs' or $testMatch == 'accordion' or $testMatch == 'plain')){
+		//echo 'layout: <b>'.$testMatch.'</b> is not valid.<br/>';
+		echo 'Parameter <b>layout</b> is not valid (tabs,accordion,plain).<br/>';
+		die();
  	}
 	$layout = $testMatch;
 	$testMatch = NULL;
@@ -130,10 +130,10 @@ if (isset($_REQUEST["layout"]) & $_REQUEST["layout"] != "") {
 if (isset($_REQUEST["subscribe"]) & $_REQUEST["subscribe"] != "") {
 	//validate to csv integer list
 	$testMatch = $_REQUEST["subscribe"];
-	if (!($testMatch == '1' or $testMatch == '0')){ 
-		//echo 'layout: <b>'.$testMatch.'</b> is not valid.<br/>'; 
-		echo 'Parameter <b>subscribe</b> is not valid (0,1).<br/>'; 
-		die(); 		
+	if (!($testMatch == '1' or $testMatch == '0')){
+		//echo 'layout: <b>'.$testMatch.'</b> is not valid.<br/>';
+		echo 'Parameter <b>subscribe</b> is not valid (0,1).<br/>';
+		die();
  	}
 	$subscribe = $testMatch;
 	$testMatch = NULL;
@@ -196,7 +196,7 @@ switch ($languageCode) {
 		$translation['minscale'] = 'Minimaler Maßstab';
 		$translation['maxscale'] = 'Maximaler Maßstab';
 		$translation['crs'] = 'Koordinatenreferenzsysteme (mit BBOX)';
-		$translation['wmccrs'] = 'Eingestelltes Koordinatenreferenzsystem';	
+		$translation['wmccrs'] = 'Eingestelltes Koordinatenreferenzsystem';
 		$translation['wgs84Bbox'] = 'Eckpunkte in geogr. Koordinaten';
 		$translation['wgs84BboxGraphic'] = 'Ausdehnung';
 		$translation['mapbenderCapabilities'] = 'Geoportal Capabilities';
@@ -517,8 +517,8 @@ switch ($languageCode) {
 
 //Check if an id and a resource was given
 if (!isset($_REQUEST["id"]) or !isset($_REQUEST["resource"])) {
-	echo 'Not enough input parameters. resource and id must be given!<br/>'; 
-	die(); 	
+	echo 'Not enough input parameters. resource and id must be given!<br/>';
+	die();
 }
 
 //Read out information from mapbender database
@@ -585,12 +585,12 @@ switch ($resource) {
 		$t = array('i');
 		$serviceType = 'wfs';
 		$resourceSymbol = "<img src='../img/osgeo_graphics/geosilk/vector.png' alt='".$translation['featuretype']." - Bild' title='".$translation['featuretype']."'> - ".$translation['featuretype'];
-		$serviceType = 'wfs';	
+		$serviceType = 'wfs';
 		break;
 	case "wfs-conf":
-		//echo 'Not yet implemented!'; 
+		//echo 'Not yet implemented!';
 		//$serviceType = 'wfs';
-		//die(); 	
+		//die();
 		$wfsConfId = $id;
 		$sql1 = "SELECT fkey_featuretype_id from wfs_conf WHERE wfs_conf_id = $1";
 		$v1 = array($wfsConfId);
@@ -609,7 +609,7 @@ switch ($resource) {
 		$t = array('i');
 		$serviceType = 'wfs';
 		$resourceSymbol = "<img src='../img/osgeo_graphics/geosilk/vector.png' alt='".$translation['featuretype']." - Bild' title='".$translation['featuretype']."'> - ".$translation['featuretype'];
-		$serviceType = 'wfs';	
+		$serviceType = 'wfs';
 		break;
 	case "wmc":
 		$wmcId = $id;
@@ -633,8 +633,8 @@ $resourceMetadata = db_fetch_array($res);
 
 
 if (!isset($resourceMetadata['contentid']) or ($resourceMetadata['contentid'] == '')) {
-		echo 'No result for the requested id found in the registry!'; 
-		die(); 	
+		echo 'No result for the requested id found in the registry!';
+		die();
 }
 
 if($resourceMetadata['owsproxy']!='') {
@@ -649,21 +649,21 @@ $serviceId = $resourceMetadata['serviceid'];
 /*switch ($serviceType) {
 	case "wms":
 		#$resourceSymbol = "<img src='../img/osgeo_graphics/geosilk/server_map.png' alt='".."' title='".."'>";
-		die(); 	
+		die();
 		break;
 	case "wfs":
 		#$resourceSymbol = "<img src='../img/osgeo_graphics/geosilk/server_vector.png' alt='' title=''>";
-		die(); 	
-		break;		
+		die();
+		break;
 	case "wmc":
 		$resourceSymbol = "<img src='' alt='' title=''>";
-		die(); 	
+		die();
 		break;
 	case "kml":
-		die(); 	
+		die();
 		break;
 	case "georss":
-		die(); 	
+		die();
 		break;
 }
 
@@ -747,15 +747,22 @@ if ($resource == 'wmc') {
 //db select for content properties
 if ($resource == 'wfs' || $resource == 'featuretype') {
 	//get bbox and crs codes for single layer - maybe some entries ;-)
-	//Ticket #8491: Info - Selects all "otherCRS" for featuretype
-	//Added distinct to select because wfs registration allowed inserting the same crs multiple times 
-	//Issue is fixed but until the registry is cleaned up this is a workaround
-	$sql = "SELECT DISTINCT * FROM wfs_featuretype_epsg WHERE fkey_featuretype_id = $1";
-	$contentBboxes = array();
+	// Ticket #8829: also show the DefaultCRS
+	$sql = "SELECT featuretype_srs FROM wfs_featuretype WHERE featuretype_id = $1";
 	$v = array($featuretypeId);
 	$t = array('i');
 	$res = db_prep_query($sql, $v, $t);
-	$j = 0;
+	$contentBboxes = array();
+	$contentBboxes[0] = array('epsg' => db_fetch_row($res)[0]);
+
+	//Ticket #8491: Info - Selects all "otherCRS" for featuretype
+	//Added distinct to select because wfs registration allowed inserting the same crs multiple times
+	//Issue is fixed but until the registry is cleaned up this is a workaround
+	$sql = "SELECT DISTINCT * FROM wfs_featuretype_epsg WHERE fkey_featuretype_id = $1";
+	$v = array($featuretypeId);
+	$t = array('i');
+	$res = db_prep_query($sql, $v, $t);
+	$j = 1;
 	while ($row = db_fetch_array($res)){
 		$contentBboxes[$j] = array();
 		$contentBboxes[$j]['epsg'] = $row['epsg'];
@@ -773,17 +780,17 @@ if ($resource == 'wfs' || $resource == 'featuretype') {
 //e.g. tabs and their content
 $html = '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="'.$languageCode.'">';
 
-$metadataStr .= '<head>' . 
-		'<title>'.$translation['metadata'].'</title>' . 
+$metadataStr .= '<head>' .
+		'<title>'.$translation['metadata'].'</title>' .
 		'<meta name="description" content="'.$translation['metadata'].'" xml:lang="'.$languageCode.'" />'.
-		'<meta name="keywords" content="'.$translation['metadata'].'" xml:lang="'.$languageCode.'" />'	.	
+		'<meta name="keywords" content="'.$translation['metadata'].'" xml:lang="'.$languageCode.'" />'	.
 		'<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0;">' .
 		'<meta http-equiv="cache-control" content="no-cache">'.
 		'<meta http-equiv="pragma" content="no-cache">'.
 		'<meta http-equiv="expires" content="0">'.
 		'<meta http-equiv="content-language" content="'.$languageCode.'" />'.
 		'<meta http-equiv="content-style-type" content="text/css" />'.
-		'<meta http-equiv="Content-Type" content="text/html; charset='.CHARSET.'">' . 	
+		'<meta http-equiv="Content-Type" content="text/html; charset='.CHARSET.'">' .
 		'<meta http-equiv="X-UA-Compatible" content="IE=edge" />' .
 		'</head>';
 $html .= $metadataStr;
@@ -818,7 +825,7 @@ $producerOrganizationCategory = 'property="producer" typeof="Organization"';
 /************************/
 switch ($layout) {
 	case "tabs":
-		$html .= '<link type="text/css" href="../extensions/jquery-ui-1.8.1.custom/css/custom-theme/jquery-ui-1.8.5.custom.css" rel="Stylesheet" />';	
+		$html .= '<link type="text/css" href="../extensions/jquery-ui-1.8.1.custom/css/custom-theme/jquery-ui-1.8.5.custom.css" rel="Stylesheet" />';
 		$html .= '<script type="text/javascript" src="../extensions/jquery-ui-1.8.1.custom/js/jquery-1.4.2.min.js"></script>';
 		$html .= '<script type="text/javascript" src="../extensions/jquery-ui-1.8.1.custom/js/jquery-ui-1.8.1.custom.min.js"></script>';
 		//some js for dialog
@@ -865,7 +872,7 @@ switch ($layout) {
 		$html .= '</ul>';
 		break;
 	case "accordion":
-		$html .= '<link type="text/css" href="../extensions/jquery-ui-1.8.1.custom/css/custom-theme/jquery-ui-1.8.4.custom.css" rel="Stylesheet" />';	
+		$html .= '<link type="text/css" href="../extensions/jquery-ui-1.8.1.custom/css/custom-theme/jquery-ui-1.8.4.custom.css" rel="Stylesheet" />';
 		$html .= '<script type="text/javascript" src="../extensions/jquery-ui-1.8.1.custom/js/jquery-1.4.2.min.js"></script>';
 		$html .= '<script type="text/javascript" src="../extensions/jquery-ui-1.8.1.custom/js/jquery-ui-1.8.1.custom.min.js"></script>';
 		//define the javascript functions
@@ -923,9 +930,9 @@ if ($resourceMetadata['contenttitle'] !='') {
 if ($resourceMetadata['timestamp'] != '') {
     $date = new DateTime();
     $date->setTimestamp($resourceMetadata['timestamp']);
-    
+
     $html .= $t_a.$translation['resourceTimestamp'].$t_b.displayText($date->format('Y-m-d H:i:s')).$t_c;
-    
+
 }
 
 //decide if a root layer have been found - then the type will be a server
@@ -975,7 +982,7 @@ $layerAccessibility = $user->isLayerAccessible ($layerId);
 // Monitoring is only available if the user is allowed to access this service
 //
 if ($resource == 'wms' or $resource == 'layer'){
-	if ($layerAccessibility) {		
+	if ($layerAccessibility) {
 		$is_public = $user->isPublic();
 		//show abo function to registred and authorized users
 		if (!$is_public) {
@@ -987,17 +994,17 @@ if ($resource == 'wms' or $resource == 'layer'){
 			}
 			$is_subscribed = $user->hasSubscription($resourceMetadata['serviceid'], "WMS");
 			if ($is_subscribed) {
-				$aboStr = "<tr><th>Abo</th><td><a href = '../php/mod_showMetadata.php?id=" . 
+				$aboStr = "<tr><th>Abo</th><td><a href = '../php/mod_showMetadata.php?id=" .
 					$layerId . "&resource=layer&user_id=" . $user->id . "&subscribe=0'><img  style='border: none;' src = '../img/mail_delete.png' title='"._mb("Monitoring Abo l&ouml;schen")."'></a></td></tr>"; //TODO check wherefor user_id should be given as parameter?
 			}
 			else if (!$is_subscribed) {
-				$aboStr = "<tr><th>Abo</th><td><a href = '../php/mod_showMetadata.php?id=" . $layerId . 
+				$aboStr = "<tr><th>Abo</th><td><a href = '../php/mod_showMetadata.php?id=" . $layerId .
 					"&resource=layer&user_id=" . $user->id . "&subscribe=1'><img style='border: none;' src = '../img/mail_send.png' title='"._mb("Monitoring abonnieren")."'></a></td></tr>";
 			}
-		}	
+		}
 	}
 	$html .= $aboStr;
-} 
+}
 
 if ($resource == 'wfs' or $resource == 'featuretype' or $resource == 'wfs-conf') {
 		$is_public = $user->isPublic();
@@ -1012,15 +1019,15 @@ if ($resource == 'wfs' or $resource == 'featuretype' or $resource == 'wfs-conf')
 			$e = new mb_exception("test subscription");
 			$is_subscribed = $user->hasSubscription($resourceMetadata['serviceid'], "WFS");
 			if ($is_subscribed) {
-				$aboStr = "<tr><th>Abo</th><td><a href = '../php/mod_showMetadata.php?id=" . 
+				$aboStr = "<tr><th>Abo</th><td><a href = '../php/mod_showMetadata.php?id=" .
 					$wfsId . "&resource=wfs&user_id=" . $user->id . "&subscribe=0'><img  style='border: none;' src = '../img/mail_delete.png' title='"._mb("Monitoring Abo l&ouml;schen")."'></a></td></tr>"; //TODO check wherefor user_id should be given as parameter?
 			}
 			else if (!$is_subscribed) {
-				$aboStr = "<tr><th>Abo</th><td><a href = '../php/mod_showMetadata.php?id=" . $wfsId . 
+				$aboStr = "<tr><th>Abo</th><td><a href = '../php/mod_showMetadata.php?id=" . $wfsId .
 					"&resource=wfs&user_id=" . $user->id . "&subscribe=1'><img style='border: none;' src = '../img/mail_send.png' title='"._mb("Monitoring abonnieren")."'></a></td></tr>";
 			}
 		}
-$html .= $aboStr;	
+$html .= $aboStr;
 }
 
 if ($layerAccessibility && WRAPPER_PATH != '' && ($resource == 'layer' or $resource == 'wms' )) {
@@ -1034,10 +1041,10 @@ if ($layerAccessibility && WRAPPER_PATH != '' && ($resource == 'layer' or $resou
 	//add hidden element for show map url
 	$html .= $t_a.$t_b.'<span hidden="hidden" property="url">'.$showMapUrl.'</span>'.$t_c;
 	$html .= $t_a.$t_b.'<span hidden="hidden" property="identifier" href="'.$mapbenderBaseUrl.'/'.$resource.'/'.$resourceMetadata['contentid'].'"></span>'.$t_c;
-	$html .= $t_a."<button onclick='window.open(\"".$showMapUrl."\", 
-  \"windowname1\", 
+	$html .= $t_a."<button onclick='window.open(\"".$showMapUrl."\",
+  \"windowname1\",
   \"width=1024, height=768, scrollbars=yes, resizable=yes\");'
-   return false;><img src='../img/osgeo_graphics/layer-wms-add.png'>".$translation['showMap']."</button>".$t_b."".$t_c;	
+   return false;><img src='../img/osgeo_graphics/layer-wms-add.png'>".$translation['showMap']."</button>".$t_b."".$t_c;
 }
 
 if (WRAPPER_PATH != '' && $resource == 'wmc') {
@@ -1051,11 +1058,11 @@ if (WRAPPER_PATH != '' && $resource == 'wmc') {
 	//add hidden element for show map url
 	$html .= $t_a.$t_b.'<span property="url">'.$showMapUrl.'</span>'.$t_c;
 	//$html .= $t_a.$translation['addLayerToMap'].$t_b."<a href='".$showMapUrl."' target='_blank'><img src='../img/osgeo_graphics/layer-wms-add.png'></a>".$t_c;
-	$html .= $t_a."<button onclick='window.open(\"".$showMapUrl."\", 
-  \"windowname1\", 
+	$html .= $t_a."<button onclick='window.open(\"".$showMapUrl."\",
+  \"windowname1\",
   \"width=1024, height=768, scrollbars=yes, resizable=yes\");'
    return false;><img src='../img/osgeo_graphics/layer-wms-add.png'>".$translation['showMap']."</button>".$t_b."".$t_c;
-	
+
 }
 //add dynamic preview in rdfa
 $html .= $t_a.$t_b.'<span hidden="hidden" property="contentLocation" typeof="Place"><span hidden="hidden" property="hasMap" href="'.$getMapUrl.'"></span></span>'.$t_c;
@@ -1108,9 +1115,9 @@ if ($layout == 'plain') {
 $html .= $tableBegin;
 if ($resource == 'wms' or $resource == 'layer'){
 	if ($resourceMetadata['layer_queryable'] == '1') {
-			$html .= $t_a.$translation['queryable'].$t_b."<img src='../img/osgeo_graphics/select.png' title='".$translation['queryableTrue']."' alt='".$translation['queryableTrue']."'>".$t_c;	
+			$html .= $t_a.$translation['queryable'].$t_b."<img src='../img/osgeo_graphics/select.png' title='".$translation['queryableTrue']."' alt='".$translation['queryableTrue']."'>".$t_c;
 	} else {
-		$html .= $t_a.$translation['queryable'].$t_b."<img src='../img/osgeo_graphics/not_selectable.png' title='".$translation['queryableFalse']."' alt='".$translation['queryableFalse']."'>".$t_c;	
+		$html .= $t_a.$translation['queryable'].$t_b."<img src='../img/osgeo_graphics/not_selectable.png' title='".$translation['queryableFalse']."' alt='".$translation['queryableFalse']."'>".$t_c;
 	}
 }
 $epsgString = '';
@@ -1121,7 +1128,7 @@ if (($resource == 'wms') || ($resource == 'layer')) {
 			$wgs84Bbox = $contentBboxes[$j]['minx'].",".$contentBboxes[$j]['miny'].",".$contentBboxes[$j]['maxx'].",".$contentBboxes[$j]['maxy'];
 			$getMapUrl = $admin->getExtentGraphic(explode(",", $wgs84Bbox));
 		}
-		
+
 	}
 $html .= $t_a.$translation['crs'].$t_b.$epsgString.$t_c;
 }
@@ -1147,15 +1154,15 @@ if ($resource == 'wmc') {
 		//transform crs
 		$oldEPSG = preg_replace("/EPSG:/","", $resourceMetadata['contentcrs']);
 		$ll = transform(
-					floatval($resourceMetadata['contentminx']), 
-					floatval($resourceMetadata['contentminy']), 
-					$oldEPSG, 
+					floatval($resourceMetadata['contentminx']),
+					floatval($resourceMetadata['contentminy']),
+					$oldEPSG,
 					"4326"
 				);
 		$ur = transform(
-					floatval($resourceMetadata['contentmaxx']), 
-					floatval($resourceMetadata['contentmaxy']), 
-					$oldEPSG, 
+					floatval($resourceMetadata['contentmaxx']),
+					floatval($resourceMetadata['contentmaxy']),
+					$oldEPSG,
 					"4326"
 				);
 		$wgs84Bbox = round($ll["x"],4).",".round($ll["y"],4).",".round($ur["x"],4).",".round($ur["y"],4);
@@ -1172,7 +1179,7 @@ if (isset($wgs84Bbox)) {
 		$html .= $t_a.$translation['wgs84BboxGraphic'].$t_b.$translation['graphicUnavailable'].$t_c;
 	}
 	//show preview map - dynamically
-	
+
 }
 //$html .= $tableEnd;
 //$html .= $tableBegin;
@@ -1181,10 +1188,10 @@ if (isset($wgs84Bbox)) {
 if ((isset($resourceMetadata['contentminscale']) & $resourceMetadata['contentminscale'] != '0') or (isset($resourceMetadata['contentmaxscale']) & $resourceMetadata['contentmaxscale'] != '0')){
 	$html .= $t_a.$translation['restrictedScale'].$t_b.$t_c;
 	if (isset($resourceMetadata['contentminscale']) & $resourceMetadata['contentminscale'] != '0' & $resourceMetadata['contentminscale'] != "") {
-		$html .= $t_a.$translation['maxscale'].$t_b. "1 : ".$resourceMetadata['contentminscale'].$t_c;	
+		$html .= $t_a.$translation['maxscale'].$t_b. "1 : ".$resourceMetadata['contentminscale'].$t_c;
 	}
 	if (isset($resourceMetadata['contentmaxscale']) & $resourceMetadata['contentmaxscale'] != '0' & $resourceMetadata['contentmaxscale'] != "") {
-		$html .= $t_a.$translation['minscale'].$t_b. "1 : ".$resourceMetadata['contentmaxscale'].$t_c;	
+		$html .= $t_a.$translation['minscale'].$t_b. "1 : ".$resourceMetadata['contentmaxscale'].$t_c;
 	}
 	//$html .= '</fieldset>';
 }
@@ -1230,18 +1237,18 @@ if ($resource == 'wms' or $resource == 'layer' or $resource == 'featuretype'){
 	switch ($resource) {
 		case "featuretype":
 $sql = <<<SQL
-	SELECT metadata_id, uuid, link, linktype, md_format, origin FROM mb_metadata 
-	INNER JOIN (SELECT * from ows_relation_metadata 
-	WHERE fkey_featuretype_id = $featuretypeId ) as relation ON 
+	SELECT metadata_id, uuid, link, linktype, md_format, origin FROM mb_metadata
+	INNER JOIN (SELECT * from ows_relation_metadata
+	WHERE fkey_featuretype_id = $featuretypeId ) as relation ON
 	mb_metadata.metadata_id = relation.fkey_metadata_id WHERE mb_metadata.origin
 	IN('capabilities','external','metador','upload')
 SQL;
 			break;
 		case "layer":
 $sql = <<<SQL
-	SELECT metadata_id, uuid, link, linktype, md_format, origin FROM mb_metadata 
-	INNER JOIN (SELECT * from ows_relation_metadata 
-	WHERE fkey_layer_id = $layerId ) as relation ON 
+	SELECT metadata_id, uuid, link, linktype, md_format, origin FROM mb_metadata
+	INNER JOIN (SELECT * from ows_relation_metadata
+	WHERE fkey_layer_id = $layerId ) as relation ON
 	mb_metadata.metadata_id = relation.fkey_metadata_id WHERE mb_metadata.origin
 	IN('capabilities','external','metador','upload')
 SQL;
@@ -1260,7 +1267,7 @@ SQL;
 			break;
 			case "upload" :
 				$metadataList .= "<img src='../img/button_blue_red/up.png' title='".$translation['uploaded metadata']."'/>";
-			break;	
+			break;
 			case "metador" :
 				$metadataList .= "<img src='../img/gnome/edit-select-all.png' title='".$translation['added from registry']."'/>";
 			break;
@@ -1271,14 +1278,14 @@ SQL;
 		$downloadOptionsConnector = new connector("http://localhost".$_SERVER['SCRIPT_NAME']."/../mod_getDownloadOptions.php?id=".$row["uuid"]);
 		$downloadOptions = json_decode($downloadOptionsConnector->file);
 		//var_dump($downloadOptions);
-		if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != '') { 
+		if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != '') {
 			$mapbenderUrl = MAPBENDER_PATH;
 		} else {
 			$mapbenderUrl = "http://www.geoportal.rlp.de/mapbender";
 		}
 		//$metadataList .= "<a href='../php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$row["uuid"]."'>".$row["uuid"]."</a> <a href='../php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$row["uuid"]."&validate=true'>".$translation['validate']."</a>";
 		$metadataList .= "<a href='../php/mod_exportIso19139.php?url=".urlencode($mapbenderUrl."/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$row["uuid"])."'>".$row["uuid"]."</a> <a href='../php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$row["uuid"]."&validate=true'>".$translation['validate']."</a>"." <a href='../php/mod_dataISOMetadata.php?outputFormat=rdf&id=".$row["uuid"]."&CN=false'><img style='border: none;' src='../img/rdf_w3c_icon.48.gif' title='".$translation['inspireMetadata']." - RDF/XML (BETA)"."' style='width:34px;height:34px' alt='' /></a>";
-		
+
 		if ($downloadOptions != null) {
 			foreach ($downloadOptions->{$row["uuid"]}->option as $option) {
 				switch ($option->type) {
@@ -1294,8 +1301,8 @@ SQL;
 					case "downloadlink":
 						$metadataList .= "  <a href='../plugins/mb_downloadFeedClient.php?url=".urlencode($mapbenderUrl."/php/mod_inspireDownloadFeed.php?id=".$row["uuid"]."&type=SERVICE&generateFrom=metadata")."'><img src='../img/osgeo_graphics/geosilk/link_download.png' title='".$translation['Download linked data from INSPIRE Download Service']."'/></a>";
 						break;
-				}	
-			}	
+				}
+			}
 		}
 
 		$metadataList .= "<br>";
@@ -1305,7 +1312,7 @@ SQL;
 		$html .= $t_a.$translation['Coupled Metadata'].$t_b;
 		$html .= $metadataList;
 	}
-	
+
 	//$html .= $t_c;
 	//$html .= $tableEnd;
 }
@@ -1442,7 +1449,7 @@ if ($resource != 'wmc') {
 		case '0':
 		    $html .= $t_a.$translation['status'].$t_b."<img src='../img/trafficlights/wait.bmp' height='24px' width='24px'  alt='".$translation['statusChanged']."' title='".$translation['statusChanged']."'>".$t_c;
 			if (isset($serviceQuality['availability'])) {
-			    $html .= $t_a.$translation['changes'].$t_b."<input type=button value='" . $translation['show'] . "' onclick=\"var newWindow = window.open('../php/mod_showCapDiff.php?serviceType=" . $serviceType . "&id=" . $resourceMetadata['serviceid'] . "','Capabilities Diff','width=700,height=300,scrollbars');newWindow.focus();\">".$t_c; 
+			    $html .= $t_a.$translation['changes'].$t_b."<input type=button value='" . $translation['show'] . "' onclick=\"var newWindow = window.open('../php/mod_showCapDiff.php?serviceType=" . $serviceType . "&id=" . $resourceMetadata['serviceid'] . "','Capabilities Diff','width=700,height=300,scrollbars');newWindow.focus();\">".$t_c;
 			}
 			break;
 		case '-1':
@@ -1488,7 +1495,7 @@ $html .= $tableBegin;
 
 if ($resource == 'wmc') {
 	$html .= $t_a.$translation['wmc'].$t_b."XML".$t_c;
-	//show qr for link 
+	//show qr for link
 	//create uuid for qr graphic
 	$uuid = new Uuid;
 	$filename = "qr_wmc_".$uuid.".png";
@@ -1499,14 +1506,14 @@ if ($resource == 'wmc') {
 		QRcode::png($invokeLink,TMPDIR."/".$filename);
 		$html .= $t_a.$translation['loadWmc'].$t_b."<a href = '".$invokeLink."'><img src='".TMPDIR."/".$filename."'></a>".$t_c;
 	}
-	
+
 }
 if ($resource == 'wms' or $resource == 'layer'){
-	
+
 	$html .= $t_a;
 	$html .= $translation['mapbenderCapabilities'];
 	$html .= $t_b;
-	$html .= "<table class='lesscsstable'>";	
+	$html .= "<table class='lesscsstable'>";
 	$html .= $t_a1.$translation['mapbenderCapabilitiesSingleLayer'].$t_b1."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a onclick='' class='linkjs' href = '../php/wms.php?layer_id=".$layerId."&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$mapbenderBaseUrl.dirname($_SERVER['PHP_SELF'])."/wms.php?layer_id=".$layerId."&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS"."\",\"".$translation['mapbenderCapabilitiesSingleLayer']."\");'>".$translation['showLink']."</a>".$t_c;
 	$html .= $t_a1.$translation['mapbenderCapabilitiesWithSubLayer'].$t_b1."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href = '../php/wms.php?layer_id=".$layerId."&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS&withChilds=1' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$mapbenderBaseUrl.dirname($_SERVER['PHP_SELF'])."/wms.php?layer_id=".$layerId."&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS&withChilds=1"."\",\"".$translation['mapbenderCapabilitiesWithSubLayer']."\");'>".$translation['showLink']."</a>".$t_c;
 	$html .= "</table>";
@@ -1514,11 +1521,11 @@ if ($resource == 'wms' or $resource == 'layer'){
     $capUrl = $resourceMetadata['wms_getcapabilities'].getConjunctionCharacter($resourceMetadata['wms_getcapabilities']).'REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS';
 
 	//show only original url if the resource is not secured!
-	if (!$resourceSecured) {	
+	if (!$resourceSecured) {
 		$html .= $t_a.$translation['originalCapabilities'].$t_b."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href = '".$capUrl."' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$capUrl."\",\"".$translation['mapbenderCapabilities']."\");'>".$translation['showLink']."</a>".$t_c;
 	}
 
-	
+
     $html .= $t_a.$translation['inspireCapabilities'].$t_b."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href = '../php/wms.php?layer_id=".$layerId."&INSPIRE=1&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$mapbenderBaseUrl.dirname($_SERVER['PHP_SELF'])."/wms.php?layer_id=".$layerId."&INSPIRE=1&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS"."\",\"".$translation['inspireCapabilities']."\");'>".$translation['showLink']."</a>".$t_c;
 	$html .= $t_a;
 	$html .= $translation['inspireMetadata'];
@@ -1566,7 +1573,7 @@ if ($resource == 'wfs' or $resource == 'featuretype' or $resource == 'wfs-conf')
         $html .= $t_a1.$translation['mapbenderCapabilitiesSingleFeaturetype'].$t_b1.'<img class="normalizeicon" src="../img/gnome/edit-select-all.png"><a class="linkjs" href ="../php/'.$wfsuri.'" target="_blank">'.$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$mapbenderBaseUrl.$_SERVER['PHP_SELF'].'/../'.$wfsuri."\",\"".$translation['mapbenderCapabilitiesSingleLayer']."\");'>".$translation['showLink']."</a>".$t_c;
     }
     $html .= $t_a1.$translation['mapbenderCapabilitiesWfsLevel'].$t_b1.'<img class="normalizeicon" src="../img/gnome/edit-select-all.png"><a class="linkjs" href ="'.$mapbenderBaseUrl.'/registry/wfs/'.$serviceId.'?REQUEST=GetCapabilities&VERSION=1.1.0&SERVICE=WFS" target="_blank">'.$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$mapbenderBaseUrl.'/registry/wfs/'.$serviceId.'?REQUEST=GetCapabilities&VERSION=1.1.0&SERVICE=WFS'."\",\"".$translation['mapbenderCapabilitiesWfsLevel']."\");'>".$translation['showLink']."</a>".$t_c;
-    
+
     $html .= "</table>";
 	$html .= $t_c;
     $capUrl = $resourceMetadata['wfs_getcapabilities'].getConjunctionCharacter($resourceMetadata['wfs_getcapabilities']).$gcWfsParams;
@@ -1579,13 +1586,13 @@ if ($resource == 'wfs' or $resource == 'featuretype' or $resource == 'wfs-conf')
     	}
         $html .= $t_a.$translation['mapbenderOGCApiFeatures'].$t_b."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href = '".$ogcApiFeaturesUrl."' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$ogcApiFeaturesUrl."\",\"".$translation['mapbenderOGCApiFeatures']."\");'>".$translation['showLink']."</a>".$t_c;
     }
-    
+
 	//show only original url if the resource is not secured!
-	if (!$resourceSecured) {	
+	if (!$resourceSecured) {
 		$html .= $t_a.$translation['originalCapabilities'].$t_b."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href = '".$capUrl."' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$capUrl."\",\"".$translation['mapbenderCapabilities']."\");'>".$translation['showLink']."</a>".$t_c;
 	}
 	$html .= $t_a.$translation['inspireCapabilities'].$t_b.'<img class="normalizeicon" src="../img/gnome/edit-select-all.png"><a class="linkjs" href ="../php/'.$wfsuri.'&INSPIRE=1" target="_blank">'.$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$mapbenderBaseUrl.$_SERVER['PHP_SELF']."/../".$wfsuri."\",\"".$translation['inspireCapabilities']."\");'>".$translation['showLink']."</a>".$t_c;
-	
+
 	$html .= $t_a;
 	$html .= $translation['inspireMetadata'];
 	$html .= $t_b;
@@ -1599,7 +1606,7 @@ if ($resource == 'wfs' or $resource == 'featuretype' or $resource == 'wfs-conf')
     $html .= $t_c;
 	$html .= "</table>";
 	$html .= $t_c;
-	
+
 	$html .= $t_a.$translation['inspireMetadataValidation'].$t_b."<a href='../php/mod_featuretypeISOMetadata.php?SERVICE=WFS&outputFormat=iso19139&Id=".$featuretypeId."&validate=true' target=_blank title='".$translation['inspireMetadataValidation']."'>".$translation['showInspireMetadataValidation']."</a>".$t_c;
 	//if service is secured and http_auth is adjusted show secured url
 	if ($resourceSecured) {
@@ -1627,15 +1634,15 @@ echo $html;
 
 //functions (from old metadata module):
 function displayText($string) {
-    $string = mb_eregi_replace("[[:alpha:]]+://[^<>[:space:]]+[[:alnum:]/]", "<a href=\"\\0\" target=_blank>\\0</a>", $string);   
-    $string = mb_eregi_replace("^[_a-z0-9-]+(\.[_a-z0-9-]+)*@([0-9a-z](-?[0-9a-z])*\.)+[a-z]{2}([zmuvtg]|fo|me)?$", "<a href=\"mailto:\\0\" target=_blank>\\0</a>", $string);   
+    $string = mb_eregi_replace("[[:alpha:]]+://[^<>[:space:]]+[[:alnum:]/]", "<a href=\"\\0\" target=_blank>\\0</a>", $string);
+    $string = mb_eregi_replace("^[_a-z0-9-]+(\.[_a-z0-9-]+)*@([0-9a-z](-?[0-9a-z])*\.)+[a-z]{2}([zmuvtg]|fo|me)?$", "<a href=\"mailto:\\0\" target=_blank>\\0</a>", $string);
     $string = mb_eregi_replace("\n", "<br>", $string);
     return $string;
-} 
+}
 
 //from php/mod_coordsLookup_server.php
 function transform ($x, $y, $oldEPSG, $newEPSG) {
-	if (is_null($x) || !is_numeric($x) || 
+	if (is_null($x) || !is_numeric($x) ||
 		is_null($y) || !is_numeric($y) ||
 		is_null($oldEPSG) || !is_numeric($oldEPSG) ||
 		is_null($newEPSG) || !is_numeric($newEPSG)) {
@@ -1644,17 +1651,17 @@ function transform ($x, $y, $oldEPSG, $newEPSG) {
 		$sqlMinx = "SELECT X(transform(GeometryFromText('POINT(".$x." ".$y.")',".$oldEPSG."),".$newEPSG.")) as minx";
 		$resMinx = db_query($sqlMinx);
 		$minx = floatval(db_result($resMinx,0,"minx"));
-		
+
 		$sqlMiny = "SELECT Y(transform(GeometryFromText('POINT(".$x." ".$y.")',".$oldEPSG."),".$newEPSG.")) as miny";
 		$resMiny = db_query($sqlMiny);
 		$miny = floatval(db_result($resMiny,0,"miny"));
 
 	return array("x" => $minx, "y" => $miny);
-	
+
 }
 function getConjunctionCharacter ($url) {
-	if (mb_strpos($url, "?") !== false) { 
-		if (mb_substr($url, mb_strlen($url)-1, 1) == "?") { 
+	if (mb_strpos($url, "?") !== false) {
+		if (mb_substr($url, mb_strlen($url)-1, 1) == "?") {
 			return "";
 		}
 		else if (mb_substr($url, mb_strlen($url)-1, 1) == "&"){

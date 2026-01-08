@@ -61,11 +61,11 @@ if (isset($inspire) && $inspire === 1 ) {
 	$inspire = true;
 }
 if (DEFINED("MAPBENDER_PATH") && MAPBENDER_PATH !== "") {
-	$mapbenderMetadaUrl = MAPBENDER_PATH."/php/mod_showMetadata.php?resource=layer&id=";
+	$mapbenderMetadataUrl = MAPBENDER_PATH."/php/mod_showMetadata.php?resource=layer&id=";
 	$inspireServiceMetadataUrl =  MAPBENDER_PATH."/php/mod_layerISOMetadata.php?SERVICE=WMS&outputFormat=iso19139&Id=";
 	$mapbenderMetadataUrlUrl = MAPBENDER_PATH."/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=";
 } else {
-	$mapbenderMetadaUrl = FULLY_QUALIFIED_DOMAIN_NAME."/mapbender/php/mod_showMetadata.php?resource=layer&id=";
+	$mapbenderMetadataUrl = FULLY_QUALIFIED_DOMAIN_NAME."/mapbender/php/mod_showMetadata.php?resource=layer&id=";
 	$inspireServiceMetadataUrl =  FULLY_QUALIFIED_DOMAIN_NAME."/mapbender/php/mod_layerISOMetadata.php?SERVICE=WMS&outputFormat=iso19139&Id=";
 	$mapbenderMetadataUrlUrl = FULLY_QUALIFIED_DOMAIN_NAME."/mapbender/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=";
 	$mapbenderMetadataUrl = $urlPrefix.$mapbenderMetadataUrl;
@@ -1391,6 +1391,9 @@ SQL;
  		$onlineResource = $doc->createElement("OnlineResource");
              	$onlineResource = $dataUrl->appendChild($onlineResource);
                 $onlineResource->setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink" );
+                // Ticket #4671: $mapbenderMetadataUrl is not defined in this scope, so bind it from global scope
+                // adding it as parameter to the function would probably be better, but also more intrusive
+                global $mapbenderMetadataUrl;
                 $onlineResource->setAttribute("xlink:href", $mapbenderMetadataUrl.$layerRow['layer_id']);
 		$onlineResource->setAttribute("xlink:type", "simple");
 	}	

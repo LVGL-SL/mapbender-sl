@@ -1082,8 +1082,9 @@ SQL;
 			//$previewFilenameText = $iso19139->createTextNode ( $mapbenderPath . "php/geoportal/preview/" . $mapbenderMetadata ['layer_id'] . "_layer_map_preview.jpg" ); // TODO use constant for absolute path
 			#6260: Changed path declaration to access current storage folder /var/opt/geoportal/media/preview
 			#      Also see etc/apache2/apache.cfg -- /var/opt.. Directory specification
-		# -> Changed layer_id -> resourceID, because layer_id didn't exist here and never worked
-			$previewFilenameText = $iso19139->createTextNode ( PREVIEW_DIR . $mapbenderMetadata ['resourceId'] . "_layer_map_preview.jpg" ); // TODO use constant for absolute path
+			# -> Changed layer_id -> resourceID, because layer_id didn't exist here and never worked
+			# Ticket #8476: use php script instead of absolute file path to show preview image
+			$previewFilenameText = $iso19139->createTextNode ("https://" . FULLY_QUALIFIED_DOMAIN_NAME . "/mapbender/geoportal/mod_showPreview.php?resource=layer&id=" . $mapbenderMetadata['resourceId']);
 			$fileName_cs->appendChild ( $previewFilenameText );
 			$fileName->appendChild ( $fileName_cs );
 			

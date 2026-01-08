@@ -30,5 +30,12 @@
 	    "marker-color":"#7e7e7e",
 		"title": "Point default title",
 		"description": "Point default description"
+    },
+	"MultiPoint": {
+        "marker-size":"24",
+        "marker-symbol":"marker",
+	    "marker-color":"#7e7e7e",
+		"title": "Multi Point default title",
+		"description": "Multi Point default description"
     }
 }
