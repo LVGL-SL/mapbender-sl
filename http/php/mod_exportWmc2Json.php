@@ -236,7 +236,7 @@ function createJsonFromWmc($wmcId, $crs){
     		    //$time_start = microtime();
     		    //load it from whereever it has been stored
     		    $wmcDocSession = $admin->getFromStorage($wmc_filename, TMP_WMC_SAVE_STORAGE);
-		    $myWmc->createFromXml($wmcDocSession);
+		        $myWmc->createFromXml($wmcDocSession);
     		    //$row['minx'],$row['miny'],$row['maxx'],$row['maxy'],$row['srs'],$row['wmc_serial_id'],$row['wmc_title'],$row['wmc_timestamp'],$row['wmc_local_data_public'],$row['wmc_has_local_data'],$row['wmc'];
 //$e = new mb_exception(json_encode($myWmc->mainMap));
 	//parse wmc
@@ -382,6 +382,18 @@ $row['wmc'] = $wmcDocSession;
 		}
 		$layerId = (integer)$mbExtensions->layer_id;
 		$layerParent = (string)$mbExtensions->layer_parent;
+	
+		//Ticket #8106: Adaption for mobilemap3 - Retrieving the correct OutputFormat for each layer
+		$layer = $layerArray[$i];
+		// Register default namespace as 'net' based on document context with fallback to opengis namespace
+		$ns = $xml->getDocNamespaces(true);
+		$defaultNs = $ns[''] ?? 'http://www.opengis.net/context';
+		$xml->registerXPathNamespace('net', $defaultNs);
+		// Register prefix on this layer node as 'net'
+		$layer->registerXPathNamespace('net', $defaultNs);
+		// Find <Format> with @current="1" in this layer
+		$nodes = $layer->xpath('./net:FormatList/net:Format[@current="1"]');
+		
 		//<Layer queryable="0" hidden="0">
 		//gui_wms_opacity
 		//use only layer which are not hidden and no root layer and support the requested SRS
@@ -392,7 +404,7 @@ $row['wmc'] = $wmcDocSession;
 					$wmcObject->layerList[$layerCount]->layerName = (string)$layerArray[$i]->Name;
 					$wmcObject->layerList[$layerCount]->opacity = (integer)$mbExtensions->gui_wms_opacity;
 					$wmcObject->layerList[$layerCount]->active = $layerActive;
-					$wmcObject->layerList[$layerCount]->currentFormat = (string)$layerArray[$i]->FormatList->Format[0];
+					$wmcObject->layerList[$layerCount]->currentFormat = ($nodes && isset($nodes[0])) ? trim((string)$nodes[0]) : (string)$layerArray[$i]->FormatList->Format[0];
 					$wmcObject->layerList[$layerCount]->getMapUrl = (string)$layerArray[$i]->Server->OnlineResource->attributes('http://www.w3.org/1999/xlink')->href;
 					$wmcObject->layerList[$layerCount]->layerTitle = (string)$layerArray[$i]->Title;
 					$wmcObject->layerList[$layerCount]->layerAbstract = (string)$layerArray[$i]->Abstract;
@@ -412,7 +424,7 @@ $row['wmc'] = $wmcDocSession;
 						$wmcObject->layerList[$layerCount]->layerId = (integer)$mbExtensions->layer_id;
 						$wmcObject->layerList[$layerCount]->opacity = (integer)$mbExtensions->gui_wms_opacity;
 						$wmcObject->layerList[$layerCount]->active = $layerActive;
-						$wmcObject->layerList[$layerCount]->currentFormat = (string)$layerArray[$i]->FormatList->Format[0];
+						$wmcObject->layerList[$layerCount]->currentFormat = ($nodes && isset($nodes[0])) ? trim((string)$nodes[0]) : (string)$layerArray[$i]->FormatList->Format[0];
 						$wmcObject->layerList[$layerCount]->layerQueryable = $layerQueryable;
 						$wmcObject->layerList[$layerCount]->queryLayer = (integer)$mbExtensions->querylayer;
 
@@ -436,7 +448,7 @@ $row['wmc'] = $wmcDocSession;
 					$wmcObject->layerList[$layerCount]->layerName = (string)$layerArray[$i]->Name;
 					$wmcObject->layerList[$layerCount]->opacity = (integer)$mbExtensions->gui_wms_opacity;
 					$wmcObject->layerList[$layerCount]->active = $layerActive;
-					$wmcObject->layerList[$layerCount]->currentFormat = (string)$layerArray[$i]->FormatList->Format[0];
+					$wmcObject->layerList[$layerCount]->currentFormat = ($nodes && isset($nodes[0])) ? trim((string)$nodes[0]) : (string)$layerArray[$i]->FormatList->Format[0];
 					$wmcObject->layerList[$layerCount]->getMapUrl = (string)$layerArray[$i]->Server->OnlineResource->attributes('http://www.w3.org/1999/xlink')->href;
 					$wmcObject->layerList[$layerCount]->layerTitle = (string)$layerArray[$i]->Title;
 					$wmcObject->layerList[$layerCount]->layerAbstract = (string)$layerArray[$i]->Abstract;
@@ -450,7 +462,7 @@ $row['wmc'] = $wmcDocSession;
 						$wmcObject->layerList[$layerCount]->layerId = (integer)$mbExtensions->layer_id;
 						$wmcObject->layerList[$layerCount]->opacity = (integer)$mbExtensions->gui_wms_opacity;
 						$wmcObject->layerList[$layerCount]->active = $layerActive;
-						$wmcObject->layerList[$layerCount]->currentFormat = (string)$layerArray[$i]->FormatList->Format[0];
+						$wmcObject->layerList[$layerCount]->currentFormat = ($nodes && isset($nodes[0])) ? trim((string)$nodes[0]) : (string)$layerArray[$i]->FormatList->Format[0];
 						$wmcObject->layerList[$layerCount]->layerQueryable = $layerQueryable;
 						$wmcObject->layerList[$layerCount]->queryLayer = (integer)$mbExtensions->querylayer;
 						//$wmcObject->layerList[$layerCount]->hidden = $layerHidden;
