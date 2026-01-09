@@ -49,8 +49,12 @@ if (isset($_SERVER["HTTPS"])){
 	$urlPrefix = "https://";	
 }
 
-if (isset($_REQUEST["withChilds"]) && $_REQUEST["withChilds"] === "1") {
-	$withChilds = true;
+$withChilds = false;
+foreach ($_REQUEST as $key => $value) {
+    if (strcasecmp($key, "withChilds") === 0 && $value === "1") {
+        $withChilds = true;
+        break;
+    }
 }
 $sessionId = $_GET[strtoupper(session_name())];
 //if session id not set, set a dummy id!
