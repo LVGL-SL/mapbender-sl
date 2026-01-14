@@ -497,14 +497,15 @@ if (!isDragging && featureInfoEnabled) {
                 //build list of possible featureInfo requests
                 featureInfos = mod_featureInfo_mapObj.getFeatureInfoRequestsForLayers(point, ignoreWms, Mapbender.modules[options.target].getSRS(), realWorldPoint, featureInfoCollectLayers) || [];
 // --------------------- Ticket 9025 -----------------------------------
-                parameter_dyn = "WIDTH="+mod_featureInfo_mapObj.getWidth() + "&HEIGHT="+ mod_featureInfo_mapObj.getHeight()+"&BBOX="+mod_featureInfo_mapObj.getExtent()+"&X=" + point.x + "&Y=" + point.y + "&SRS=" + mod_featureInfo_mapObj.getSRS() ;
-	        var geth = {};
-                geth.title = "Höhe";
+            //csommer: Temporary commented out height request feature -> Customer issues -> To be reworked later
+            //     parameter_dyn = "WIDTH="+mod_featureInfo_mapObj.getWidth() + "&HEIGHT="+ mod_featureInfo_mapObj.getHeight()+"&BBOX="+mod_featureInfo_mapObj.getExtent()+"&X=" + point.x + "&Y=" + point.y + "&SRS=" + mod_featureInfo_mapObj.getSRS() ;
+	        // var geth = {};
+            //     geth.title = "Höhe";
 
-                geth.request = "<?php echo HEIGHT_URL;?>" + parameter_dyn;
-                geth.inBbox = true;
-                geth.legendurl = "empty"
-                featureInfos.push(geth);
+            //     geth.request = "<?php //echo HEIGHT_URL;?>" + parameter_dyn;
+            //     geth.inBbox = true;
+            //     geth.legendurl = "empty"
+            //     featureInfos.push(geth);
 
 // ---------------------Ende Ticket 9025 -----------------------------------
 
