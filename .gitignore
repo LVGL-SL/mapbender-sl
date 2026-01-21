@@ -4,6 +4,7 @@ conf/.env.php
 conf/excludeproxyurls.conf
 conf/linkedDataProxy.json
 conf/mobilemap2.conf
+conf/mobilemap3.conf
 conf/excludeFromMonitoring.json
 http/geoportal/preview/*.jpg
 http/img/altitude_profile/

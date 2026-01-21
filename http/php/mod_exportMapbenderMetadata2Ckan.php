@@ -1028,7 +1028,7 @@ if ($outputFormat == 'rdfxml') {
                                     $layerViewResource_1 = array("name" => "Online Karte",
                                         "description" => $layerTitle . " - Vorschau im integrierten Kartenviewer",
                                         "format" => "HTML",
-                                        "url" => $mapbenderBaseUrl . "extensions/mobilemap/map.php?layerid=" . $value1->id,
+                                        "url" => $mapbenderBaseUrl . "extensions/mobilemap3/map.php?layerid=" . $value1->id,
                                         "id" => $gpDataset->uuid . "_mapviewer_layer_" . $value1->id,
                                         "license_id" => $layerLicenseId
                                     );
@@ -1433,7 +1433,7 @@ if ($forceCache && $cache->isActive && $cache->cachedVariableExists("mapbender:"
                             $layerViewResource_1 = array("name" => "Online Karte",
                                 "description" => $layerTitle . " - Vorschau im integrierten Kartenviewer",
                                 "format" => "Kartenviewer",
-                                "url" => $mapbenderBaseUrl . "extensions/mobilemap/map.php?layerid=" . $value1->id,
+                                "url" => $mapbenderBaseUrl . "extensions/mobilemap3/map.php?layerid=" . $value1->id,
                                 "id" => $package[$j]->id . "_mapviewer_layer_" . $value1->id
                             );
                             $layerViewResource_2 = array("name" => $portalName,

@@ -46,7 +46,7 @@ $filename = "qr_mobileclient.png";
 //generate qr on the fly in tmp folder
 //link to invoke wmc per get api if wrapper path isset
 if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != "") {
-    $invokeLink = MAPBENDER_PATH."/extensions/mobilemap2/index.html";
+    $invokeLink = MAPBENDER_PATH."/extensions/mobilemap3/index.html";
     QRcode::png($invokeLink,TMPDIR."/".$filename);
     $htmlElement = "<a href='".$invokeLink."' target='_blank'><img src='$pathExtension".TMPDIR."/".$filename."'></a>";
 } else {

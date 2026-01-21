@@ -95,12 +95,12 @@ while($row = db_fetch_array($res)){
 	//generate qr on the fly in tmp folder if not already exists
 	//check if exists
 	if (file_exists(TMPDIR."/".$filename)) {
-    	$mobileUrl = MAPBENDER_PATH."/extensions/mobilemap2/index.html?wmc_id=".$row['wmc_serial_id'];
+    	$mobileUrl = MAPBENDER_PATH."/extensions/mobilemap3/index.html?wmc_id=".$row['wmc_serial_id'];
 		$mobileQrImageUrl = MAPBENDER_PATH."/tmp/".$filename;
 	} else {
     	//link to invoke wmc per get api if wrapper path isset
 		if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != "") {
-			$mobileUrl = MAPBENDER_PATH."/extensions/mobilemap2/index.html?wmc_id=".$row['wmc_serial_id'];
+			$mobileUrl = MAPBENDER_PATH."/extensions/mobilemap3/index.html?wmc_id=".$row['wmc_serial_id'];
 			QRcode::png($mobileUrl,TMPDIR."/".$filename);
 			$mobileQrImageUrl = MAPBENDER_PATH."/tmp/".$filename;
 		} else {

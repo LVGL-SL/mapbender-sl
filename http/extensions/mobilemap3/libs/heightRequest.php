@@ -1,17 +1,17 @@
 <?php
-require_once(dirname(__FILE__) . "/../../../../conf/mobilemap2.conf");
+require_once(dirname(__FILE__) . "/../../../../conf/mobilemap3.conf");
 require_once(dirname(__FILE__) . "/../../../classes/class_connector.php");
 
 //calculate BBOX from position
 $UNSAFE_coord = explode(',', $_GET["coord"]);
 $bbox = (string) ((float) $UNSAFE_coord[0] - 50.0) . "," . (string) ((float) $UNSAFE_coord[1] - 50.0) . "," . (string) ((float) $UNSAFE_coord[0] + 50.0) . "," . (string) ((float) $UNSAFE_coord[1] + 50.0);
 
-$featureInfoRequestPart =  '&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&SERVICE=WMS&LAYERS=' . MOBILEMAP2_HEIGHT_REQUEST_INFO_LAYER;
-$featureInfoRequestPart .= '&QUERY_LAYERS=' . MOBILEMAP2_HEIGHT_REQUEST_INFO_LAYER . '&WIDTH=101&HEIGHT=101&SRS=EPSG:' . MOBILEMAP2_HEIGHT_REQUEST_EPSG;
+$featureInfoRequestPart =  '&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&SERVICE=WMS&LAYERS=' . MOBILEMAP3_HEIGHT_REQUEST_INFO_LAYER;
+$featureInfoRequestPart .= '&QUERY_LAYERS=' . MOBILEMAP3_HEIGHT_REQUEST_INFO_LAYER . '&WIDTH=101&HEIGHT=101&SRS=EPSG:' . MOBILEMAP3_HEIGHT_REQUEST_EPSG;
 $featureInfoRequestPart .= '&BBOX=' . $bbox . '&STYLES=&FORMAT=image/png';
 $featureInfoRequestPart .= '&INFO_FORMAT=application/vnd.ogc.gml&EXCEPTIONS=application/vnd.ogc.se_inimage&X=51&Y=51&FEATURE_COUNT=1&';
 
-$url = MOBILEMAP2_HEIGHT_REQUEST_INFO_URL . $featureInfoRequestPart;
+$url = MOBILEMAP3_HEIGHT_REQUEST_INFO_URL . $featureInfoRequestPart;
 $featureInfoConnector = new connector($url);
 $gml = $featureInfoConnector->file;
 

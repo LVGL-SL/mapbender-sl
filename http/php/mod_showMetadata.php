@@ -1502,7 +1502,7 @@ if ($resource == 'wmc') {
 	//generate qr on the fly in tmp folder
 	//link to invoke wmc per get api if wrapper path isset
 	if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != "") {
-		$invokeLink = MAPBENDER_PATH."/extensions/mobilemap2/index.html?wmc_id=".$resourceMetadata['contentid'];
+		$invokeLink = MAPBENDER_PATH."/extensions/mobilemap3/index.html?wmc_id=".$resourceMetadata['contentid'];
 		QRcode::png($invokeLink,TMPDIR."/".$filename);
 		$html .= $t_a.$translation['loadWmc'].$t_b."<a href = '".$invokeLink."'><img src='".TMPDIR."/".$filename."'></a>".$t_c;
 	}
