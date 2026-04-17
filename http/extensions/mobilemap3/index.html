@@ -14,7 +14,8 @@
 		<link rel="stylesheet" type="text/css" href="./libs/openlayers/10.0.0/ol.css" />
 
 		<!-- Custom Styles -->
-		<link rel="stylesheet" type="text/css" href="./dist/netgis_sl.min.css" />
+		<link rel="stylesheet" type="text/css" href="./dist/netgis.min.css" />
+		<link rel="stylesheet" type="text/css" href="./src/netgis/Theme.css" />
 		
 		<!-- Implementation Style -->
 		<style>
@@ -102,7 +103,7 @@
 							]
 						},
 						
-						{ "id": "searchplace", "title": "<i class='fas fa-search'></i><span>Suche</span>" },
+						{ "id": "searchplace", "title": "<i class='fas fa-search'></i><span>Ortssuche</span>" },
 						{ "id": "toolbox", "title": "<i class='fas fa-tools'></i><span>Werkzeuge</span>" },
 						{ "id": "layertree", "title": "<i class='fas fa-layer-group'></i><span>Inhalte</span>" }
 					]
@@ -120,6 +121,8 @@
 					"max_zoom": 19,
 					
 					"extent": [ 306939, 5440707, 385426, 5502344 ],
+					//Added bbox to enable center button - Value should be the same as extent
+					"bbox": [ 306939, 5440707, 385426, 5502344 ],
 					"scales": [ 500, 1000, 3000, 5000, 8000, 10000, 15000, 25000, 50000, 100000, 150000, 250000, 500000, 1000000, 1500000, 2000000 ],
 					"scalebar": true
 				},
@@ -127,8 +130,8 @@
 				"wmc":
 				{
 					"url": "/mapbender/php/mod_exportWmc2Json.php?confFileName=mobilemap2&epsg=25832&withHierarchy=1&wmc_id={id}",
-					"layers_url": "/mapbender/php/mod_callMetadata.php?languageCode=de&resultTarget=web&maxResults=40&resourceIds={ids}"
-					
+					"layers_url": "/mapbender/php/mod_callMetadata.php?languageCode=de&resultTarget=web&maxResults=40&resourceIds={ids}",
+					"layers_removable": true
 				},
 				
 				"folders":
@@ -237,13 +240,21 @@
 				{
 					"title": "Ebene hinzufügen",
 					"preview": true,
+					"editable": true,
 					"wms_options": [ "https://sgx.geodatenzentrum.de/wms_topplus_open" ],
 					"wfs_proxy": "",
 					"geopackage_lib": "./libs/geopackage/4.2.3/",
-					"geoportal_tab": true,
 					"geoportal_search_url": "/mapbender/php/mod_callMetadata.php?languageCode=de&resultTarget=web&maxResults=99&searchText={query}",
 					"geoportal_search_dynamic": true,
-					"geoportal_simplify_folders": true
+					"geoportal_simplify_folders": true,
+					"geoportal_tab": true,
+					"wms_tab": true,
+					"wfs_tab": false,
+					"geojson_tab": true,
+					"gml_tab": false,
+					"geopackage_tab": false,
+					"spatialite_tab": false,
+					"shapefile_tab": false
 				},
 				"styles":
 				{

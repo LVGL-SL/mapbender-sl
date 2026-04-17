@@ -1,0 +1,33 @@
+.netgis-font { font-family: Arial Helvetica, sans-serif; }
+/*theoretisch hover: #var(--primary-hover) #1b3b6c -> dort dann nach links? .. dunno */
+
+.netgis-color-a { background-color: #002966; color: #fff; }
+.netgis-color-b { background-color: #011b42; color: #fff; }
+.netgis-color-c { background-color: #1b3b6c; color: #fff; }
+.netgis-color-d { background-color: #F6F5F5; color: #000; }
+.netgis-color-e { background-color: #ffffff; color: #000; }
+
+.netgis-hover-a:hover { background-color: #002966; color: #fff; }
+.netgis-hover-b:hover { background-color: #011b42; color: #fff; }
+.netgis-hover-c:hover { background-color: #1b3b6c; color: #fff; }
+.netgis-hover-d:hover { background-color: #F6F5F5; color: #000; }
+.netgis-hover-e:hover { background-color: #ffffff; color: #000; }
+
+.netgis-text-a { color: #002966; }
+.netgis-text-b { color: #011b42; }
+.netgis-text-c { color: #1b3b6c; }
+.netgis-text-d { color: #F6F5F5; }
+.netgis-text-e { color: #ffffff; }
+
+.netgis-hover-text-a:hover { color: #002966; }
+.netgis-hover-text-b:hover { color: #011b42; }
+.netgis-hover-text-c:hover { color: #1b3b6c; }
+.netgis-hover-text-d:hover { color: #F6F5F5; }
+.netgis-hover-text-e:hover { color: #ffffff; }
+
+.netgis-border-d { border: 1mm solid #F6F5F5; }
+
+.netgis-gradient-a
+{
+	background: linear-gradient( to bottom, #002966 0, #011a41 100% );
+}
