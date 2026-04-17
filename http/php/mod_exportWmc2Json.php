@@ -279,6 +279,9 @@ $row['wmc'] = $wmcDocSession;
 		    //
 		} else {
 		    $e = new mb_exception("php/mod_exportWmc2JsonV2.php: no wmc found in session!");
+			header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found");
+			//No WebMapContext document with id current found in session - please load a wmc first and then request the current wmc!
+			die();
 		}
 	}
 	
