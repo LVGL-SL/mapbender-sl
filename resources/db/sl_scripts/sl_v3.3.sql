@@ -1201,3 +1201,26 @@ CREATE INDEX IF NOT EXISTS idx_wst_application_timebegin ON mapbender.search_app
 CREATE INDEX IF NOT EXISTS idx_wst_application_timeend ON mapbender.search_application_view USING btree (timeend);
 CREATE INDEX IF NOT EXISTS idx_wst_application_timestamp ON mapbender.search_application_view USING btree (dataset_timestamp);
 COMMIT;
+
+
+-- Ticket #9682
+BEGIN;
+CREATE INDEX IF NOT EXISTS idx_mb_metadata_uuid ON mapbender.mb_metadata USING hash (uuid);
+CREATE INDEX IF NOT EXISTS idx_layer_fkey_wms_id ON mapbender.layer USING btree (fkey_wms_id);
+CREATE INDEX IF NOT EXISTS idx_layer_style_fkey_layer_id ON mapbender.layer_style USING btree (fkey_layer_id);
+CREATE INDEX IF NOT EXISTS idx_ows_relation_metadata_fkey_metadata_id ON mapbender.ows_relation_metadata USING btree (fkey_metadata_id);
+CREATE INDEX IF NOT EXISTS idx_ows_relation_metadata_fkey_layer_id ON mapbender.ows_relation_metadata USING btree (fkey_layer_id) INCLUDE (fkey_metadata_id);
+CREATE INDEX IF NOT EXISTS idx_ows_relation_metadata_fkey_featuretype_id ON mapbender.ows_relation_metadata USING btree (fkey_featuretype_id) INCLUDE (fkey_metadata_id);
+CREATE INDEX IF NOT EXISTS idx_ows_relation_data_fkey_datalink_id ON mapbender.ows_relation_data USING btree (fkey_datalink_id) INCLUDE (fkey_layer_id);
+CREATE INDEX IF NOT EXISTS idx_ows_relation_data_fkey_layer_id ON mapbender.ows_relation_data USING btree (fkey_layer_id) INCLUDE (fkey_datalink_id);
+CREATE INDEX IF NOT EXISTS idx_oaf_proxy_log_log_id ON mapbender.oaf_proxy_log USING btree (log_id);
+DROP INDEX IF EXISTS mapbender.idx_mb_monitor_upload_id;  -- duplicate
+CREATE INDEX IF NOT EXISTS idx_mb_monitor_fkey_wms_id_upload_id ON mapbender.mb_monitor USING btree (fkey_wms_id, upload_id);
+CREATE INDEX IF NOT EXISTS idx_mb_monitor_fkey_wfs_id_upload_id ON mapbender.mb_monitor USING btree (fkey_wfs_id, upload_id);
+CREATE INDEX IF NOT EXISTS idx_layer_custom_category_fkey_layer_id ON mapbender.layer_custom_category USING btree (fkey_layer_id) INCLUDE (fkey_custom_category_id);
+CREATE INDEX IF NOT EXISTS idx_wfs_featuretype_custom_category_fkey_featuretype_id ON mapbender.wfs_featuretype_custom_category USING btree (fkey_featuretype_id) INCLUDE (fkey_custom_category_id);
+CREATE INDEX IF NOT EXISTS idx_wfs_featuretype_md_topic_category_fkey_featuretype_id ON mapbender.wfs_featuretype_md_topic_category USING btree (fkey_featuretype_id) INCLUDE (fkey_md_topic_category_id);
+CREATE INDEX IF NOT EXISTS idx_wfs_featuretype_keyword_fkey_featuretype_id ON mapbender.wfs_featuretype_keyword USING btree (fkey_featuretype_id) INCLUDE (fkey_keyword_id);
+CREATE INDEX IF NOT EXISTS idx_wfs_featuretype_output_formats_fkey_featuretype_id ON mapbender.wfs_featuretype_output_formats USING btree (fkey_featuretype_id) INCLUDE (output_format);
+CREATE INDEX IF NOT EXISTS idx_wfs_featuretype_namespace_fkey_featuretype_id ON mapbender.wfs_featuretype_namespace USING btree (fkey_featuretype_id);
+COMMIT;
