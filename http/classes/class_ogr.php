@@ -149,7 +149,7 @@ class Ogr {
             fclose($h);
         }
         $filenameGeojson = $tmpDir."/".$filenameUniquePart.".geojson";
-        $command = 'timeout 15 ogr2ogr  -a_srs "EPSG:4326" -dim 2 -f "GeoJSON" '.$filenameGeojson.' '. $filenameGml.' -lco WRITE_BBOX=YES';
+        $command = 'timeout 15 ogr2ogr --config GDAL_HTTPS_PROXY "' . CONNECTION_PROXY . ':' . CONNECTION_PORT . '" -a_srs "EPSG:4326" -dim 2 -f "GeoJSON" '.$filenameGeojson.' '. $filenameGml.' -lco WRITE_BBOX=YES';
         //$e = new mb_exception("classes/class_ogr.php: executing ogr2ogr: " . $command);
         exec($command, $output, $returnCode);
         
