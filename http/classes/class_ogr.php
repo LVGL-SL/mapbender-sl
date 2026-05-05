@@ -97,14 +97,24 @@ class Ogr {
         }
         $filenameUniquePart = "ogr_transform_".time()."_".uniqid();
         $targetFilename = $tmpDir . "/" . $filenameUniquePart . "." . $appendix;
-        $e = new mb_exception("classes/class_ogr.php: result of ogrcommand: " . 'ogr2ogr -t_srs "'. $targetCrs .'" -f "' . $targetFormat . '" '.$targetFilename.' '. $inputFilename.' -lco WRITE_BBOX=YES');
-        exec('ogr2ogr -t_srs "'. $targetCrs .'" -f "' . $targetFormat . '" '.$targetFilename.' '. $inputFilename.' -lco WRITE_BBOX=YES', $output);
+        $command = 'timeout 15 ogr2ogr  -t_srs "'. $targetCrs .'" -f "' . $targetFormat . '" '.$targetFilename.' '. $inputFilename.' -lco WRITE_BBOX=YES 2>&1';
+        $e = new mb_exception("classes/class_ogr.php: executing ogr2ogr: " . $command);
+        exec($command, $output, $returnCode);
+        
+        if ($returnCode === 124) {
+            $e = new mb_exception("classes/class_ogr.php: ogr2ogr TIMEOUT after 15 seconds");
+            return false;
+        } elseif ($returnCode !== 0) {
+            $e = new mb_exception("classes/class_ogr.php: ogr2ogr failed with code " . $returnCode . ": " . implode("\n", $output));
+            return false;
+        }
         
         if($h = fopen($targetFilename, "r")){
             $result = fread($h, filesize($targetFilename));
             fclose($h);
             return $result;
         } else {
+            $e = new mb_exception("classes/class_ogr.php: could not open output file: " . $targetFilename);
             return false;
         }
     }
@@ -120,6 +130,11 @@ class Ogr {
         } else {
             $tmpDir = TMPDIR;
         }
+        // Strip schemaLocation to prevent ogr2ogr from trying to fetch remote schemas
+        // This avoids network timeouts and hangs in PHP-FPM environment
+        // GDAL Flags like --config GML_DOWNLOAD_SCHEMA NO won't work in this environment
+        $gmlFeatures = preg_replace('/\s+xsi:schemaLocation="[^"]*"/', '', $gmlFeatures);
+        
         $filenameUniquePart = "ldp_gml_".time()."_".uniqid(); //will be set to new one cause ?
         $filenameGml = $tmpDir."/".$filenameUniquePart.".gml";
         $filenameGfs = $tmpDir."/".$filenameUniquePart.".gfs";
@@ -134,9 +149,29 @@ class Ogr {
             fclose($h);
         }
         $filenameGeojson = $tmpDir."/".$filenameUniquePart.".geojson";
-        exec('ogr2ogr -a_srs "EPSG:4326" -dim 2 -f "GeoJSON" '.$filenameGeojson.' '. $filenameGml.' -lco WRITE_BBOX=YES', $output);
+        $command = 'timeout 15 ogr2ogr  -a_srs "EPSG:4326" -dim 2 -f "GeoJSON" '.$filenameGeojson.' '. $filenameGml.' -lco WRITE_BBOX=YES';
+        //$e = new mb_exception("classes/class_ogr.php: executing ogr2ogr: " . $command);
+        exec($command, $output, $returnCode);
+        
+        if ($returnCode === 124) {
+            $e = new mb_exception("classes/class_ogr.php: ogr2ogr TIMEOUT after 15 seconds");
+            unlink($filenameGml);
+            unlink($filenameGfs);
+            return false;
+        } elseif ($returnCode !== 0) {
+            $e = new mb_exception("classes/class_ogr.php: ogr2ogr failed with code " . $returnCode . ": " . implode("\n", $output));
+            unlink($filenameGml);
+            unlink($filenameGfs);
+            return false;
+        }
         //read geojson
         if($h = fopen($filenameGeojson, "r")){
+            if (!file_exists($filenameGeojson) || filesize($filenameGeojson) === 0) {
+                $e = new mb_exception("classes/class_ogr.php: output file is empty or doesn't exist: " . $filenameGeojson);
+                unlink($filenameGml);
+                unlink($filenameGfs);
+                return false;
+            }
             $geojson = fread($h, filesize($filenameGeojson));
             if(!$geojson){
                 $e = new mb_exception("classes/class_ogr.php: could not read geojson ".$filenameGeojson." from tmp folder");
@@ -150,6 +185,11 @@ class Ogr {
                 unlink($filenameGfs);
             }
             fclose($h);
+        } else {
+            $e = new mb_exception("classes/class_ogr.php: could not open geojson file: " . $filenameGeojson);
+            unlink($filenameGml);
+            unlink($filenameGfs);
+            return false;
         }
         if ($this->logRuntime) {
             $timeEnd = microtime_float() - $timeBegin;
