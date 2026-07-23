@@ -3,9 +3,12 @@ var paintPoints = false;
 var uebergeben = false;
 var create = false;
 var min_point_distance = 1.000; // in meters
+var NUM_POINTS = 2000 //Anzahl Messpunkte
 var string_cursor = "";
+
 $.widget("mapbender.mb_hohe", {
 	options: {
+	
 		measurePointDiameter: 6,
 		lineStrokeDefault: "#099",
 		lineStrokeWidthDefault: 3,
@@ -24,7 +27,6 @@ $.widget("mapbender.mb_hohe", {
 	_toRad: function (deg) {
 		return deg * Math.PI / 180;
 	},
-
 	_calculateDistanceGeographic: function (a, b) {
 		var lon_from = this._toRad(a.x);
 		var lat_from = this._toRad(a.y);
@@ -86,9 +88,12 @@ $.widget("mapbender.mb_hohe", {
 		im else sind es vom Server bearbeitete Punkte.
 		*/
 		else if (paintPoints) {
-			len = jsonPoints.length;
+			//alert(jsonPoints.length);
+			
+			len = jsonPoints.length - 1;
 			for (var k = 0; k < len; k++) {
 				var q = jsonPoints[k].mousePos;
+				//console.log(k + " " +jsonPoints[k].mousePos.x + " "+ jsonPoints[k].mousePos.y );
 				str_path += (k === 0) ? 'M' : 'L';
 				str_path += q.x + ' ' + q.y;
 			}
@@ -206,7 +211,7 @@ $.widget("mapbender.mb_hohe", {
 	in mb_hohe_widget wird durch "update" die Funktion updateView ausgeführt.
 	*/
 	_testPointSnapped: function (p) {
-		var l = jsonPoints.length;
+		var l = jsonPoints.length - 1;
 		for (var i = 0; i < l; i++) {
 			if (this._isPointSnapped(p, jsonPoints[i].mousePos)) {
 				if (i > 0)
@@ -261,31 +266,112 @@ $.widget("mapbender.mb_hohe", {
 		this._mache_punkte();
 	},
 
+	_get_total_distance: function (points){
+		let distance= 0;
+		for(let i=1;i<points.length;i++){
+			const x0 = points[i-1].pos.x;
+			const y0 = points[i-1].pos.y;
+			const x1 = points[i].pos.x;
+			const y1 = points[i].pos.y;
+			distance += Math.hypot(x1-x0, y1-y0);
+		}
+		return distance;
+	},
+
+
 	/*
 	für die Gesamtstrecke, ruft this._mache_punkte_strecke für Teilabschnitte auf.
 	*/
 
 	_mache_punkte: function () {
+		
+		
 		var len = jsonPoints.length;
 
-		var gesamtlaenge = this._totalDistance_;
-		//ungefähr 1500 Punkte werden für die Strecke verwendet.
-		var distance = gesamtlaenge / 1500.0;
-		//if (distance < 1) distance = 10;
-		if (distance < min_point_distance) distance = min_point_distance;
-		var ar = [];
-		for (var i = 0; i < len - 1; i++) {
-			ar = ar.concat(this._mache_punkte_strecke(jsonPoints[i], jsonPoints[i + 1], distance, jsonPoints[i + 1].abstand));
+		var gesamtlaenge = this._get_total_distance(jsonPoints);
+
+		//ungefähr NUM_POINTS Punkte werden für die Strecke verwendet.
+		var step = gesamtlaenge / NUM_POINTS;
+		//if (distance < 1) distance = 1;
+		if (step < min_point_distance){ 
+			step = min_point_distance;
+			NUM_POINTS = gesamtlaenge; 
 		}
-		ar.push(jsonPoints[len - 1]);
-		jsonPoints = ar;
+		const result = [];
+		if(jsonPoints.length < 2 || step <= 0) return result;
+		
+		let segIndex = 0;
+		let sx = jsonPoints[0].pos.x, sy = jsonPoints[0].pos.y; // aktuelle Position auf der Linie
+		let remaining = step;
+		result.push([sx, sy, 1]);
+	  
+	  
+		while((result.length < (NUM_POINTS + jsonPoints.length) )&& segIndex < jsonPoints.length - 1){
+			const ex = jsonPoints[segIndex+1].pos.x, ey = jsonPoints[segIndex+1].pos.y;
+			let dx = ex - sx, dy = ey - sy;
+			const segLen = Math.hypot(dx, dy);
+
+			if(segLen === 0){ segIndex++; sx = jsonPoints[segIndex].pos.x; sy = points[segIndex].pos.y; continue; }
+
+			const vx = dx / segLen, vy = dy / segLen; // normalisierter Vektor
+
+			if(remaining <= segLen){
+				const ix = sx + vx * remaining;
+				const iy = sy + vy * remaining;
+				if (remaining < segLen){
+					result.push([ix, iy, 0]);
+				} else {
+					result.push([ix, iy, 1]);
+				}
+				sx = ix; sy = iy; // Start für nächstes Sample
+				remaining = step;
+			} else { // remaining größer seqLen
+				remaining -= segLen;
+				segIndex++;
+				sx = jsonPoints[segIndex].pos.x; sy = jsonPoints[segIndex].pos.y;
+				result.push([sx, sy, 1]);
+			}
+
+		}
+
+		jsonPoints = [];
+		for(i = 0; i < result.length; i++){
+			let p = {
+				x: result[i][0],
+				y: result[i][1]
+			};
+			let daten = {
+				pos: p,
+				mousePos: this._map.convertRealToPixel(p),
+				hoehe: -1,
+				stuetzpunkt: result[i][2],
+				ist_in_BBox: true,
+				abstand : 0,
+				abstand_von_0: 0
+			};
+			jsonPoints.push(daten);
+			if (i != 0){
+					jsonPoints[i].abstand = Math.hypot( jsonPoints[i].pos.x -  jsonPoints[i-1].pos.x , jsonPoints[i].pos.y -  jsonPoints[i-1].pos.y);
+					jsonPoints[i].abstand_von_0 = jsonPoints[i-1].abstand_von_0 + jsonPoints[i].abstand;
+				
+			}
+			
+		}
+        
+		let daten = {
+
+			laenge: gesamtlaenge,
+			epsg: this._srs.split(":")[1],
+			step: step
+		};
+		jsonPoints.push(daten);
+		//ar.push(jsonPoints[len - 1]);
 		this._canvas.clear();
 		this._measurePoints = [];
 		var sende = [];
 		var j = 0;
 		// sende[j + 2] = -1; ist ein Platzhalter, der wird auf dem Server durch die Höhe ersetzt.
-		jsonPoints[0].abstand = this._totalDistance_;
-		for (var i = 0; i < jsonPoints.length; i++) {
+		for (var i = 0; i < jsonPoints.length - 1; i++) {
 			sende[j] = jsonPoints[i].pos.x;
 			sende[j + 1] = jsonPoints[i].pos.y;
 			sende[j + 2] = -1;
@@ -296,7 +382,6 @@ $.widget("mapbender.mb_hohe", {
 		
 		
 		
-	
 		var div = document.createElement('div');
 		div.setAttribute('style', 'position: absolute;top: calc(50% - 75px);left: calc(50% - 120px);');
 		var img = document.createElement('img');
@@ -316,24 +401,21 @@ $.widget("mapbender.mb_hohe", {
 },
 	
 
- _fetchdata : async function (data,div)  { 
+	_fetchdata : async function (data,div)  { 
  
-	
- const response = await fetch('../plugins/mb_hohe_weiterleitung.php',{
-	 method : 'POST',	
-	 body: data, 
-	  
- });
+		const response = await fetch('../plugins/mb_hohe_weiterleitung.php',{
+		method : 'POST',	
+		body: data, 
+		
+		});
  
+		const re = await response.text();
 
  
-const re = await response.text();
-
- 
- var arr = JSON.parse(re);
+		var arr = JSON.parse(re);
 		var s = JSON.stringify(arr);
 
-		for (var i = 0; i < jsonPoints.length; i++) {
+		for (var i = 0; i < jsonPoints.length - 1; i++) {
 			jsonPoints[i].hoehe = arr[(3 * i) + 2];
 		}
 		
@@ -343,8 +425,11 @@ const re = await response.text();
 		uebergeben = true;
         var l = jsonPoints.length;
 		
-			for (var i = 0; i < l; i++)
+			for (var i = 0; i < l; i++){
 				this._trigger("pointadded", null, jsonPoints[i]);
+				//console.log(jsonPoints[i].pos.x + " " +jsonPoints[i].pos.y );
+				//console.log(jsonPoints[i].mousePos.x + " " +jsonPoints[i].mousePos.y );
+			}
 			this._trigger("update", null, -1);
 			
 			
@@ -356,65 +441,15 @@ const re = await response.text();
 		return  re;
 	},
 
-	/*
-	Diese Funktion fügt Punkte zwischen zwei Stuetzpunkten (geklickten) p1 und p2 ein.
-	p1 gehört dazu.
-	distance besagt in welchem Abstand die Zwischenpunkte sein sollen,
-	laenge ist der Abstand zwischen p1 und p2.
-	*/
-	_mache_punkte_strecke: function (p1, p2, distance, laenge) {
-		/*
-		Das folgende if macht einen Abbruch, wenn p1 und p2 näher als distance bei
-		einander liegen, keine Zwischenpunkte nötig.
-		*/
-		if (laenge < distance) return [];
-		/*
-		anzahl: wie viele Zwischenpunkte kommen auf die Strecke.
-		*/
-		var anzahl = Math.floor(laenge / distance);
-		/*
-		vector von p1 nach p2.
-		Teile durch anzahl, damit er auf den ersten, dann nächsten Zwischenpunkte führt.
-		*/
-		var vector = [(p2.pos.x - p1.pos.x) / anzahl, (p2.pos.y - p1.pos.y) / anzahl];
-		var strecke = [];
-		//Setze Anfangspunkt
-		strecke.push(p1);
-		//lastpoint ist der letzte erzeugte Zwischenpunkt, hier zum Start Anfangspunkt.
-		var lastpoint = {
-			x: p1.pos.x,
-			y: p1.pos.y
-		};
-		for (var i = 0; i < anzahl; i++) {
-			//nächster Punkt, letzter erzeugter Zwischenpunkt + vector.
-			var p = {
-				x: lastpoint.x + vector[0],
-				y: lastpoint.y + vector[1]
-			};
-			var daten = {
-				pos: p,
-				mousePos: this._map.convertRealToPixel(p),
-				abstand: distance,
-				hoehe: -1,
-				// daten sind Zwischenpunkte, deshalb stuetzpunkt = 0 (false), p1 ist stuetzpunkt = 1 (true)
-				stuetzpunkt: 0,
-				ist_in_BBox: true
-			};
-			strecke.push(daten);
-			lastpoint.x = daten.pos.x;
-			lastpoint.y = daten.pos.y;
-		}
-		//p2.abstand = Strecke von letztem Zischenpunkt zu p2, anstelle von p1
-		p2.abstand -= anzahl * distance;
-		return strecke;
-	},
 
 	/*
 	wird ausgeführt, wenn man einen Punkt durch Klicken oder Doppelklick (Ende Zeichnen) hinzufügt.
 	*/
 	_addPoint: function (e) {
 		//Abbruch, wenn Punkte vom Sever da sind.
+		
 		if (paintPoints) return;
+		
 		var mousePos = this._map.getMousePosition(e);
 		var len = this._measurePoints.length;
 
@@ -432,7 +467,6 @@ const re = await response.text();
 		var daten = {
 			pos: this._map.convertPixelToReal(mousePos),
 			mousePos: mousePos,
-			abstand: this._currentDistance,
 			hoehe: -1,
 			stuetzpunkt: 1,
 			ist_in_BBox: true
@@ -440,7 +474,7 @@ const re = await response.text();
 		if (this._totalDistance) {
 			data.pos.totalDistance = this._totalDistance;
 		}
-
+        //alert(mousePos.x + "  " + mousePos.y);
 		var lastPointSnapped = this._isLastPointSnapped(mousePos);
 		/*Doppelklickfunktion, wird ausgeführt bei 2 sehr nahen Punkten, Zeit des Klicks spielt keine Rolle (Schwachpunkt)
 		sonst wird  der Punkt himzugefügt.
@@ -452,10 +486,7 @@ const re = await response.text();
 			jsonPoints.push(daten);
 			this._measurePoints.push(data.pos);
 		}
-		//bei this._totalDistance_  entfällt der doppelt geklickte Punkt.		
-		this._totalDistance_ = this._totalDistance;
-		//this._totalDistance += this._currentDistance;
-		this._currentDistance = 0;
+
 		this._draw(data.pos, {
 			not_clicked: false
 		});
@@ -477,11 +508,11 @@ const re = await response.text();
 	},
 
 	_redraw: function () {
-
 		if (!$(this.element).data("mb_hohe")) {
 			return;
 		}
-		var len = jsonPoints.length;
+		var len = jsonPoints.length - 1;
+		
 		if ((len === 0) && (!paintPoints)) {
 			if (this._map.getSrs() != this._srs)
 				this._srs = this._map.getSrs()
@@ -505,19 +536,20 @@ const re = await response.text();
 				p.ist_in_BBox = false;
 			jsonPoints[i] = p;
 		}
+		
 		this._trigger("cleardia", null, null);
 
-		for (var i = 0; i < len; i++)
+		for (var i = 0; i < len + 1 ; i++)
 			this._trigger("pointadded", null, jsonPoints[i]);
 		this._trigger("update", null, -1);
 
 		this._draw(undefined, {
 			not_clicked: true
-		});
+		}); 
 	},
 
 	_init: function () {
-		
+		if(this._map.getSrs() == "EPSG:4326") {alert("EPSG 4326 wird leider nicht unterstützt"); return;}
 		this.element
 			.bind("mousemove", $.proxy(this, "_measure"))
 			.bind("mousedown", $.proxy(this, "_addPoint"))

@@ -1,0 +1,140 @@
+MAP
+  NAME "GK2_Linienkarte"
+  STATUS ON
+  #SIZE 1200 1200 
+  EXTENT 2500000 5400000 2600000 5600000   # Beispielausdehnung in GK2
+  UNITS METERS
+
+  PROJECTION
+    "init=epsg:31466"   # Gauß-Krüger Zone 2
+  END
+
+  IMAGECOLOR 255 255 255
+
+  WEB
+    METADATA
+      "wms_title"           "GK2 Linienkarte"
+      "wms_onlineresource"  "http://localhost/cgi-bin/mapserv?map=/data/mapfiles/line.map"
+      "wms_srs"             "EPSG:31466 EPSG:25832"
+      "wms_enable_request"  "*"
+    END
+  END
+
+  OUTPUTFORMAT
+    NAME "png"
+    DRIVER "AGG/PNG"
+    MIMETYPE "image/png"
+    IMAGEMODE RGBA
+    EXTENSION "png"
+  END
+
+SYMBOL
+	NAME 'circle'
+	TYPE ellipse
+	FILLED true
+	POINTS
+		1 1
+	END
+END 
+ SYMBOL
+  NAME 'x'
+  TYPE PIXMAP
+  IMAGE "x2.png"
+END 
+
+  
+    LAYER
+    NAME "inline_line_gk2"
+    TYPE LINE
+    STATUS ON
+    METADATA
+      "wms_title" "GK2 Beispiel-Linie"
+      "wms_srs"   "EPSG:31466 EPSG:25832"
+      "wms_name"  "inline_line_gk2"
+    END
+    # Wichtig: kein FEATURE-Block hier, weil MapScript die Geometrie dynamisch einfügt
+    CLASS
+	  NAME "GK3-Points"
+      STYLE
+	    COLOR 255 0 0
+        WIDTH 6
+     
+      END
+    END
+
+    PROJECTION
+      "init=epsg:31466"
+    END
+  END
+  LAYER
+    NAME "inline_points_gk2"
+    TYPE POINT
+    STATUS ON 
+    #CONNECTIONTYPE INLINE
+    METADATA
+      "wms_title" "GK2 Beispiel-Punkte"
+      "wms_srs"   "EPSG:31466 EPSG:25832"
+      "wms_name"  "inline_points_gk2"
+    END
+    # Wichtig: kein FEATURE-Block hier, weil MapScript die Geometrie dynamisch einfügt
+    CLASS
+      NAME "GK2-Points"
+      STYLE
+        COLOR 0 0 255
+        SIZE 15
+		SYMBOL 'circle'
+      END
+    END
+    PROJECTION
+      "init=epsg:31466"
+    END
+  END
+  LAYER
+    NAME "inline_startpoint_gk2"
+    TYPE POINT
+    STATUS ON 
+    METADATA
+      "wms_title" "GK2 Beispiel-Punkte"
+      "wms_srs"   "EPSG:31466 EPSG:25832"
+      "wms_name"  "inline_startpoint_gk2"
+    END
+    # Wichtig: kein FEATURE-Block hier, weil MapScript die Geometrie dynamisch einfügt
+    CLASS
+      NAME "GK2-Points2"
+      STYLE
+        COLOR 255 255 255
+        SIZE 20
+		SYMBOL 'circle'
+	  END
+    END
+    PROJECTION
+      "init=epsg:31466"
+    END
+  END      
+  LAYER
+    NAME "inline_point_gk2"
+    TYPE POINT
+    STATUS ON 
+    #CONNECTIONTYPE INLINE
+    METADATA
+      "wms_title" "GK2 Beispiel-Punkte"
+      "wms_srs"   "EPSG:31466 EPSG:25832"
+      "wms_name"  "inline_point_gk2"
+    END
+    # Wichtig: kein FEATURE-Block hier, weil MapScript die Geometrie dynamisch einfügt
+    CLASS
+      NAME "GK2-Points"
+      STYLE
+        #COLOR 255 255 0
+        SIZE 30
+		ANGLE 90
+		SYMBOL 'x'
+	END
+    END
+    PROJECTION
+      "init=epsg:31466"
+    END
+  END 
+ 
+END
+

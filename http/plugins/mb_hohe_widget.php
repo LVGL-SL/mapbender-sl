@@ -51,6 +51,13 @@ var MeasureApi = function (o) {
                         Mapbender.unbindPanEvents();
                         resetII();
                     }
+                },
+				{
+                    text: "3D",
+                    id: "hohe3DButton",
+                    click: function() {
+                        ddd(jsonarray);
+                    }
                 }
             ],
             open: function() {
@@ -160,7 +167,37 @@ var MeasureApi = function (o) {
             });
         }
     };
-    
+    var ddd = function (jarray) {
+		
+
+        const payload = { srs:jarray[jarray.length - 1].epsg, laenge: jarray[jarray.length - 1].laenge, step: jarray[jarray.length - 1].step, points: [] };
+		
+        for (var i = 0; i  < jarray.length - 1; i++)
+          
+		    if(jarray[i].stuetzpunkt == 0)
+				payload.points.push({ type:"I", x: jarray[i].pos.x , y: jarray[i].pos.y, z: jarray[i].hoehe, abstand: jarray[i].abstand , abstand_von_0: jarray[i].abstand_von_0});
+			else
+				payload.points.push({ type:"P", x: jarray[i].pos.x , y: jarray[i].pos.y, z: jarray[i].hoehe, abstand: jarray[i].abstand , abstand_von_0: jarray[i].abstand_von_0 });
+         
+		  
+		  
+		  
+		fetch("/mapbender/extensions/3D_hprofil/bin/html_block.py", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(payload)
+		})
+		.then(response => response.text())
+		.then(data => {
+			const newWin = window.open("", "_blank");
+			newWin.document.write(data);
+			newWin.document.close();
+		})
+		.catch(err => console.error("Fehler:", err));
+
+};
+
+	
     var resetII = function () {
         if (o.$target.size() > 0) {
             o.$target.mb_hohe("destroy")
@@ -315,11 +352,11 @@ die von w_hohe.js übergebenen jarray Punkte werden an points übergeben und fü
 hoehe_min, hoehe_max werden ermittelt.
 */
     var prep_json = function (jarray) {
-        points_count = jarray.length;
-        if( jarray[0].abstand > 0)
-        gesamt_laenge = jarray[0].abstand;
+        points_count = jarray.length - 1;
+        if( jarray[jarray.length-1].laenge > 0)
+        gesamt_laenge = jarray[jarray.length-1].laenge;
         //alert('gesamt_laenge: ' + gesamt_laenge+ " " + points_count);
-        jarray[0].abstand = 0;
+        //jarray[jarray.length-1].laenge = 0;
 
         for (var i = 0; i < points_count; i++) {
             if (jarray[i].hoehe > hoehe_max) hoehe_max = jarray[i].hoehe;
@@ -330,6 +367,7 @@ hoehe_min, hoehe_max werden ermittelt.
 
         for (var i = 0; i < points_count; i++) {
             acc += jarray[i].abstand;
+			console.log(gesamt_laenge);
             var daten =
             {
                 x: umrechnen(30, width - 30, 0, gesamt_laenge, acc, false),
