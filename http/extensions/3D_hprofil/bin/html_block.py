@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
-import cgi
-import html
 import sys
 import json
 import os
-import subprocess
-import tempfile
+
+
 # 1. CORS-Header setzen (Erlaubt Anfragen von überall)
 #print("Access-Control-Allow-Origin: *")
 # Optional: Erlaubt bestimmte Methoden
@@ -26,21 +24,9 @@ import tempfile
 	print("</ul>")
 
 """
-def get_env_variable_from_geoportal_sl(variable_name:str, default_value= None)->str:
-    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','..','..','..','GeoPortal.sl','Geoportal','.env')
-    with open(env_path, 'r') as env_file:
-        for line in env_file:
-            try:
-                key,value = line.strip().split('=')
-            except ValueError:
-                continue
-            os.environ[key.replace(" ","")] = value.replace(" ","").replace("\"","")
-    return os.getenv(variable_name, default_value)
+
 
 def main():
-	host = get_env_variable_from_geoportal_sl("HOSTNAME","geoportal.saarland.de")
-	base_url = f"https://{host}"
-
 	content_length = int(os.environ.get("CONTENT_LENGTH", 0))
 	post_data = sys.stdin.read(content_length)
 
@@ -84,24 +70,24 @@ def main():
 	print("	")
 	print("    <title></title>")
 	print("	")
-	print(f"\t<script src=\"{base_url}/mapbender/extensions/3D_hprofil/static/javascript/settings.js\"></script>")
-	print(f"\t<script src=\"{base_url}/mapbender/extensions/3D_hprofil/static/javascript/koord.js\"></script>")
-	print(f"\t<script src=\"{base_url}/mapbender/extensions/3D_hprofil/static/javascript/wms.js\"></script>")
-	print(f"\t<script src=\"{base_url}/mapbender/extensions/3D_hprofil/static/javascript/basis.js\"></script>")
-	print(f"    <script src=\"{base_url}/mapbender/extensions/3D_hprofil/static/javascript/vertex.js\"></script>")
-	print(f"    <script src=\"{base_url}/mapbender/extensions/3D_hprofil/static/javascript/vector.js\"></script>")
-	print(f"\t<script src=\"{base_url}/mapbender/extensions/3D_hprofil/static/javascript/vectornomal.js\"></script>")
-	print(f"    <script src=\"{base_url}/mapbender/extensions/3D_hprofil/static/javascript/shader.js\"></script>")
-	print(f"    <script src=\"{base_url}/mapbender/extensions/3D_hprofil/static/javascript/local_system.js\"></script>")
-	print(f"    <script src=\"{base_url}/mapbender/extensions/3D_hprofil/static/javascript/matrix.js\"></script>")
-	print(f"    <script src=\"{base_url}/mapbender/extensions/3D_hprofil/static/javascript/material.js\"></script>")
-	print(f"    <script src=\"{base_url}/mapbender/extensions/3D_hprofil/static/javascript/materialII.js\"></script>")
-	print(f"    <script src=\"{base_url}/mapbender/extensions/3D_hprofil/static/javascript/polyhedron.js\"></script>")
-	print(f"    <script src=\"{base_url}/mapbender/extensions/3D_hprofil/static/javascript/Dach_dxf.js\"></script>")
-	print(f"    <script src=\"{base_url}/mapbender/extensions/3D_hprofil/static/javascript/superpoly.js\"></script>")
-	print(f"    <script src=\"{base_url}/mapbender/extensions/3D_hprofil/static/javascript/lib/webgl-utils.js\"></script>")
-	print(f"    <script src=\"{base_url}/mapbender/extensions/3D_hprofil/static/javascript/lib/webgl-debug.js\"></script>")
-	print(f"    <script src=\"{base_url}/mapbender/extensions/3D_hprofil/static/javascript/lib/cuon-utils.js\"></script>")
+	print(f"\t<script src=\"/mapbender/extensions/3D_hprofil/static/javascript/settings.js\"></script>")
+	print(f"\t<script src=\"/mapbender/extensions/3D_hprofil/static/javascript/koord.js\"></script>")
+	print(f"\t<script src=\"/mapbender/extensions/3D_hprofil/static/javascript/wms.js\"></script>")
+	print(f"\t<script src=\"/mapbender/extensions/3D_hprofil/static/javascript/basis.js\"></script>")
+	print(f"    <script src=\"/mapbender/extensions/3D_hprofil/static/javascript/vertex.js\"></script>")
+	print(f"    <script src=\"/mapbender/extensions/3D_hprofil/static/javascript/vector.js\"></script>")
+	print(f"\t<script src=\"/mapbender/extensions/3D_hprofil/static/javascript/vectornomal.js\"></script>")
+	print(f"    <script src=\"/mapbender/extensions/3D_hprofil/static/javascript/shader.js\"></script>")
+	print(f"    <script src=\"/mapbender/extensions/3D_hprofil/static/javascript/local_system.js\"></script>")
+	print(f"    <script src=\"/mapbender/extensions/3D_hprofil/static/javascript/matrix.js\"></script>")
+	print(f"    <script src=\"/mapbender/extensions/3D_hprofil/static/javascript/material.js\"></script>")
+	print(f"    <script src=\"/mapbender/extensions/3D_hprofil/static/javascript/materialII.js\"></script>")
+	print(f"    <script src=\"/mapbender/extensions/3D_hprofil/static/javascript/polyhedron.js\"></script>")
+	print(f"    <script src=\"/mapbender/extensions/3D_hprofil/static/javascript/Dach_dxf.js\"></script>")
+	print(f"    <script src=\"/mapbender/extensions/3D_hprofil/static/javascript/superpoly.js\"></script>")
+	print(f"    <script src=\"/mapbender/extensions/3D_hprofil/static/javascript/lib/webgl-utils.js\"></script>")
+	print(f"    <script src=\"/mapbender/extensions/3D_hprofil/static/javascript/lib/webgl-debug.js\"></script>")
+	print(f"    <script src=\"/mapbender/extensions/3D_hprofil/static/javascript/lib/cuon-utils.js\"></script>")
 	print("    ")
 	print("")
 	print("")
@@ -155,7 +141,7 @@ def main():
 	print("body {  ")
 	print("background-color: gray;  ")
 	print("overflow: hidden;  ")
-	print("}  ")	
+	print("}  ")
 	print("/* --- Overlay --- */")
 	print("#overlay {")
 	print("position: fixed;")
@@ -194,11 +180,11 @@ def main():
 #	print("height: 100vh;   ")
 
 	print("       left: 5px; top: 0px; }  ")
-	
+
 	print("canvas {")
 	print("display: block;")
-	print("width: 100vw;;")  
-	print("height: 100vh;")  
+	print("width: 100vw;;")
+	print("height: 100vh;")
 	print("}")
 
 	print("#plot { position: absolute;   ")
@@ -251,7 +237,7 @@ def main():
 	print("}")
 
 
-	print(".outer.disabled { opacity: 0.1;  filter: none;}") #cursor: not-allowed; 
+	print(".outer.disabled { opacity: 0.1;  filter: none;}") #cursor: not-allowed;
 
 	print(".angle-marker {")
 	print("      stroke: #fff;")
@@ -307,7 +293,7 @@ def main():
 	print("<br>")
 	print("<h2>[ESC]: Zurück zur Anfangsansicht</h2>")
 	print("<br>")
-	print("<h2>[SPACE]: Strecke abgehen;  [H]: Zurück zum Anfangspunkt</h2>")	
+	print("<h2>[SPACE]: Strecke abgehen;  [H]: Zurück zum Anfangspunkt</h2>")
 	print("<br>")
 	print("<h2>[MITTLERER MAUSBUTTON; MAUSRAD]: im Diagramm drücken, um zu gewähltem Punkt in Ebene zu springen</h2>")
 	print("<br>")
@@ -335,13 +321,13 @@ def main():
 	print("</div>")
 	print("</form>")
 
-    
+
 	#print("<br>")
 	#print("<br>")
 	#print("<br>")
 	print("<p>Bitte klicken Sie hier, wenn der Button grün ist, um das Overlay auszublenden.</p>")
 	print("<button id=\"closeBtn\" type=\"button\">Schließen</button>")
-	#print("<img src=\"https://via.placeholder.com/300x180.png?text=Beispielbild\" alt=\"Beispielbild\">") 
+	#print("<img src=\"https://via.placeholder.com/300x180.png?text=Beispielbild\" alt=\"Beispielbild\">")
 	print("</div>")
 
 
@@ -486,8 +472,8 @@ def main():
 	print("var supoly = new superpoly(shade,ba.gl,ba.canvas,matt,wms);")
 	print("supoly.gm_fkt(5);")
 	print("//supoly.texon();")
-    
-    
+
+
 	print("// 1) Einzelne Listener an alle Radios")
 	print("document.querySelectorAll('input[name=\"auswahl\"]').forEach(radio => {")
 	print("radio.addEventListener('change', (e) => {")
@@ -503,7 +489,7 @@ def main():
 	print("document.getElementById(\"overlay\").classList.add(\"fade-out\");")
 	print("setTimeout(() => { overlay.style.display = \"none\"; }, 800); // gleiche Zeit wie transition")
 	print("});")
-    
+
 	print("  </script>")
 	print("	</div>")
 	"""
@@ -569,7 +555,7 @@ def main():
 	print("  xaxis: {tickfont: { color: 'white' }, title: {text : 'Strecke in km' , font: { color: 'white' }}},")
 	print("  yaxis: {tickfont: { color: 'white' }, title: {text : 'Z-Wert (Höhe)', font: { color: 'white' } }},")
 	print("  paper_bgcolor: 'rgba(0,0,0,0)', ")
-	print("  plot_bgcolor: 'rgba(0,0,0,0)'  ")  
+	print("  plot_bgcolor: 'rgba(0,0,0,0)'  ")
 	print("},config);")
 	print("var myDiv = document.getElementById('plot');")
 	print("myDiv.on('plotly_click', function(data){")
@@ -607,8 +593,8 @@ def main():
 	print(" counter = 0;    ")
 	print(" i = 0;    ")
 	print("    }")
-    
-    
+
+
 	print("    if (e.keyCode === 72) {")
 	print("if(supoly.get_jetzt_nicht()){ return;}")
 	print(" counter = 0;    ")
@@ -684,7 +670,7 @@ def main():
 
 	print("function handlePress(e) { const dir = e.target.dataset.dir;")
 	print("if (interval) return;")
-	print("switch (dir) {") 
+	print("switch (dir) {")
 	print("case \"outer-strip-top-quarter\": interval = setInterval(() => {supoly.vertikal(-1);}, 30); break; ")
 	print("case \"outer-strip-right-quarter\": interval = setInterval(() => {supoly.horizontal(1);}, 30); break; ")
 	print("case \"outer-strip-bottom-quarter\":interval = setInterval(() => {supoly.vertikal(1);}, 30); break; ")
@@ -711,7 +697,7 @@ def main():
 
 	print("function handlePress3(e) { const dir = e.target.dataset.dir;")
 	print("if (interval2) return;")
-	print("switch (dir) {") 
+	print("switch (dir) {")
 	print("case \"inner-down\": interval2 = setInterval(() => {supoly.mousewheel(1);}, 35); break; ")
 	print("case \"inner-up\": interval2 = setInterval(() => {supoly.mousewheel(0);}, 35); break; }")
 	print(" }")
@@ -721,7 +707,7 @@ def main():
 	print("interval2 = null;")
 	print(" }")
 
-	print("document.querySelectorAll('.btn.inner').forEach(strip => { strip.addEventListener('mousedown',handlePress3);") 
+	print("document.querySelectorAll('.btn.inner').forEach(strip => { strip.addEventListener('mousedown',handlePress3);")
 	print("});")
 	print("document.querySelectorAll('.btn.inner').forEach(strip => { strip.addEventListener(\"mouseup\", handlePress4);")
 	print("});")
@@ -770,6 +756,7 @@ def main():
 
 	print("  </body>")
 	print("</html>")
-	
+
+
 if __name__ == "__main__":
 	main()
