@@ -1070,9 +1070,6 @@ function _dochecks()
 	//Check mbstring overloading
 	if(ini_get('mbstring.func_overload') & 2)
 		$this->Error('mbstring overloading must be disabled');
-	//Disable runtime magic quotes
-	if(get_magic_quotes_runtime())
-		@set_magic_quotes_runtime(0);
 }
 
 function _getpageformat($format)
@@ -1563,7 +1560,7 @@ function _putimages()
 {
 	$filter=($this->compress) ? '/Filter /FlateDecode ' : '';
 	reset($this->images);
-	while(list($file,$info)=each($this->images))
+	foreach($this->images as $file => $info)
 	{
 		$this->_newobj();
 		$this->images[$file]['n']=$this->n;

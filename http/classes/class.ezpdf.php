@@ -652,8 +652,7 @@ function ezTable(&$data,$cols='',$title='',$options=''){
   
   if (!is_array($cols)){
     // take the columns from the first row of the data set
-    reset($data);
-    list($k,$v)=each($data);
+    $v = reset($data);
     if (!is_array($v)){
       return;
     }
