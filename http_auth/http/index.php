@@ -210,8 +210,11 @@ if ($wfsId !== false) {
 $layerId = $_REQUEST['layer_id'];
 $wfsId = $_REQUEST['wfs_id'];
 $withChilds = false;
-if (isset($_REQUEST["withChilds"]) && $_REQUEST["withChilds"] === "1") {
-    $withChilds = true;
+foreach ($_REQUEST as $key => $value) {
+    if (strcasecmp($key, "withChilds") === 0 && $value === "1") {
+        $withChilds = true;
+        break;
+    }
 }
 //$e = new mb_exception("http_auth/http/index.php: wfsId: ".$wfsId);
 $n = new administration();
