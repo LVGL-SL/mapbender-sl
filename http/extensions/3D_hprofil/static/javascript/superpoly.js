@@ -75,6 +75,7 @@ var svertex = function(x, y)
 	var esscape = false;
 	var esscape_begin = true;
 	var aufloesung_aktuell = "500";
+	var gpx_array_ = []; 
 
 
 var superpoly = function(shad,gl,canvas,mate,wmms)
@@ -229,8 +230,10 @@ var tick = function()
 		local_s.set(cam.pos,cam.right,cam.up,cam.sight);   
 		ppol[0].set_len_eins(1.0);
 		l_ur = l;
-		
-		ppol[0].settex_overlay(wwms.get_getmap(ggm2),"Material.001"); // u.a. strecke   
+		//var gelb = male_gpx();
+		//if(!gelb)
+		//ppol[0].settex_overlay(wwms.get_getmap(ggm2),"Material.001"); // u.a. strecke   
+	
 		ppol[0].settex(wwms.get_getmap(ggm),"Material.001"); // DOP2023
 		ppol[0].settex_schon_da(wwms.get_getmap(0),"Material.001"); //Höhe  
 			
@@ -238,7 +241,12 @@ var tick = function()
 	}
    
 	if(refresh){
+		
+		
+		var gelb = male_gpx();
+		if(!gelb)
 		ppol[0].settex_overlay(wwms.get_getmap(ggm2),"Material.001"); // u.a. strecke 
+		
 		refresh = false;
 	    
    }
@@ -281,25 +289,97 @@ tick();
 
 
 };
+superpoly.prototype.gpx_array = function(ar)
+{
+	
+		gpx_array_ = ar;
+		
+	
+};
+var male_gpx = function(){
 
+
+		var array_gpx2 = gpx_array_;
+        if ((array_gpx2 == undefined)|| (array_gpx2.length == 0)|| (array_gpx2 == "[]"))
+			return 0;
+		
+		
+		var array_gpx = [];
+		var s = array_gpx2.replace("]]","]");
+		s = s.replace("[[","[");
+		
+		
+		
+		for (var i = 0;i < s.split(",").length; i += 1){	
+
+		//alert(s.split(",")[i].split(";")[0]);
+		//alert(s.split(",")[i].split(";")[1]);
+			array_gpx.push([s.split(",")[i].replace("]","").replace("[","").split(";")[0],s.split(",")[i].replace("]","").replace("[","").split(";")[1]]);
+			
+		}
+		
+		
+		
+		
+		
+		
+
+		
+		
+		
+		const canvas = document.createElement('canvas');
+		canvas.width = wwms.width;
+		canvas.height = wwms.height;
+
+
+		const ctx = canvas.getContext('2d');
+				ctx.translate(0,wwms.height);
+		ctx.scale(1, -1);
+			ctx.beginPath();
+	// Neuen Pfad starten
+			ctx.moveTo(wwms.gety1(array_gpx[0][0]),wwms.gety2(array_gpx[0][1]));
+
+		for (var i = 1;i < array_gpx.length;i += 1){
+			y1 = wwms.gety1(array_gpx[i][0]);
+			y2 = wwms.gety2(array_gpx[i][1]);
+			
+			ctx.lineTo(y1, y2);
+			
+			
+
+
+		}	
+
+		
+
+		ctx.lineWidth = 3;          // Dicke in Pixeln (Standard ist 1)
+		ctx.strokeStyle = 'yellow';
+		ctx.stroke(); 
+	// Linie sichtbar machen (zeichnen)
+		ppol[0].settex_overlay(canvas,"Material.001",false);
+		
+
+	return 1;
+};
 
 
 
 superpoly.prototype.reload = function(a){
 	
-
+         var gelb = 0;
         if (aufloesung_aktuell == a){ return;}
 		document.getElementById("closeBtn").style.backgroundColor = "white";
 		wwms.set_aufloesung(a);
 		ppol[0].reset_ready();
 
 
-		ppol[0].settex_overlay(wwms.get_getmap(ggm2),"Material.001"); // u.a. strecke   
+		//ppol[0].settex_overlay(wwms.get_getmap(ggm2),"Material.001"); // u.a. strecke
+			gelb = male_gpx();		
 		ppol[0].settex(wwms.get_getmap(ggm),"Material.001"); // DOP2023
 		ppol[0].settex_schon_da(wwms.get_getmap(0),"Material.001"); //Höhe  
 		aufloesung_aktuell = a;
-		
-		//ppol[0].settex_overlay(wwms.get_getmap(ggm2),"Material.001"); // u.a. strecke 
+		if (!gelb)
+		ppol[0].settex_overlay(wwms.get_getmap(ggm2),"Material.001"); // u.a. strecke 
 		//refresh = true;
 		
 		

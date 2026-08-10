@@ -79,7 +79,7 @@ this.VSHADER_SOURCE =
 
 
 '    ttt = s11;\n'+
-'    position = vec3(inputPosition.x, inputPosition.y + ((u_len_eins ) * s11 * 0.3 + 0.0) ,inputPosition.z);\n'+
+'    position = vec3(inputPosition.x, inputPosition.y + ((u_len_eins ) * s11 * 0.3) ,inputPosition.z);\n'+
 //'    position = vec3(inputPosition.x, inputPosition.y  + 4.0 *(u_len_eins / u_len_eins),inputPosition.z);\n'+
 '    gl_Position   = u_projection * u_modelview * vec4(position, 1.0);\n'+
 '    vec4 vertPos4 = u_projection * u_modelview * vec4(position, 1.0);\n'+

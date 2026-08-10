@@ -14,7 +14,12 @@ var MeasureApi = function (o) {
 			?></div></div>",
 		informationHtml = "<canvas id='can' width='660' height='250'></canvas>";
 
-	var jsonarray = [];		  
+	var jsonarray = [];
+	var gpxarray = [];
+	var gpx_array = [];
+	var gpx_ = false;
+	var strecke2 = 0;
+var yetupdated = false;	
         
 	var hideMeasureData = function () {
 		measureDialog.find(".mb-measure-clicked-point").parent().hide();
@@ -30,6 +35,50 @@ var MeasureApi = function (o) {
 		hideMeasureData();
 		o.$target.unbind("click", changeDialogContent);
 	};
+
+
+// Berechnet die euklidische Distanz zwischen zwei ebenen Punkten (Pythagoras)
+var euclideanDistance = function (coord1, coord2) {
+    // GeoJSON nutzt [X, Y] (meistens Ostwert, Nordwert)
+    const dX = coord2[0] - coord1[0];
+    const dY = coord2[1] - coord1[1];
+    
+    return Math.sqrt(dX * dX + dY * dY); // Ergebnis in der Einheit des Systems (meistens Meter)
+};
+
+// Berechnet die Gesamtlänge eines ebenen GeoJSON LineString
+var getFlatGeoJsonLength = function (geojson) {
+    let coordinates = [];
+
+    // Typprüfung für Feature oder direkte Geometrie
+    if (geojson[0].type === "Feature") {
+        coordinates = geojson[0].geometry.coordinates;
+    } else if (geojson[0].type === "LineString") {
+        coordinates = geojson[0].coordinates;
+    } else {
+        alert("error");
+    }
+
+    let totalLength = 0;
+
+    // Aufaddieren aller Teilstrecken
+    for (let i = 0; i < coordinates.length - 1; i++) {
+        totalLength += euclideanDistance(coordinates[i], coordinates[i + 1]);
+    }
+
+    return totalLength; // Rückgabe in Metern (bzw. Karteneinheit)
+};
+
+
+
+
+
+
+
+
+
+
+
 
 	var create = function () {
 		//
@@ -48,7 +97,7 @@ var MeasureApi = function (o) {
                     text: "Neu",
                     id: "hoheNewButton",
                     click: function() {
-                        Mapbender.unbindPanEvents();
+                        //Mapbender.unbindPanEvents();
                         resetII();
                     }
                 },
@@ -56,9 +105,17 @@ var MeasureApi = function (o) {
                     text: "3D",
                     id: "hohe3DButton",
                     click: function() {
-                        ddd(jsonarray);
+						
+                        ddd(jsonarray,gpxarray,gpx_array,gpx_);
                     }
-                }
+                },
+				{
+				text: "GPX",
+				id: "hoheGPXButton",
+				title: "Wenn deaktiviert, bitte Klient zurücksetzen",
+				click: function() {
+					gpx();
+				}},
             ],
             open: function() {
                 $('#toolsContainer').hide();
@@ -100,14 +157,21 @@ var MeasureApi = function (o) {
 
     var clearJsonArray  = function(evt,data) {
         jsonarray = [];
+		//gpxarray = [];
+		gpx_array = [];
         points = [];
     };
     var updateJsonArray = function (evt, data) {
         jsonarray.push(data); 
     };
-
+    var updateGPXArray = function (evt, data) {
+        gpxarray.push(data); 
+    };
 	var updateView = function (evt, data) {
-        if(data == -1) {
+		
+		if (!(jsonarray.length > 0)) return;
+		
+        if(data == -1)  {
             ctx.clearRect(0, 0, 660, 250);
             prep_json(jsonarray);
             draw_lineII();
@@ -128,6 +192,7 @@ var MeasureApi = function (o) {
             draw_stuetzpunkte();
             koordinaten_system_zeichnen(hoehe_min,hoehe_max,gesamt_laenge);
         }
+
     };
 
 	var finishMeasure = function () {
@@ -167,21 +232,271 @@ var MeasureApi = function (o) {
             });
         }
     };
-    var ddd = function (jarray) {
-		
+	
+	var gpx = function() {
+    gpx_ = true;
+    var dlg = $('<div id="LoadData"></div>').dialog({
+      "title": "Eigene Strecken hochladen",
+      width: 800,
+      height: 420,
+      close: function() {
+         //$('#LoadData').dialog('destroy');
+        $('#LoadData').remove();
+      }
+    });
+    var dlgcontent ='<div id="kml-from-upload2">' + '<iframe name="kml-upload-target2" style="width: 0; height: 0; border: 0px;"></iframe>' + '<iframe name="kml-upload-target3" style="width: 0; height: 0; border: 0px;"></iframe>'+ '<form action="../php/uploadKml.php" method="post" enctype="multipart/form-data" target="kml-upload-target2">' + '<input type="file" name="kml"></input>' + '<input type="submit" class="upload" value="Upload"></input><br>' + '<br><br>Hier können lokale KML, GPX und geoJSON Dateien hochgeladen werden. Der Dateiname muss die typische Endung (.kml. .gpx oder .geojson) haben.<br><br><br> Die dünne, schwarze Linie ist die Originalstrecke Ihrer Datei. <br>Für die weitere Verarbeitung verwenden wir eine <b>Annäherung an Ihre Strecke</b>, d.h. das Höhenprofil entspricht nicht der Strecke, die Sie hochgeladen haben.<br><br><b>Ziel war es im 3D Tool Ihre hochgeladene Strecke einzubinden und als gelbe Line zu zeichnen.<b>' +  '</form>' + '</div>';
 
-        const payload = { srs:jarray[jarray.length - 1].epsg, laenge: jarray[jarray.length - 1].laenge, step: jarray[jarray.length - 1].step, points: [] };
+
+    $(dlg).append(dlgcontent);
+
+
+
+    //upload of remote files
+    var ifr = $('iframe[name="kml-upload-target2"]')[0];
+	var ifr2 = $('iframe[name="kml-upload-target3"]')[0];
+	
+	
+    var onloadfun = function() {
+	
+      ifr.onload = null;
+      var txt = $(this).contents().find('pre').text(); // result von php/uploadKML.php
+      
+      var data;
+      //returns geojson from kml (from internal parser) or geojson native - no parsing or exception - then gpx!
+      try {
+        data = JSON.parse(txt);
 		
-        for (var i = 0; i  < jarray.length - 1; i++)
+      } catch (e) {
+        var xml = new DOMParser().parseFromString(txt, 'application/xml');
+        data = toGeoJSON.gpx(xml);
+		
+      }
+      
+	
+
+
+
+
+
+
+var sendData = async function() {
+	
+
+  const response = await fetch('../php/transformgeojson.php?targetEPSG='+Mapbender.modules[options.target].getSRS(), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify( data.features ) // data = gpx_datei
+	
+  });
+  const result= await response.json();
+
+  //alert(JSON.stringify( result ));
+
+strecke2 = getFlatGeoJsonLength(result);
+    
+  
+
+let res = [];
+
+//result[0].geometry.coordinates.forEach((ele) => {res.push({x: ele[0], y: ele[1]});});
+result[0].geometry.coordinates.forEach((ele) => {gpx_array.push({x: ele[0], y: ele[1]});});
+
+
+let targetCount1 = 20;
+	if (strecke2 < 20000)
+		targetCount1 = 100 ;
+	else 
+		targetCount1 = 150;
+let minDist1 = 5;
+
+let res_erg = rdpByCountWithMinDistance(gpx_array, targetCount1, minDist1);
+
+let targetCount2 = 20;
+       if (strecke2 < 12000) targetCount2 = 20;
+	   else if (strecke2 < 20000) targetCount2 = 25;
+	   else if (strecke2 < 30000) targetCount2 = 30;
+	   else targetCount2 = 40;
+let minDist2 = 150;
+
+let res_erg_2 = rdpByCountWithMinDistance(gpx_array, targetCount2, minDist2);
+
+var ele_final = [];
+
+for (var i = 0;i < res_erg.length; i+= 1)
+	ele_final.push([res_erg[i].x,res_erg[i].y]);
+
+result[0].geometry.coordinates = ele_final;
+
+
+
+let j = 0;
+	var pp;
+	result[0].geometry.coordinates.forEach((ele) => {pp = [ele[0],ele[1]];  o.$target.mb_hohe("addPoint_gpx",[ele[0],ele[1]]);});
+	o.$target.mb_hohe("addPoint_gpx",[-1,pp[1]]);
+
+	
+var ele_final2 = [];
+
+for (var i = 0;i < res_erg_2.length; i+= 1)
+	ele_final2.push([res_erg_2[i].x,res_erg_2[i].y]);
+
+
+	ele_final2.forEach((ele) => {pp = [ele[0],ele[1]];  o.$target.mb_hohe("addPoint_gpx2",[ele[0],ele[1]]);});
+	o.$target.mb_hohe("addPoint_gpx2",[-1,pp[1]]);
+
+
+
+};
+
+sendData();
+
+
+
+
+		$(dlg).dialog('destroy');
+		 o.$target.mb_hohe("no",data);
+    };
+	
+	
+$('#kml-from-upload2 form').bind('submit', function() {
+  if ($("#kml-from-upload2 > form > input[type='file'] ").val() === "") {
+
+	return;
+  }
+
+  ifr.onload = onloadfun;
+  
+  
+ 
+});
+
+
+
+	
+};
+
+
+// Abstand eines Punktes zur Linie (A-B) 
+function perpendicularDistance(point, start, end) {
+    const x = point.x, y = point.y;
+    const x1 = start.x, y1 = start.y;
+    const x2 = end.x, y2 = end.y;
+
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+
+    if (dx === 0 && dy === 0) {
+        return Math.hypot(x - x1, y - y1);
+    }
+
+    const t = ((x - x1) * dx + (y - y1) * dy) / (dx * dx + dy * dy);
+    const projX = x1 + t * dx;
+    const projY = y1 + t * dy;
+
+    return Math.hypot(x - projX, y - projY); 
+	
+}
+
+// Klassischer RDP-Split-Sammler
+function rdpCollect(points, startIndex, endIndex, splits) {
+    let maxDist = 0;
+    let index = -1;
+
+    const start = points[startIndex];
+    const end = points[endIndex];
+
+
+    for (let i = startIndex + 1; i < endIndex; i++)
+	{
+        const d = perpendicularDistance(points[i], start, end);
+        if (d > maxDist) {
+            maxDist = d;
+            index = i;
+        }
+    }
+    if (index !== -1) {
+        splits.push({ index, dist: maxDist });
+        rdpCollect(points, startIndex, index, splits);
+        rdpCollect(points, index, endIndex, splits);
+    }
+}
+
+// Mindestabstand-Filter
+function enforceMinDistance(points, minDist) {
+    const result = [points[0]];
+
+    for (let i = 1; i < points.length; i++) {
+        const last = result[result.length - 1];
+        const d = Math.hypot(points[i].x - last.x, points[i].y - last.y);
+
+        if (d >= minDist) {
+            result.push(points[i]);
+        }
+    }
+
+    return result;
+}
+
+// Hauptfunktion: RDP + Zielanzahl + Mindestabstand 
+function rdpByCountWithMinDistance(points, targetCount, minDist) {
+    if (20 >= points.length) return points;//points.slice();
+
+    const splits = [];
+    rdpCollect(points, 0, points.length - 1, splits);
+
+    // Wichtigste Splits zuerst
+    splits.sort((a, b) => b.dist - a.dist);
+
+    // Punkte auswählen
+    const keep = new Set([0, points.length - 1]);
+    for (let i = 0; i < targetCount - 2 && i < splits.length; i++) {
+        keep.add(splits[i].index);
+    }
+
+    let reduced = [...keep].sort((a, b) => a - b).map(i => points[i]);
+
+    // Mindestabstand erzwingen
+    reduced = enforceMinDistance(reduced, minDist);
+
+    // Falls durch Mindestabstand zu wenige Punkte übrig bleiben:
+    // → weitere wichtige Splits hinzufügen
+    if (reduced.length < targetCount) {
+        for (let i = targetCount - 2; i < splits.length; i++) {
+            keep.add(splits[i].index);
+            reduced = [...keep].sort((a, b) => a - b).map(i => points[i]);
+            reduced = enforceMinDistance(reduced, minDist);
+            if (reduced.length >= targetCount) break;
+        }
+    }
+
+    return reduced;
+}
+
+
+
+
+    var ddd = function (jarray,garray,gpx_array_,gpx_bool) {
+		
+        
+        const payload = { srs:jarray[jarray.length - 1].epsg, laenge: jarray[jarray.length - 1].laenge, step: jarray[jarray.length - 1].step, points: [], pointsgpx: [] , gpx: gpx_array, streckegesamt: String(strecke2), gpxbool: gpx_bool };
+		
+				  for (var i = 0; i  < garray.length - 1; i++){
           
+		    if(garray[i].stuetzpunkt == 0)
+				
+				payload.pointsgpx.push({ type:"I", x: garray[i].pos.x , y: garray[i].pos.y, z: garray[i].hoehe, abstand: garray[i].abstand , abstand_von_0: garray[i].abstand_von_0});
+			else
+				payload.pointsgpx.push({ type:"P", x: garray[i].pos.x , y: garray[i].pos.y, z: garray[i].hoehe, abstand: garray[i].abstand , abstand_von_0: garray[i].abstand_von_0 });
+				  }
+        for (var i = 0; i  < jarray.length - 1; i++)
+        {  
 		    if(jarray[i].stuetzpunkt == 0)
 				payload.points.push({ type:"I", x: jarray[i].pos.x , y: jarray[i].pos.y, z: jarray[i].hoehe, abstand: jarray[i].abstand , abstand_von_0: jarray[i].abstand_von_0});
 			else
 				payload.points.push({ type:"P", x: jarray[i].pos.x , y: jarray[i].pos.y, z: jarray[i].hoehe, abstand: jarray[i].abstand , abstand_von_0: jarray[i].abstand_von_0 });
-         
-		  
-		  
-		  
+		}
+
+
 		fetch("/mapbender/extensions/3D_hprofil/bin/html_block.py", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
@@ -189,34 +504,45 @@ var MeasureApi = function (o) {
 		})
 		.then(response => response.text())
 		.then(data => {
-			const newWin = window.open("", "_blank");
+			const newWin = window.open("https://geoportal.saarland.de", "_blank");
 			newWin.document.write(data);
 			newWin.document.close();
 		})
 		.catch(err => console.error("Fehler:", err));
 
+
+
+
 };
 
 	
     var resetII = function () {
-        if (o.$target.size() > 0) {
+       if (o.$target.size() > 0) {
             o.$target.mb_hohe("destroy")
 				.unbind("mb_hohepointadded", updateJsonArray)
+				.unbind("mb_hohepointadded_gpx", updateGPXArray)
 				.unbind("mb_hohecleardia", clearJsonArray)
 				.unbind("mb_hoheupdate", updateView)
 				.unbind("mb_measurelastpointadded", finishMeasure)
 				.unbind("mb_hohenew", resetII)
 				.unbind("mousedown")
 				.unbind("mb_measurereinitialize", reinitializeMeasure);
+				
+
 		}
+
                 ctx.clearRect(0, 0, 660, 250);
                 points = [];
                 jsonarray = [];
+				gpxarray = [];
+				strecke2 = 0;
+				gpx_array = [];
 				hideMeasureData();
                 ctx.fillText(t,9,15);
                 hoehe_min = 700;
                 hoehe_max = 100;
                 gesamt_laenge = 0;
+				gpx_ = false;
 
 		measureDialog.html(defaultHtml);
 
@@ -232,22 +558,27 @@ var MeasureApi = function (o) {
 	};
 	this.activate = function () {
 		
-		//o.$target.mb_hohe("activate").unbind("mousedown");
                 //remove measured x and y values from print dialog
                 $('input[name="measured_x_values"]').val("");
                 $('input[name="measured_y_values"]').val("");
 
 		if (o.$target.size() > 0) {
 			o.$target
-				.mb_hohe(o)
+				.mb_hohe(o)     
                                 .bind("mb_hohecleardia", clearJsonArray)
                                 .bind("mb_hohepointadded", updateJsonArray)
-								.bind("mb_hoheupdate", updateView)				
+								.bind("mb_hohepointadded_gpx", updateGPXArray)
 								.bind("mb_hohelastpointadded", finishMeasure)
 								.bind("mb_hohereinitialize", reinitializeMeasure)
-								.bind("click", changeDialogContent)								
-								.bind("mb_hohenew", resetII);
+								.bind("click", changeDialogContent)
+								.bind("mb_hohenew", resetII)
+								.bind("mb_measurelastpointadded", finishMeasure)
+								.bind("mb_hoheupdate", updateView);	
+								
+	
 		}
+
+				
 
 		if (!inProgress) {
 			inProgress = true;
@@ -264,6 +595,7 @@ var MeasureApi = function (o) {
 		if (o.$target.size() > 0) {
 			o.$target.mb_hohe("destroy")
                                 .unbind("mb_hohepointadded", updateJsonArray)
+								.unbind("mb_hohepointadded_gpx",updateGPXArray)
                                 .unbind("mb_hohecleardia", clearJsonArray)
 								.unbind("mb_hoheupdate", updateView)
                                 .unbind("mb_measurelastpointadded", finishMeasure)
@@ -274,6 +606,8 @@ var MeasureApi = function (o) {
                 ctx.clearRect(0, 0, 600, 250);
                 points = [];
                 jsonarray = [];
+				gpxarray = [];
+				gpx_array = [];
 		//hideMeasureData();
                 ctx.fillText(t,9,15);
                 hoehe_min = 700;
@@ -367,7 +701,7 @@ hoehe_min, hoehe_max werden ermittelt.
 
         for (var i = 0; i < points_count; i++) {
             acc += jarray[i].abstand;
-			console.log(gesamt_laenge);
+			
             var daten =
             {
                 x: umrechnen(30, width - 30, 0, gesamt_laenge, acc, false),

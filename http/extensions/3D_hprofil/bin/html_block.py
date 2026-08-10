@@ -29,17 +29,33 @@ import os
 def main():
 	content_length = int(os.environ.get("CONTENT_LENGTH", 0))
 	post_data = sys.stdin.read(content_length)
-
+	gpx_array = []
+	gpx = ""
 	try:
 		payload = json.loads(post_data)
 		points = payload.get("points", [])
+		points_gpx = payload.get("pointsgpx",[])
+		gpx_array = payload.get("gpx", [])
 		srs = "EPSG:" + payload.get("srs", "")
 		laenge = payload.get("laenge", "")
 		step = payload.get("step", "")
+		strecke_gesamt = payload.get("streckegesamt", "")
+		gpx_bool = payload.get("gpxbool","")
 	except:
 		points = []
+
 		srs = ""
 	l = len(points)
+	#print(strecke_gesamt)
+	#return
+	
+	gpx_array_str = "["
+	for p in gpx_array:
+		gpx_array_str += "["+ str(p['x']) +";" +str(p['y'])+  "],"
+	gpx_array_str = gpx_array_str.strip(',') + "]"
+	
+
+	
 	pointsstr = ""
 	pointsstr_all = ""
 	k2 = "["
@@ -56,9 +72,22 @@ def main():
 	#print(json.dumps(coords, indent=2))
 	x = json.dumps(points, indent=2)
 
+	pointsstr_gpx = ""
+	pointsstr_all_gpx = ""
+	k2_gpx = "["
+	for p in points_gpx:
+		k2_gpx += str(p['x'])+","+str(p['y'])+","
+		pointsstr_all_gpx += str(p['x'])+","+str(p['y'])+","+str(p['z'])+";"
+		if p['type'] == 'P':
+			pointsstr_gpx += str(p['x'])+","+str(p['y'])+";"
+	k2_gpx = k2_gpx.strip(',') + "]"
+	pointsstr_gpx = pointsstr_gpx.strip(';')
+	pointsstr_all_gpx = pointsstr_all_gpx.strip(';')
 
-
-
+	#if not gpx_bool:
+	#	pointsstr_gpx = pointsstr
+	#	pointsstr_all_gpx = pointsstr_all
+	#	k2_gpx = k2
 
 
 	print("Content-Type: application/html\n")
@@ -94,7 +123,6 @@ def main():
 	print("")
 	print("")
 	print("<script>")
-	print(" ")
 	print("</script>")
 	print("")
 	print("<style type=\"text/css\">  ")
@@ -176,8 +204,8 @@ def main():
 	print("       right: -3px; top: 50px; } ")
 	print("#viewer { position: absolute;   ")
 	print("           ")
-#	print("width: 100vw;   ")
-#	print("height: 100vh;   ")
+	#print("width: 100vw;   ")
+	#print("height: 100vh;   ")
 
 	print("       left: 5px; top: 0px; }  ")
 
@@ -256,13 +284,13 @@ def main():
 	print("      stroke-width: 2;")
 	print("      cursor: pointer;")
 	print("      transition: 0.2s;")
-#	print("     filter: drop-shadow(0 0 6px #0ff);")
+	#print("     filter: drop-shadow(0 0 6px #0ff);")
 	print("    }")
 
 	print("    .btn:hover {")
 	print("      fill: #fff1;")
 	print("      stroke: #fff;")
-#	print("      filter: drop-shadow(0 0 14px #00f6ff);")
+	#print("      filter: drop-shadow(0 0 14px #00f6ff);")
 	print("    }")
 
 	print("    .btn:active {")
@@ -297,7 +325,7 @@ def main():
 	print("<br>")
 	print("<h2>[MITTLERER MAUSBUTTON; MAUSRAD]: im Diagramm drücken, um zu gewähltem Punkt in Ebene zu springen</h2>")
 	print("<br>")
-	print("<h2>[LINKER MAUSBUTTON]: im Diagramm drücken, um gewählten Punkt in Ebene zu markieren</h2>")
+	print("<h2>[LINKER MAUSBUTTON]: im Diagramm drücken, um gewählten Punkt in Ebene zu markieren [nicht untersützt bei GPX Dateien]</h2>")
 	print("<br>")
 	print("<br>")
 	print("<br>")
@@ -408,7 +436,8 @@ def main():
 	print("	const canvas = document.getElementById('webgl');")
 	print("  canvas.width = window.innerWidth;")
 	print("  canvas.height = window.innerHeight;")
-	print("var wms = new wms("+k2+",'"+pointsstr+"','"+srs+"','"+pointsstr_all+"');")
+	#print("var wms = new wms("+k2+",'"+pointsstr+"','"+srs+"','"+pointsstr_all+"');")
+	print("var wms = new wms("+k2_gpx+",'"+pointsstr_gpx+"','"+srs+"','"+pointsstr_all_gpx+"','"+pointsstr+"');")
 	print("var shade = new shader();")
 	print("var ba = new basis(shade);")
 	print("var wv = new vertex();")
@@ -470,10 +499,11 @@ def main():
 	print("matt.addmat(mat3);")
 	print("")
 	print("var supoly = new superpoly(shade,ba.gl,ba.canvas,matt,wms);")
+	print("supoly.gpx_array('"+ gpx_array_str + "');")
 	print("supoly.gm_fkt(5);")
 	print("//supoly.texon();")
-
-
+    
+    
 	print("// 1) Einzelne Listener an alle Radios")
 	print("document.querySelectorAll('input[name=\"auswahl\"]').forEach(radio => {")
 	print("radio.addEventListener('change', (e) => {")
@@ -653,7 +683,7 @@ def main():
 	print("            ? (i === 0 ? \"white\" : (p.type === \"I\" ? \"green\" : \"blue\"))")
 	print("            : \"gray\";")
 	print("    });")
-	print("if (male)")
+	print("if (false &&  male)")
 	print("    Plotly.update(\"plot\", { marker: { color: colors, size: sizes } }, [0]);")
 	print("}")
 	#print("const overlay = document.getElementById(\"overlay\"); ")

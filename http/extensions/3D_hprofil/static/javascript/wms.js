@@ -1,13 +1,14 @@
 
-var wms = function(koordinaten,pointsstring,epsg,pointsstring_all){
+var wms = function(koordinaten,pointsstring,epsg,pointsstring_all,pointstring_=""){
 
 	this.epsg = epsg;
-	
+    
 	this.width = auflösung;
 	this.height = 1.0 * this.width;
 	this.bbox = [];
 	this.pointsstring = pointsstring;
 	this.pointsstring_all = pointsstring_all;
+	this.pointstring_ = pointstring_;
 	var k2 = [];
 	k2 = koordinaten;
 	this.point = "";
@@ -39,12 +40,15 @@ wms.prototype.getlen = function(){
 	return this.bbox[2]-this.bbox[0];
 }
 wms.prototype.get_getmap = function(i){
-if(i == 0)
+if(i == 0){
+	//alert(url_dgm+"VERSION=1.1.1&Request=GetMap&SERVICE=WMS&LAYERS="+layer_dgm+"&STYLES=&SRS="+this.epsg+"&BBOX="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&WIDTH="+this.width+"&HEIGHT="+this.height+"&FORMAT=image/png&BGCOLOR=0xffffff&TRANSPARENT=TRUE&EXCEPTIONS=application/vnd.ogc.se_xml");
 	return url_dgm+"VERSION=1.1.1&Request=GetMap&SERVICE=WMS&LAYERS="+layer_dgm+"&STYLES=&SRS="+this.epsg+"&BBOX="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&WIDTH="+this.width+"&HEIGHT="+this.height+"&FORMAT=image/png&BGCOLOR=0xffffff&TRANSPARENT=TRUE&EXCEPTIONS=application/vnd.ogc.se_xml";
-else if(i == 5)
+}else if(i == 5){
+	//alert(url_dop+"REQUEST=GetMap&VERSION=1.1.1&SERVICE=WMS&LAYERS="+layer_dop+"&STYLES=&SRS="+this.epsg+"&BBOX="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&WIDTH="+this.width+"&HEIGHT="+this.height+"&FORMAT=image/png&BGCOLOR=0xffffff&TRANSPARENT=TRUE&EXCEPTIONS=application/vnd.ogc.se_xml");
 	return url_dop+"REQUEST=GetMap&VERSION=1.1.1&SERVICE=WMS&LAYERS="+layer_dop+"&STYLES=&SRS="+this.epsg+"&BBOX="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&WIDTH="+this.width+"&HEIGHT="+this.height+"&FORMAT=image/png&BGCOLOR=0xffffff&TRANSPARENT=TRUE&EXCEPTIONS=application/vnd.ogc.se_xml";
-else if(i == 9){
-	return "/mapbender/extensions/3D_hprofil/bin/ms.py?points="+this.pointsstring+"&point="+this.point+"&epsg="+ this.epsg.split(':')[1] +"&bbox="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&width="+this.width+"&height="+this.height;
+}else if(i == 9){
+	//alert("/mapbender/extensions/3D_hprofil/bin/ms.py?points="+this.pointstring_ +"&point="+this.point+"&epsg="+ this.epsg.split(':')[1] +"&bbox="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&width="+this.width+"&height="+this.height);
+	return "/mapbender/extensions/3D_hprofil/bin/ms.py?points="+this.pointstring_+"&point="+this.point+"&epsg="+ this.epsg.split(':')[1] +"&bbox="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&width="+this.width+"&height="+this.height;
 	//return "../../bin/ms.py?points="+this.pointsstring+"&point="+this.point+"&epsg="+ this.epsg.split(':')[1] +"&bbox="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&width="+this.width+"&height="+this.height;
 	}
 }
@@ -101,6 +105,17 @@ wms.prototype.getx1 = function(o1){
 
 wms.prototype.getx2 = function(o2){
 	return  4.0 * ( o2 - this.bbox[1] ) / ( this.bbox[3] - this.bbox[1]);   
+};
+wms.prototype.gety1 = function(o1){
+		
+	
+	return this.width * ( o1 - this.bbox[0] ) / ( this.bbox[2] - this.bbox[0]);   
+};
+
+wms.prototype.gety2 = function(o2){
+		
+	
+	return  this.height * ( o2 - this.bbox[1] ) / ( this.bbox[3] - this.bbox[1]);   
 };
 
 wms.prototype.getfrompointstring = function(n){

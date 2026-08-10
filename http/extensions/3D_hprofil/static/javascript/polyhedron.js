@@ -110,7 +110,7 @@ var help2 = function(gl,url,tex_gl){
 				let max = 0;
 				for (let i = 0;i < data.length; i += 4){
 					const gray = data[i];
-					if (gray < min) min = gray;
+					if (gray < min) if (gray != 0) min = gray;
 					if (max < gray ) max = gray;
 				}
 				const a = [];
@@ -155,27 +155,27 @@ var help = function(gl,url,tex_gl){
 	});
 	
 };		
-/*
-var help = function(gl,url,tex_gl){
-	getm(url).then(im => {
-		im.onload = function() {
-			gl.activeTexture(gl.TEXTURE0);		
+
+
+var help3_b = function(gl,canvas2,tex_gl){
+	
+
+
+
+			gl.activeTexture(gl.TEXTURE2);		
 			gl.bindTexture(gl.TEXTURE_2D, null);
 			gl.bindTexture(gl.TEXTURE_2D, tex_gl);
 			gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-			gl.texImage2D(   gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, im);
-			
+			gl.texImage2D(   gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas2);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); 
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-			
 			gl.generateMipmap(gl.TEXTURE_2D);
 			gl.bindTexture(gl.TEXTURE_2D, null);
-		};
-	});	
-};
-*/
+	
+};	
+
 var help3 = function(gl,url,tex_gl){
 	getm(url).then(im => {
 		im.onload = function() {
@@ -210,7 +210,7 @@ polyhedron.prototype.set_len_eins = function(eins){
 
 
 
-polyhedron.prototype.settex_overlay = function(s,mat_name)
+polyhedron.prototype.settex_overlay = function(s,mat_name,umn=true)
 {   
 
 
@@ -220,7 +220,10 @@ polyhedron.prototype.settex_overlay = function(s,mat_name)
 	var tex_glint = this.tex_glint[2];	
 	var gl = this.gl;
 	this.material_char[2] = mat_name;
-	help3(gl,s,tex_glint);
+	if (umn)
+		help3(gl,s,tex_glint);
+	else
+		help3_b(gl,s,tex_glint);;
 	
 }
 
