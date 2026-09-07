@@ -4,7 +4,6 @@ conf/.env.php
 conf/excludeproxyurls.conf
 conf/linkedDataProxy.json
 conf/mobilemap2.conf
-conf/mobilemap3.conf
 conf/excludeFromMonitoring.json
 http/geoportal/preview/*.jpg
 http/img/altitude_profile/
@@ -30,3 +29,8 @@ composer.lock
 # composer.lock
 # conf/gazetteerFlst.conf
 #
+
+#Mobilemap3
+conf/mobilemap3.conf
+http/extensions/mobilemap3/src/netgis/Theme.css
+http/extensions/mobilemap3/config.js
