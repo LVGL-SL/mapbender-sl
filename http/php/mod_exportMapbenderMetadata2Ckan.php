@@ -360,7 +360,8 @@ $license_map = array(
     "cc-by-sa-4.0" => "http://dcat-ap.de/def/licenses/cc-by-sa/4.0",
     "cc-by-3.0" => "http://dcat-ap.de/def/licenses/cc-by-de/3.0",
     "dl-de-by-1.0" => "http://dcat-ap.de/def/licenses/dl-by-de/1.0",
-    "cc-nc-3.0" => "http://dcat-ap.de/def/licenses/cc-by-nc-de/3.0"
+    "cc-nc-3.0" => "http://dcat-ap.de/def/licenses/cc-by-nc-de/3.0",
+    "other-closed" => "http://dcat-ap.de/def/licenses/other-closed"
 );
 
 //TODO add crontributor id? - test for ogdp 
@@ -544,6 +545,10 @@ function createDistributionElement($rdfXmlDoc, $uri, $title, $description=false,
             $dcatdeLicenseAttributionByText->appendChild($dcatdeLicenseAttributionByTextText);
             $Distribution->appendChild($dcatdeLicenseAttributionByText);
         }
+    } else {
+        $dctLicense = $rdfXmlDoc->createElement ( "dct:license" );
+        $dctLicense->setAttribute('rdf:resource', $license_map["other-closed"]);
+        $Distribution->appendChild($dctLicense);
     }
     $distributionFormat = $rdfXmlDoc->createElement ( "dct:format" );
     //$distributionFormatText = $rdfXmlDoc->createTextNode( $format );
@@ -918,6 +923,10 @@ if ($outputFormat == 'rdfxml') {
                             $dctLicense = $rdfXmlDoc->createElement ( "dct:license" );
                             $dctLicense->setAttribute('rdf:resource', $license_map["other-closed"]);
                             $Dataset->appendChild($dctLicense);
+                        } else {
+                            $dctLicense = $rdfXmlDoc->createElement ( "dct:license" );
+                            $dctLicense->setAttribute('rdf:resource', $license_map["other-closed"]);
+                            $Dataset->appendChild($dctLicense);
                         }
                     }
                     /*
@@ -1085,7 +1094,7 @@ if ($outputFormat == 'rdfxml') {
                                             "description" =>   "Objektart: " . $value1->resourceName. " - ISO19168-1:20202 API",
                                             "format" => "HTML",
                                             "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
-                                            "id" => $gpDataset->uuid . "_ogc_api_interface_" . $value1->resourceName . "_" . $value1->serviceId,
+                                            "id" => $gpDataset->uuid . "_ogc_api_interface_" . str_replace(":", "__colon__", $value1->resourceName) . "_" . $value1->serviceId,
                                             "license_id" => $inspireAtomFeedsLicenseId,
                                             "license_source_note" => $value1->licenseSourceNote
                                             );
@@ -1097,7 +1106,7 @@ if ($outputFormat == 'rdfxml') {
                                                 "format" => "WFS",
                                                 "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
                                                 "original_url" => str_replace("http://127.0.0.1", $baseUrlPortal, str_replace("http://localhost", $baseUrlPortal, $value1->originalGetCapabilitiesUrl)),
-                                                "id" => $gpDataset->uuid . "_wfs_interface_" . $value1->resourceName . "_" . $value1->serviceId,
+                                                "id" => $gpDataset->uuid . "_wfs_interface_" . str_replace(":", "__colon__", $value1->resourceName) . "_" . $value1->serviceId,
                                                 "license_id" => $inspireAtomFeedsLicenseId,
                                                 "license_source_note" => $value1->licenseSourceNote
                                                 );
