@@ -841,7 +841,7 @@ SQL;
 	    while ($row = db_fetch_array($res)){
 	        $logId[] = $row['log_id'];
 	    }
-	    if (isset($logId)) {
+	    if (count($logId) > 0) {
 	        return $logId[0];
 	    } else {
 	        return false;
@@ -2710,7 +2710,6 @@ SQL;
 	}
         $res = db_prep_query($sql,$v,$t);
 	$row = db_fetch_array($res);
-		$returnObject = new stdClass();
         if ($row["uuid"] != false) {
 	    $returnObject->uuid = $row["uuid"];
 	    $returnObject->orgaId = $row["orga_id"];

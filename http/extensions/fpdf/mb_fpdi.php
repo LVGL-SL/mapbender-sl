@@ -190,7 +190,7 @@ class mb_fpdi extends FPDI {
 	{
 	    $filter=($this->compress) ? '/Filter /FlateDecode ' : '';
 	    reset($this->images);
-	    foreach($this->images as $file => $info)
+	    while(list($file,$info)=each($this->images))
 	    {
 	        $this->_newobj();
 	        $this->images[$file]['n']=$this->n;

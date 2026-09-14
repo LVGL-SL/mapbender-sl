@@ -395,7 +395,7 @@ class FPDI extends FPDF_TPL {
 
     			reset ($value[1]);
 
-    			foreach ($value[1] as $k => $v) {
+    			while (list($k, $v) = each($value[1])) {
     				$this->_out($k . " ",false);
     				$this->pdf_write_value($v);
     			}

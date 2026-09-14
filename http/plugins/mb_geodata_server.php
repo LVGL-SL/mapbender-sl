@@ -65,7 +65,7 @@ SQL;
 
 		while ($row = db_fetch_row($res)) {
 			// convert NULL to '', NULL values cause datatables to crash
-			$row = array_map('strval', $row);
+			$walk = array_walk($row, create_function('&$s', '$s=strval($s);'));
 			$resultObj["data"][]= $row;
 		}
 		$ajaxResponse->setResult($resultObj);

@@ -7,27 +7,25 @@
  require_once(dirname(__FILE__)."/../http/classes/class_mb_exception.php");
  require_once(dirname(__FILE__)."/../http/classes/class_mb_warning.php");
  require_once(dirname(__FILE__)."/../http/classes/class_mb_notice.php");
- 
-class Mapbender_session {
-	private $id ;
+ require_once(dirname(__FILE__)."/class_Singleton.php");
 
-    // Hold an instance of the class
-    private static $instance;
+ class Mapbender_session extends Singleton{
+ 	
+ 	private $id ;
+ 	
+ 	/**
+	 * @constructor
+	 */
+ 	protected function __construct() {
+ 		$id = false;
+ 		new mb_notice("session.mapbender_session.instantiated ... ");
+ 	}
 
-    // A private constructor; prevents direct creation of object
-    private function __construct() {
-        new mb_notice("session.mapbender_session.instantiated ... ");
+ 	public static function singleton()
+    {
+        return parent::singleton(__CLASS__);
     }
-
-    // The singleton method
-    public static function singleton() {
-        if (!isset(self::$instance)) {
-            self::$instance = new self;
-        }
-
-        return self::$instance;
-    }
-
+ 	
  	/**
 	 * sets the value of the session-variable  
 	 * @param String name the name of the session-variable
