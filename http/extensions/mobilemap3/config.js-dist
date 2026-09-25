@@ -26,6 +26,11 @@ var config =
 		"header": "<a href='.' target='_self'>Geoportal Saarland</a>",
 		"items":
 		[
+			{ "id": "info", "title": "<i class='fas fa-caret-down'></i><span>Info</span>", 
+				items: [
+					{ "id": "dse", "title": "<i class='fas fa-info-circle'></i><span>Datenschutz</span>", "url": "https://www.saarland.de/SharedDocs/Downloads/DE/LVGL/Datenschutz/datenschutz_geoportal.html" },
+				]
+			},
 			{
 				"title": "<i class='fas fa-caret-down'></i><span>Ansicht</span>",
 				"items":
@@ -51,10 +56,16 @@ var config =
 		"projection": "EPSG:25832",
 		"min_zoom": 5,
 		"max_zoom": 19,
-		
+
 		"extent": [ 306939, 5440707, 385426, 5502344 ],
-		//Added bbox to enable center button - Value should be the same as extent
-		"bbox": [ 306939, 5440707, 385426, 5502344 ],
+		//Responsible for center and zoom level of the map when no WMC is loaded
+		"bbox": [
+			320700,
+			5451400,
+			371700,
+			5491600
+		],
+
 		"scales": [ 500, 1000, 3000, 5000, 8000, 10000, 15000, 25000, 50000, 100000, 150000, 250000, 500000, 1000000, 1500000, 2000000 ],
 		"scalebar": true
 	},
@@ -62,8 +73,10 @@ var config =
 	"wmc":
 	{
 		"url": "/mapbender/php/mod_exportWmc2Json.php?confFileName=mobilemap3&epsg=25832&withHierarchy=1&wmc_id={id}",
-		"layers_url": "/mapbender/php/mod_callMetadata.php?languageCode=de&resultTarget=web&maxResults=40&resourceIds={ids}",
+		"layers_url": "/mapbender/php/mod_callMetadata.php?languageCode=de&resultTarget=web&maxResults=60&resourceIds={ids}",
 		"layers_removable": true,
+		"active_leaf_threshold": 30,
+		"max_active_leaves": 20,
 		//"layers_inverse": true,
 		"legacy_mode": true
 	},
