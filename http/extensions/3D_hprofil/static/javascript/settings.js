@@ -1,7 +1,7 @@
 var auflösung = 500;
 var url_dgm = "https://geoportal.saarland.de/http_auth/46159?";
 var layer_dgm = "sl_dgm1_2016";
-var url_dop = "https://geoportal.saarland.de/freewms/dop2023?";
+var url_dop = "https://geoportal.saarland.de/freewms/truedop?";
 var layer_dop = "sl_dop20_rgb";
 //https://geoportal.saarland.de/freewms/truedop?
 //https://geoportal.saarland.de/freewms/dop2023?

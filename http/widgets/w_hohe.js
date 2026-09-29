@@ -337,9 +337,8 @@ $.widget("mapbender.mb_hohe", {
 		if(b == 1){
 			this._mache_punkte();
 			NUM_POINTS = 2000;
-			//alert("gpxPoints.length " +gpxPoints.length);
-			gpxPoints = this._rdp(gpxPoints,40);
-			//alert("gpxPoints.length2 " +gpxPoints.length);
+			if (gpxPoints.length > 20)
+			gpxPoints = this._rdp(gpxPoints,60);
 			this._mache_punkte2();
 		}
 		else if (b == 2){
@@ -999,9 +998,12 @@ $.widget("mapbender.mb_hohe", {
 
 	_create: function () {
 		
-		
+		$('#hoheNewButton').button('enable');
+		$('#hohe3DButton').button('disable');
+        $('#hoheGPXButton').button('enable');
 		this._measurePoints = [];
 		jsonPoints = [];
+		gpxPoints = [];
 		paintPoints = false;
 		uebergeben = false;
 		this._min_x = 10000000;
@@ -1063,6 +1065,7 @@ $.widget("mapbender.mb_hohe", {
 		this._canvas.clear();
 		this._measurePoints = [];
 		jsonPoints = [];
+		gpxPoints = [];
 		paintPoints = false;
 		uebergeben = false;
 		create = false;

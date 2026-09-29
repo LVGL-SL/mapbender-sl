@@ -3,8 +3,8 @@
 var polyhedron = function(hastex)
 {    
 
-   
-
+	this.data ;
+	this.im_width = 0;
 	this.ready_dgm = false;
 	this.ready_dop = false;
 	this.min;
@@ -82,10 +82,14 @@ var help = function(gl,url,tex_gl){
 	});	
 };
 */
-var help2 = function(gl,url,tex_gl){
+var help2 = function(data,gl,url,tex_gl){
+	
 	return	getm(url).then(im => {
+		
 		return new Promise((resolve, reject) => {
+			
 			im.onload = () =>  {
+				
 				gl.activeTexture(gl.TEXTURE1);		
 				gl.bindTexture(gl.TEXTURE_2D, null);
 				gl.bindTexture(gl.TEXTURE_2D, tex_gl);
@@ -97,15 +101,17 @@ var help2 = function(gl,url,tex_gl){
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 				gl.generateMipmap(gl.TEXTURE_2D);
 				gl.bindTexture(gl.TEXTURE_2D, null);
+				
 				const canvas = document.createElement('canvas');
+				
 				canvas.width = im.width;
 				canvas.height = im.height;
 				const ctx = canvas.getContext('2d');
 				ctx.drawImage(im,0,0);
 				
-				const imageData = ctx.getImageData(0,0,im.width,im.height);
-				const data = imageData.data;
 				
+				const imageData = ctx.getImageData(0,0,im.width,im.height);
+				data = imageData.data;
 				let min = 255;
 				let max = 0;
 				for (let i = 0;i < data.length; i += 4){
@@ -116,9 +122,11 @@ var help2 = function(gl,url,tex_gl){
 				const a = [];
 				min += pixel_to_add;
 				max += pixel_to_add;
+				//alert(min+ " min/max " +max);
 				a[0] = min;
 				a[1] = max;
-				
+				a[2] = data;
+				a[3] = canvas.width;
 				let result = a;
 				resolve(result);
 				
@@ -226,7 +234,22 @@ polyhedron.prototype.settex_overlay = function(s,mat_name,umn=true)
 		help3_b(gl,s,tex_glint);;
 	
 }
+polyhedron.prototype.get_data  = function(x,y)
+{
+	
+	
+	//var h = this.data[(x * 4) + (this.im_width* 4 * y)] /255 * max_;
+	
+	var h = this.data[(x * 4) + (this.im_width* 4 * y)];
+	
+	
+	 
+	 return h;
+	 
 
+	
+	
+}
 polyhedron.prototype.settex_schon_da = async function(s,mat_name)
 {
 	
@@ -235,13 +258,15 @@ polyhedron.prototype.settex_schon_da = async function(s,mat_name)
     this.first_1=false;
 	var tex_glint = this.tex_glint[1];	
 	var gl = this.gl;
+	var data = this.data;
 	this.material_char[1] = mat_name;
     let min = 255;
 	let max = 0;
-
-	let A = await help2(gl,s,tex_glint);
+	let A = await help2(data,gl,s,tex_glint);
 	this.min = A[0];
 	this.max = A[1];
+	this.data = A[2];
+	this.im_width = A[3];
     this.ready_dgm = true;
 	if(this.ready_dop)
     document.getElementById("closeBtn").style.backgroundColor = "green";

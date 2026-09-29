@@ -14,9 +14,26 @@ var wms = function(koordinaten,pointsstring,epsg,pointsstring_all,pointstring_="
 	this.point = "";
 	var koords = new koord(k2);
 	this.bbox = koords.bbox(300);
+	this.canvas_x = 0;
+	this.canvas_z = 0;
 
 
 };
+
+wms.prototype.set_canvas = function(x){
+	
+	this.canvas_x = 4.0 * x;
+	this.canvas_z = 4.0 * x;
+	
+};
+wms.prototype.getz1 = function(o1){
+	return Math.floor(this.width *   o1  / this.canvas_x);   I
+};
+
+wms.prototype.getz2 = function(o2){
+	return  Math.floor(this.height *  o2  / this.canvas_z);   
+};
+
 wms.prototype.set_point = function(punkt){
 	this.point = punkt;
 }
@@ -106,6 +123,17 @@ wms.prototype.getx1 = function(o1){
 wms.prototype.getx2 = function(o2){
 	return  4.0 * ( o2 - this.bbox[1] ) / ( this.bbox[3] - this.bbox[1]);   
 };
+wms.prototype.get_koord_pixel_x = function(o1){
+		
+	
+	return this.width * ( o1 - this.bbox[0] ) / ( this.bbox[2] - this.bbox[0]);   
+};
+
+wms.prototype.get_koord_pixel_y = function(o2){
+		
+	
+	return  this.height * ( o2 - this.bbox[1] ) / ( this.bbox[3] - this.bbox[1]);   
+};
 wms.prototype.gety1 = function(o1){
 		
 	
@@ -117,7 +145,6 @@ wms.prototype.gety2 = function(o2){
 	
 	return  this.height * ( o2 - this.bbox[1] ) / ( this.bbox[3] - this.bbox[1]);   
 };
-
 wms.prototype.getfrompointstring = function(n){
 	return  this.pointsstring.split(";")[n].split(","); 
 };
@@ -130,4 +157,6 @@ wms.prototype.getfrompointstring_all = function(n){
 };
 wms.prototype.getx3 = function(hoehe_in_meter,min,max){
 	return (hoehe_in_meter  - min)/ (max - min);
+	
+	
 };

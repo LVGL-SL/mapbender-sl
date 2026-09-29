@@ -5,6 +5,10 @@ var svertex = function(x, y)
     var sx = x;
     var sy = y;
 };
+	var helper = false;
+	var drin = 0;
+	var drin2 = false;
+	var drin_init = 0;
 	var cam_save =  new local_system();
 	var cam_save_rot = new local_system();
 	var min2 = 700.0;
@@ -244,9 +248,10 @@ var tick = function()
 		
 		
 		var gelb = male_gpx();
-		if(!gelb)
+		if(!gelb){
 		ppol[0].settex_overlay(wwms.get_getmap(ggm2),"Material.001"); // u.a. strecke 
-		
+
+		}
 		refresh = false;
 	    
    }
@@ -371,8 +376,6 @@ superpoly.prototype.reload = function(a){
 		document.getElementById("closeBtn").style.backgroundColor = "white";
 		wwms.set_aufloesung(a);
 		ppol[0].reset_ready();
-
-
 		//ppol[0].settex_overlay(wwms.get_getmap(ggm2),"Material.001"); // u.a. strecke
 			gelb = male_gpx();		
 		ppol[0].settex(wwms.get_getmap(ggm),"Material.001"); // DOP2023
@@ -459,7 +462,6 @@ superpoly.prototype.set_nr = function (n){
 		while(true){
 			
 			t = m.winkel(cam.sight,m,cam.up);
-			console.log(t);
 			if ( 0.1 > 180.0 - t) break;
 			mcamera.translate(-cam.pos.wx,-cam.pos.wy,-cam.pos.wz);
 			mcamera.rotate(0.05 ,cam.up);
@@ -715,8 +717,15 @@ superpoly.prototype.mousewheel = function (b){
 			
 		}
 		else{
-			//alert("cam: " + ppol[0].ls.pos.wy);
-			if (cam.pos.wy <= -2.6) return;
+			/*
+			min2 = ppol[0].min;
+			max2 = ppol[0].max;
+			let coord = wwms.getfrompointstring_all(0);
+			let x3_alt =  wwms.getx3(coord[2],(0 / 255.0) *  range,(max2 / 255.0) * range);
+            //alert("x3_alt: " + x3_alt + " " + "cam: " + cam.pos.wy );
+*/
+			
+			if (cam.pos.wy <= (-2.4)) return;
 			mcamera.clear();
 			mcamera.translate(-stange* ve.x,-stange*ve.y,-stange*ve.z);
 			cam = mcamera.multiply_local_system(cam);
@@ -836,7 +845,67 @@ if(!ppol[0].ready_dop) return;
 
 };
 
+var min_max = function(mi,ma){
 
+	if(mi < ma) 
+		return ma;
+	else
+		return mi;
+};
+var get_height = function(){
+	
+
+		var m = new matrix();
+		m.scale(1.0/height2,1,1.0/height2);
+		var k_0 = new vertex();
+		k_0.set(-2.0,0,-2.0);
+		var k_1 = new vertex();
+		k_1.set(-2.0,0,2.0);
+		var k_2 = new vertex();
+		k_2.set(2.0,0,-2.0);
+		var k_3 = new vertex();
+		k_3.set(2.0,0,2.0);
+		
+		var k_scale_0 = m.multiply_vertex(k_0);
+		var k_scale_1 = m.multiply_vertex(k_1);
+		var k_scale_2 = m.multiply_vertex(k_2);
+		var k_scale_3 = m.multiply_vertex(k_3);
+		var m2 = new matrix();
+		m2.translate(ppol[0].ls.pos.wx,0,ppol[0].ls.pos.wz);
+		k_scale_0 = m2.multiply_vertex(k_scale_0);
+		k_scale_1 = m2.multiply_vertex(k_scale_1);
+		k_scale_2 = m2.multiply_vertex(k_scale_2);
+		k_scale_3 = m2.multiply_vertex(k_scale_3);
+    
+		
+		var drin_x = false;
+		var drin_y = false;
+		
+		if( cam.pos.wx >= k_scale_0.wx && cam.pos.wx <= k_scale_2.wx)
+			drin_x = true;
+		
+		if( cam.pos.wz >= k_scale_0.wz && cam.pos.wz <= k_scale_1.wz)
+			drin_y = true;		
+
+		var position = new vector();
+		if (drin_x && drin_y){
+			position.set(cam.pos.wx + 1.0/height2 * 2.0,0,(cam.pos.wz+998 + 1.0/height2 * 2.0));
+			wwms.set_canvas(1.0/height2);
+		
+			var pix_x = wwms.getz1(position.x);
+			var pix_y = wwms.getz2(position.z);
+			var h = ppol[0].get_data(pix_x,pix_y);
+			return h;
+
+		}			
+		else
+			return -1;
+ 
+		
+		
+		
+	
+}
 
 
 
@@ -845,9 +914,19 @@ if(!ppol[0].ready_dop) return;
 	var keyCode = ('which' in event) ? event.which : event.keyCode
 	mcamera.clear();
 		if(keyCode==73){
+/*	
+		if (helper) {
+			helper = false;
+			alert("keine Korrektur");
+		}
+		else
+		{
+			helper = true;
+			alert("mit Korrektur");
+		}
+        
 		
-alert(cam.pos.wy);
-
+*/		
 	};
 	
 // H
@@ -895,6 +974,7 @@ alert(cam.pos.wy);
 
 //SPACE
 	if(keyCode==32){
+
 		stop_rotation = true;
 		gib_mouse_move_frei = true;
 		if (!spaziergang && !saved  || esscape_begin){
@@ -923,7 +1003,6 @@ alert(cam.pos.wy);
 			while(true){
 				
 				w = u.winkel(cam.sight,v ,cam.up);
-				console.log("Math.abs(w) " + Math.abs(w));
 				if( 174.1 >= Math.abs(w) ) r = -5.0;
 				else if (177.1 >= Math.abs(w)) r = -2.0;
 				else r = -0.5;
@@ -935,7 +1014,6 @@ alert(cam.pos.wy);
 				cam = mcamera.multiply_local_system(cam);
 				mcamera.clear();
 				w = u.winkel(cam.sight,v,cam.up);
-				console.log("Math.abs(w) " + Math.abs(w));
 				if (Math.abs(w) > 179.0) break;
 				
 			}
@@ -1002,13 +1080,46 @@ alert(cam.pos.wy);
 			}
 			min2 = ppol[0].min;
 			max2 = ppol[0].max;
-		   	x3 =  wwms.getx3(coord[2],(0.0 / 255.0) *  range,(max2 / 255.0) * range);
-
-			mcamera.translate(0,(-x3_old + x3),0);
-            
-			cam = mcamera.multiply_local_system(cam);
 			
+			
+
+
+			let x3 =  wwms.getx3(coord[2],(0.0/ 255.0) *  range,(max2 / 255.0) * range);
+			let neu = get_height();
+
+			
+			if ((((neu / 255.0) * range)  ) + 5 > coord[2]){
+                 //alert("neu " + (neu/ 255.0 ) * range " Coord2: " + coord[2]);
+				
+				if(!drin2) drin = 0;
+				drin2 = true;
+				drin += -x3_old + x3;
+				
+			
+				
+			}
+			
+			
+			else if (drin2 && (-x3_old + x3) > 0){
+				drin += -x3_old + x3;
+				if (drin >= 0){
+					
+					mcamera.translate(0,(-x3_old + x3),0);
+					drin2 = false;
+					
+				}
+			}
+			
+			
+			else{	
+				mcamera.translate(0,(-x3_old + x3),0);
+			
+			}
+			
+
+			cam = mcamera.multiply_local_system(cam);
 			mcamera.clear();
+
 			x3_old = x3;
 			x2_old = x2;
 			x1_old = x1;
@@ -1147,7 +1258,7 @@ alert(cam.pos.wy);
 
 			mcamera.clear();
 			let t = u.winkel(cam.up,uup,cam.right);
-			console.log("Math.abs(t) :" + Math.abs(t));
+
 			mcamera.translate(-cam.pos.wx,-cam.pos.wy,-cam.pos.wz);
 			mcamera.rotate(t,cam.right);
 			mcamera.translate(cam.pos.wx,cam.pos.wy,cam.pos.wz);
@@ -1198,7 +1309,6 @@ alert(cam.pos.wy);
 
 			
 			mcamera.translate(-cam_help.pos.wx,-cam_help.pos.wy,-cam_help.pos.wz);
-			console.log("1. Schritt FERTIG : " + w);
 			mcamera.rotate(s* r,cam.up);
 			mcamera.translate(cam_help.pos.wx,cam_help.pos.wy,cam_help.pos.wz);
 			cam = mcamera.multiply_local_system(cam);
@@ -1206,7 +1316,7 @@ alert(cam.pos.wy);
 			
 
 			w = u.winkel(cam.sight,v,cam.up);
-			console.log("Math.abs(w) " + Math.abs(w));
+
 			if (Math.abs(w) > 179.0){
 				ist_in_drehung = false;
 				jetzt_nicht = false;
