@@ -19,6 +19,7 @@ var MeasureApi = function (o) {
 	var gpx_array = [];
 	var gpx_ = false;
 	var strecke2 = 0;
+	var mapUrlArray  = "";
 var yetupdated = false;	
         
 	var hideMeasureData = function () {
@@ -105,8 +106,9 @@ var getFlatGeoJsonLength = function (geojson) {
                     text: "3D",
                     id: "hohe3DButton",
                     click: function() {
-						
-                        ddd(jsonarray,gpxarray,gpx_array,gpx_);
+						o.$target.mb_hohe("move_mapUrlArray",null);
+						movemapurlarray();
+                        
                     }
                 },
 				{
@@ -154,7 +156,13 @@ var getFlatGeoJsonLength = function (geojson) {
 		});
 	};
 
-
+    var set_mapUrlArray = function(evt,data) {
+		
+		mapUrlArray = data;
+		ddd(jsonarray,gpxarray,mapUrlArray,gpx_);//,gpx_array 3. Arg
+		
+	};
+		
     var clearJsonArray  = function(evt,data) {
         jsonarray = [];
 		//gpxarray = [];
@@ -244,7 +252,7 @@ var getFlatGeoJsonLength = function (geojson) {
         $('#LoadData').remove();
       }
     });
-    var dlgcontent ='<div id="kml-from-upload2">' + '<iframe name="kml-upload-target2" style="width: 0; height: 0; border: 0px;"></iframe>' + '<iframe name="kml-upload-target3" style="width: 0; height: 0; border: 0px;"></iframe>'+ '<form action="../php/uploadKml.php" method="post" enctype="multipart/form-data" target="kml-upload-target2">' + '<input type="file" name="kml"></input>' + '<input type="submit" class="upload" value="Upload"></input><br>' + '<br><br>Hier können lokale KML, GPX und geoJSON Dateien hochgeladen werden. Der Dateiname muss die typische Endung (.kml. .gpx oder .geojson) haben.<br><br><br> Die dünne, schwarze Linie ist die Originalstrecke Ihrer Datei. <br>Für die weitere Verarbeitung verwenden wir eine <b>Annäherung an Ihre Strecke</b>, d.h. das Höhenprofil entspricht nicht der Strecke, die Sie hochgeladen haben.<br><br><b>Ziel war es im 3D Tool Ihre hochgeladene Strecke einzubinden und als gelbe Line zu zeichnen.<b>' +  '</form>' + '</div>';
+    var dlgcontent ='<div id="kml-from-upload2">' + '<iframe name="kml-upload-target2" style="width: 0; height: 0; border: 0px;"></iframe>' + '<iframe name="kml-upload-target3" style="width: 0; height: 0; border: 0px;"></iframe>'+ '<form action="../php/uploadKml.php" method="post" enctype="multipart/form-data" target="kml-upload-target2">' + '<input type="file" name="kml"></input>' + '<input type="submit" class="upload" value="Upload"></input><br>' + '<br><br>Hier können lokale KML, GPX und geoJSON Dateien hochgeladen werden. Der Dateiname muss die typische Endung (.kml. .gpx oder .geojson) haben.<br><br><br> Die dünne, schwarze Linie ist die Originalstrecke Ihrer Datei. <br>Für die weitere Verarbeitung verwenden wir eine <b>Annäherung an Ihre Strecke</b>, d.h. das Höhenprofil entspricht nicht exakt der Strecke, die Sie hochgeladen haben.<br><br>' +  '</form>' + '</div>';
 
 
     $(dlg).append(dlgcontent);
@@ -475,10 +483,10 @@ function rdpByCountWithMinDistance(points, targetCount, minDist) {
 
 
 
-    var ddd = function (jarray,garray,gpx_array_,gpx_bool) {
+    var ddd = function (jarray,garray,mapUrl,gpx_bool) { //gpx_array_ 3. Argument
 		
         
-        const payload = { srs:jarray[jarray.length - 1].epsg, laenge: jarray[jarray.length - 1].laenge, step: jarray[jarray.length - 1].step, points: [], pointsgpx: [] , gpx: gpx_array, streckegesamt: String(strecke2), gpxbool: gpx_bool };
+        const payload = { srs:jarray[jarray.length - 1].epsg, laenge: jarray[jarray.length - 1].laenge, step: jarray[jarray.length - 1].step, points: [], pointsgpx: [] , streckegesamt: String(strecke2), gpxbool: gpx_bool, mapurl: mapUrl }; //  gpx: gpx_array,
 		
 				  for (var i = 0; i  < garray.length - 1; i++){
           
@@ -522,6 +530,7 @@ function rdpByCountWithMinDistance(points, targetCount, minDist) {
 				.unbind("mb_hohepointadded", updateJsonArray)
 				.unbind("mb_hohepointadded_gpx", updateGPXArray)
 				.unbind("mb_hohecleardia", clearJsonArray)
+				.unbind("mb_hohemovemapurlarray", set_mapUrlArray)
 				.unbind("mb_hoheupdate", updateView)
 				.unbind("mb_measurelastpointadded", finishMeasure)
 				.unbind("mb_hohenew", resetII)
@@ -568,6 +577,7 @@ function rdpByCountWithMinDistance(points, targetCount, minDist) {
                                 .bind("mb_hohecleardia", clearJsonArray)
                                 .bind("mb_hohepointadded", updateJsonArray)
 								.bind("mb_hohepointadded_gpx", updateGPXArray)
+								.bind("mb_hohemovemapurlarray", set_mapUrlArray)
 								.bind("mb_hohelastpointadded", finishMeasure)
 								.bind("mb_hohereinitialize", reinitializeMeasure)
 								.bind("click", changeDialogContent)
@@ -598,6 +608,7 @@ function rdpByCountWithMinDistance(points, targetCount, minDist) {
 								.unbind("mb_hohepointadded_gpx",updateGPXArray)
                                 .unbind("mb_hohecleardia", clearJsonArray)
 								.unbind("mb_hoheupdate", updateView)
+								.unbind("mb_hohemovemapurlarray", set_mapUrlArray)
                                 .unbind("mb_measurelastpointadded", finishMeasure)
 								.unbind("mb_hohenew", resetII)
 								//.unbind("mousedown")

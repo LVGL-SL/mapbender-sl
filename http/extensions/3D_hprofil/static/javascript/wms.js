@@ -1,9 +1,9 @@
 
-var wms = function(koordinaten,pointsstring,epsg,pointsstring_all,pointstring_=""){
+var wms = function(koordinaten,pointsstring,epsg,pointsstring_all,mapUrl,pointstring_=""){
 
 	this.epsg = epsg;
-    
-	this.width = auflösung;
+    this.mapurl = mapUrl;
+	this.width = image_size_small;
 	this.height = 1.0 * this.width;
 	this.bbox = [];
 	this.pointsstring = pointsstring;
@@ -16,7 +16,8 @@ var wms = function(koordinaten,pointsstring,epsg,pointsstring_all,pointstring_="
 	this.bbox = koords.bbox(300);
 	this.canvas_x = 0;
 	this.canvas_z = 0;
-
+	this.dpi = 100;
+    
 
 };
 
@@ -44,10 +45,13 @@ wms.prototype.get_bbox = function(){
  }
 
 wms.prototype.set_aufloesung = function(a){
-	
+    
+	this.width = a;
+	this.height = a;
+	if (a == image_size_small) this.dpi = 100;
+	else if (a == image_size_medium) this.dpi = 300;
+	else this.dpi = 300;
 
-this.width = a;
-this.height = 1.0 * this.width;
 return;
 };	
 
@@ -56,16 +60,27 @@ return;
 wms.prototype.getlen = function(){
 	return this.bbox[2]-this.bbox[0];
 }
+wms.prototype.get_getmap_all = function(){
+	
+	var url_array = [];
+	for (var i = 0; i < this.mapurl.split(";").length ; i +=1 ){
+		
+		url_array.push(this.mapurl.split(";")[i] + "&bbox="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&width="+this.width+"&height="+this.height + "&MAP_RESOLUTION=" + this.dpi);
+		
+	}
+
+	return url_array;
+}
 wms.prototype.get_getmap = function(i){
 if(i == 0){
 	//alert(url_dgm+"VERSION=1.1.1&Request=GetMap&SERVICE=WMS&LAYERS="+layer_dgm+"&STYLES=&SRS="+this.epsg+"&BBOX="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&WIDTH="+this.width+"&HEIGHT="+this.height+"&FORMAT=image/png&BGCOLOR=0xffffff&TRANSPARENT=TRUE&EXCEPTIONS=application/vnd.ogc.se_xml");
-	return url_dgm+"VERSION=1.1.1&Request=GetMap&SERVICE=WMS&LAYERS="+layer_dgm+"&STYLES=&SRS="+this.epsg+"&BBOX="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&WIDTH="+this.width+"&HEIGHT="+this.height+"&FORMAT=image/png&BGCOLOR=0xffffff&TRANSPARENT=TRUE&EXCEPTIONS=application/vnd.ogc.se_xml";
+	return url_dgm+"VERSION=1.1.1&Request=GetMap&SERVICE=WMS&LAYERS="+layer_dgm+"&STYLES=&SRS="+this.epsg+"&BBOX="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&WIDTH="+this.width+"&HEIGHT="+this.height+"&FORMAT=image/png&BGCOLOR=0xffffff&TRANSPARENT=TRUE&EXCEPTIONS=application/vnd.ogc.se_xml"	;//+ "&MAP_RESOLUTION=" + this.dpi;
 }else if(i == 5){
 	//alert(url_dop+"REQUEST=GetMap&VERSION=1.1.1&SERVICE=WMS&LAYERS="+layer_dop+"&STYLES=&SRS="+this.epsg+"&BBOX="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&WIDTH="+this.width+"&HEIGHT="+this.height+"&FORMAT=image/png&BGCOLOR=0xffffff&TRANSPARENT=TRUE&EXCEPTIONS=application/vnd.ogc.se_xml");
-	return url_dop+"REQUEST=GetMap&VERSION=1.1.1&SERVICE=WMS&LAYERS="+layer_dop+"&STYLES=&SRS="+this.epsg+"&BBOX="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&WIDTH="+this.width+"&HEIGHT="+this.height+"&FORMAT=image/png&BGCOLOR=0xffffff&TRANSPARENT=TRUE&EXCEPTIONS=application/vnd.ogc.se_xml";
+	return url_dop+"REQUEST=GetMap&VERSION=1.1.1&SERVICE=WMS&LAYERS="+layer_dop+"&STYLES=&SRS="+this.epsg+"&BBOX="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&WIDTH="+this.width+"&HEIGHT="+this.height+"&FORMAT=image/png&BGCOLOR=0xffffff&TRANSPARENT=TRUE&EXCEPTIONS=application/vnd.ogc.se_xml"+ "&MAP_RESOLUTION=" + this.dpi;
 }else if(i == 9){
 	//alert("/mapbender/extensions/3D_hprofil/bin/ms.py?points="+this.pointstring_ +"&point="+this.point+"&epsg="+ this.epsg.split(':')[1] +"&bbox="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&width="+this.width+"&height="+this.height);
-	return "/mapbender/extensions/3D_hprofil/bin/ms.py?points="+this.pointstring_+"&point="+this.point+"&epsg="+ this.epsg.split(':')[1] +"&bbox="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&width="+this.width+"&height="+this.height;
+	return "/mapbender/extensions/3D_hprofil/bin/ms.py?points="+this.pointstring_+"&point="+this.point+"&epsg="+ this.epsg.split(':')[1] +"&bbox="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&width="+1000+"&height="+1000;
 	//return "../../bin/ms.py?points="+this.pointsstring+"&point="+this.point+"&epsg="+ this.epsg.split(':')[1] +"&bbox="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&width="+this.width+"&height="+this.height;
 	}
 }

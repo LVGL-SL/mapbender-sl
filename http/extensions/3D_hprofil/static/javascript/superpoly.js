@@ -5,6 +5,10 @@ var svertex = function(x, y)
     var sx = x;
     var sy = y;
 };
+	var factor_escape = 0.004;
+	var canvas3 = null;
+	var gpx_array_bool = false;
+	var start = true;
 	var helper = false;
 	var drin = 0;
 	var drin2 = false;
@@ -78,7 +82,7 @@ var svertex = function(x, y)
 	var local_s = new local_system();
 	var esscape = false;
 	var esscape_begin = true;
-	var aufloesung_aktuell = "500";
+	var aufloesung_aktuell = "1000";
 	var gpx_array_ = []; 
 
 
@@ -177,6 +181,7 @@ var superpoly = function(shad,gl,canvas,mate,wmms)
 
 	tls = this.ls;
 	mysight.set(this.ls.pos,this.ls.right,this.ls.up,this.ls.sight);
+
 	local_system_save.set(this.ls.pos,this.ls.right,this.ls.up,this.ls.sight);
 	var l_ur = wwms.getlen();
 	var pe = 1.0;
@@ -237,8 +242,12 @@ var tick = function()
 		//var gelb = male_gpx();
 		//if(!gelb)
 		//ppol[0].settex_overlay(wwms.get_getmap(ggm2),"Material.001"); // u.a. strecke   
-	
-		ppol[0].settex(wwms.get_getmap(ggm),"Material.001"); // DOP2023
+		canvas3 = document.createElement('canvas');
+		canvas3.width = wwms.width;
+		canvas3.height = wwms.height;
+		//ppol[0].settex(wwms.get_getmap(ggm),"Material.001"); // DOP2023
+		
+		ppol[0].settex(wwms.get_getmap_all(),"Material.001",canvas3); // DOP2023
 		ppol[0].settex_schon_da(wwms.get_getmap(0),"Material.001"); //Höhe  
 			
 
@@ -247,11 +256,11 @@ var tick = function()
 	if(refresh){
 		
 		
-		var gelb = male_gpx();
-		if(!gelb){
+		//var gelb = male_gpx();
+		//if(!gelb){
 		ppol[0].settex_overlay(wwms.get_getmap(ggm2),"Material.001"); // u.a. strecke 
 
-		}
+		//}
 		refresh = false;
 	    
    }
@@ -264,7 +273,7 @@ var tick = function()
 	mcamera.clear();
 	
 	if((cam.pos.wy < -2.5)&& (!spaziergang)){
-		
+	
 	cam.set(cam_save.pos,cam_save.right,cam_save.up,cam_save.sight);
 	
 	}
@@ -297,11 +306,19 @@ tick();
 superpoly.prototype.gpx_array = function(ar)
 {
 	
-		gpx_array_ = ar;
+	gpx_array_bool = ar;
+		//gpx_array_ = ar;
 		
 	
 };
 var male_gpx = function(){
+
+
+
+		if (!gpx_array_bool) return 0;
+		else
+			ppol[0].settex_overlay(canvas,"Material.001",false,wwms.get_getmap(ggm2));
+
 
 
 		var array_gpx2 = gpx_array_;
@@ -357,11 +374,11 @@ var male_gpx = function(){
 
 		
 
-		ctx.lineWidth = 3;          // Dicke in Pixeln (Standard ist 1)
+		ctx.lineWidth = 6;          // Dicke in Pixeln (Standard ist 1)
 		ctx.strokeStyle = 'yellow';
 		ctx.stroke(); 
 	// Linie sichtbar machen (zeichnen)
-		ppol[0].settex_overlay(canvas,"Material.001",false);
+		ppol[0].settex_overlay(canvas,"Material.001",false,wwms.get_getmap(ggm2));
 		
 
 	return 1;
@@ -377,12 +394,15 @@ superpoly.prototype.reload = function(a){
 		wwms.set_aufloesung(a);
 		ppol[0].reset_ready();
 		//ppol[0].settex_overlay(wwms.get_getmap(ggm2),"Material.001"); // u.a. strecke
-			gelb = male_gpx();		
-		ppol[0].settex(wwms.get_getmap(ggm),"Material.001"); // DOP2023
+			//gelb = male_gpx();
+canvas3.height = wwms.height;
+canvas3.width = wwms.width;			
+		ppol[0].settex(wwms.get_getmap_all(),"Material.001",canvas3); // DOP2023 wwms.get_getmap(ggm)
 		ppol[0].settex_schon_da(wwms.get_getmap(0),"Material.001"); //Höhe  
 		aufloesung_aktuell = a;
-		if (!gelb)
-		ppol[0].settex_overlay(wwms.get_getmap(ggm2),"Material.001"); // u.a. strecke 
+		//if (!gelb)
+		ppol[0].settex_overlay(wwms.get_getmap(ggm2),"Material.001"); // u.a. strecke
+//ppol[0].settex_overlay(canvas,"Material.001",false,wwms.get_getmap(ggm2));	
 		//refresh = true;
 		
 		
@@ -396,6 +416,25 @@ superpoly.prototype.get_jetzt_nicht = function(){
 	return jetzt_nicht;
 };
 superpoly.prototype.horizontal = function(k){
+	if (this.get_jetzt_nicht()) return;
+	if(esscape ||esscape_begin)
+	{
+		
+		mcamera.clear();
+		mcamera.translate(-cam.pos.wx, -cam.pos.wy, -cam.pos.wz);
+		if(k > 0)
+			mcamera.rotate_y(-0.5);
+		else
+			mcamera.rotate_y(0.5);
+		mcamera.translate(cam.pos.wx, cam.pos.wy,cam.pos.wz);
+		cam = mcamera.multiply_local_system(cam);
+		mcamera.clear();
+		
+		return;
+	}
+	
+	
+	
 	mcamera.clear();
 	mcamera.translate(-position_pkt.x, -position_pkt.y, -position_pkt.z);
 	if(k > 0)
@@ -407,7 +446,7 @@ superpoly.prototype.horizontal = function(k){
 	mcamera.clear();
 };
 superpoly.prototype.vertikal = function(k){
-	
+	if (this.get_jetzt_nicht()) return;
 	mcamera.clear();
 	mcamera.translate(-cam.pos.wx,-cam.pos.wy,-cam.pos.wz);
 	if(k > 0)
@@ -430,6 +469,7 @@ superpoly.prototype.set_nr = function (n){
 	stop_rotation = true;
 	gib_mouse_move_frei = true;
 	esscape_begin = false;
+	esscape = false;
 	ppol[0].set_ls_or(save_lls.pos,save_lls.right,save_lls.up,save_lls.sight);
 		if(jetzt_nicht) return;
 		lr = true;
@@ -479,7 +519,7 @@ superpoly.prototype.set_nr = function (n){
 
 		min2 = ppol[0].min;
 		max2 = ppol[0].max;
-		x3 =  wwms.getx3(coord[2],(0.0 / 255.0) * range,(max2 / 255.0) * range);
+		x3 =  wwms.getx3(coord[2],(0.0 / 255.0) * range,(max2 / 255.0) * range + min_);
 		mcamera.translate(0,x3,0);
 		cam = mcamera.multiply_local_system(cam);
 		mcamera.clear();
@@ -488,7 +528,7 @@ superpoly.prototype.set_nr = function (n){
 		
 
 		mcamera.translate(-cam.pos.wx,-cam.pos.wy,-cam.pos.wz);
-		mcamera.rotate(-6,cam.right);
+		mcamera.rotate(-20,cam.right);
 		mcamera.translate(cam.pos.wx,cam.pos.wy,cam.pos.wz);
 		cam = mcamera.multiply_local_system(cam);
 		mcamera.clear();
@@ -703,15 +743,15 @@ superpoly.prototype.mousewheel = function (b){
 			
 			
 			mcamera.clear();
-			mcamera.translate(-stange* ve.x,-stange*ve.y,-stange*ve.z);
+			mcamera.translate(-stange* ve.x,-(0.6)*stange*ve.y,-stange*ve.z);
 			cam = mcamera.multiply_local_system(cam);
 			mcamera.clear();
-			mcamera.translate(0,0.02,0);
+			mcamera.translate(0,0.001,0);
 			cam = mcamera.multiply_local_system(cam);
 			mcamera.clear();
 			stange += 0.3;
 			mcamera.clear();
-			mcamera.translate(stange* ve.x,stange*ve.y,stange*ve.z);
+			mcamera.translate(stange* ve.x,(0.6)*stange*ve.y,stange*ve.z);
 			cam = mcamera.multiply_local_system(cam);
 			mcamera.clear();
 			
@@ -727,15 +767,15 @@ superpoly.prototype.mousewheel = function (b){
 			
 			if (cam.pos.wy <= (-2.4)) return;
 			mcamera.clear();
-			mcamera.translate(-stange* ve.x,-stange*ve.y,-stange*ve.z);
+			mcamera.translate(-stange* ve.x,-(0.6)*stange*ve.y,-stange*ve.z);
 			cam = mcamera.multiply_local_system(cam);
 			mcamera.clear();		
-			mcamera.translate(0,-0.02,0);
+			mcamera.translate(0,-0.001,0);
 			cam = mcamera.multiply_local_system(cam);
 			mcamera.clear();
 			stange -= 0.3;
 			mcamera.clear();
-			mcamera.translate(stange* ve.x,stange*ve.y,stange*ve.z);
+			mcamera.translate(stange* ve.x,(0.6)*stange*ve.y,stange*ve.z);
 			cam = mcamera.multiply_local_system(cam);
 			mcamera.clear();
 			
@@ -747,13 +787,162 @@ superpoly.prototype.mousewheel = function (b){
 
 superpoly.prototype.InitEventHandler = function(canv){
 
-	canv.onmousemove = this.mousemove;
-	canv.onmousedown=this.mousedown;
-	canv.onmouseup=this.mouseup;
+	//canv.onmousemove = this.mousemove;
+	//canv.onmousedown=this.mousedown;
+	//canv.onmouseup=this.mouseup;
 	document.onkeydown= this.check;
 
 }
 
+
+
+superpoly.prototype.nachlinks = function()
+{
+
+	
+	if(!ppol[0].ready_dop) return;
+	stop_rotation = true;
+	esscape = true;
+	
+		if(jetzt_nicht) return;
+		
+		if(spaziergang){
+			
+
+			ppol[0].set_ls_or(save_lls.pos,save_lls.right,save_lls.up,save_lls.sight);
+			save_stange = stange;
+			local_system_save.set(cam.pos,cam.right,cam.up,cam.sight);
+			saved = true;
+			while(cam.pos.wy < -2.45){
+			this.mousewheel(true);
+			
+			}
+			spaziergang = false;
+		}
+
+
+
+	mcamera.clear();
+	mcamera.translate(-factor_escape*cam.right.x, 0 ,-factor_escape*cam.right.z);
+	cam = mcamera.multiply_local_system(cam);
+	mcamera.clear();
+
+
+}
+
+superpoly.prototype.nachrechts = function()
+{
+
+	if(!ppol[0].ready_dop) return;
+	stop_rotation = true;
+	//gib_mouse_move_frei = true;
+
+	esscape = true;
+
+		if(jetzt_nicht) return;
+		//lr = true;
+		
+		if(spaziergang){
+			
+
+			ppol[0].set_ls_or(save_lls.pos,save_lls.right,save_lls.up,save_lls.sight);
+			save_stange = stange;
+			local_system_save.set(cam.pos,cam.right,cam.up,cam.sight);
+			saved = true;
+			while(cam.pos.wy < -2.45){
+			this.mousewheel(true);
+			
+			}
+			spaziergang = false;
+		}
+
+
+
+
+	mcamera.clear();
+	mcamera.translate(factor_escape*cam.right.x,0,factor_escape*cam.right.z);
+	cam = mcamera.multiply_local_system(cam);
+	mcamera.clear();
+
+
+}
+
+
+
+superpoly.prototype.nachvorne = function()
+{
+
+
+	if(!ppol[0].ready_dop) return;
+	stop_rotation = true;
+	//gib_mouse_move_frei = true;
+	
+	esscape = true;
+
+		if(jetzt_nicht) return;
+
+		
+		if(spaziergang){
+
+			ppol[0].set_ls_or(save_lls.pos,save_lls.right,save_lls.up,save_lls.sight);
+			save_stange = stange;
+			local_system_save.set(cam.pos,cam.right,cam.up,cam.sight);
+			saved = true;
+			while(cam.pos.wy < -2.45){
+			this.mousewheel(true);
+			
+			}
+			spaziergang = false;
+		}
+		
+
+
+
+	mcamera.clear();
+	mcamera.translate(-factor_escape*cam.sight.x,0,-factor_escape*cam.sight.z);
+	cam = mcamera.multiply_local_system(cam);
+	mcamera.clear();
+
+
+}
+
+superpoly.prototype.nachhinten = function()
+{
+
+	
+	
+	if(!ppol[0].ready_dop) return;
+	stop_rotation = true;
+	//gib_mouse_move_frei = true;
+
+	esscape = true;
+
+		if(jetzt_nicht) return;
+
+		
+		if(spaziergang){
+
+			ppol[0].set_ls_or(save_lls.pos,save_lls.right,save_lls.up,save_lls.sight);
+			save_stange = stange;
+			local_system_save.set(cam.pos,cam.right,cam.up,cam.sight);
+			saved = true;
+			
+			while(cam.pos.wy < -2.45){
+			this.mousewheel(true);
+			
+			}
+			spaziergang = false;
+		}
+		
+	
+
+	mcamera.clear();
+	mcamera.translate(factor_escape*cam.sight.x,0,factor_escape*cam.sight.z);
+	cam = mcamera.multiply_local_system(cam);
+	mcamera.clear();
+
+
+}
 superpoly.prototype.mousedown = function(event)
 {
 if(!ppol[0].ready_dop) return;
@@ -914,26 +1103,15 @@ if(!ppol[0].ready_dop) return;
 	var keyCode = ('which' in event) ? event.which : event.keyCode
 	mcamera.clear();
 		if(keyCode==73){
-/*	
-		if (helper) {
-			helper = false;
-			alert("keine Korrektur");
-		}
-		else
-		{
-			helper = true;
-			alert("mit Korrektur");
-		}
-        
-		
-*/		
-	};
+	
+};
 	
 // H
 	if(keyCode==72){
 		
 //cam.set(cam_save.pos,cam_save.right,cam_save.up,cam_save.sight);
 		if(spaziergang){
+			start = true;
 			m_now = 0;
 			m_old = -1;
 			x3_old = 0;
@@ -974,10 +1152,11 @@ if(!ppol[0].ready_dop) return;
 
 //SPACE
 	if(keyCode==32){
-
+        
 		stop_rotation = true;
 		gib_mouse_move_frei = true;
 		if (!spaziergang && !saved  || esscape_begin){
+			start = true;
 			esscape_begin = false;
 			esscape = false;
 			ppol[0].set_ls_or(save_lls.pos,save_lls.right,save_lls.up,save_lls.sight);		
@@ -1017,13 +1196,17 @@ if(!ppol[0].ready_dop) return;
 				if (Math.abs(w) > 179.0) break;
 				
 			}
-
 			mcamera.translate(-cam.pos.wx,-cam.pos.wy,-cam.pos.wz);
-			mcamera.rotate(-29.0,cam.right);
-			mcamera.translate(cam.pos.wx,cam.pos.wy,cam.pos.wz);
+			mcamera.rotate(-22.0,cam.right); // -29
+			mcamera.translate(cam.pos.wx,cam.pos.wy,cam.pos.wz);			
+			cam = mcamera.multiply_local_system(cam);
+			
+			
+			mcamera.clear();
+			mcamera.translate(0,0.10,0);
 			cam = mcamera.multiply_local_system(cam);
 			mcamera.clear();
-			mcamera.translate(stange* cam.sight.x,stange*cam.sight.y,stange*cam.sight.z);
+			mcamera.translate(0.6*stange* cam.sight.x,0,0.6*stange*cam.sight.z);
 			cam = mcamera.multiply_local_system(cam);
 			mcamera.clear();
 			cam_save_rot.set(cam.pos,cam.right,cam.up,cam.sight);
@@ -1054,6 +1237,8 @@ if(!ppol[0].ready_dop) return;
 			spaziergang = false;
 			saved = false;
 			save_stange = 2.0;
+			drin = 0;
+			drin2 = false;
 			return;
 		}		
 		x1 = wwms.getx1(coord[0]);
@@ -1063,7 +1248,8 @@ if(!ppol[0].ready_dop) return;
 			x2_old = x2;
 			x1_old = x1;
 			lr = false;
-		
+		drin = 0;
+		drin2 = false;
 		}
 
 	   //coord[2] in metern und x3 zwischen 0 und 1
@@ -1080,31 +1266,34 @@ if(!ppol[0].ready_dop) return;
 			}
 			min2 = ppol[0].min;
 			max2 = ppol[0].max;
-			
-			
-
-
-			let x3 =  wwms.getx3(coord[2],(0.0/ 255.0) *  range,(max2 / 255.0) * range);
 			let neu = get_height();
+			
+			let x3 =  wwms.getx3(coord[2],(0.0/ 255.0) *  range,(max2 / 255.0) * range + min_); //coord[2]
+			
 
 			
-			if ((((neu / 255.0) * range)  ) + 5 > coord[2]){
-                 //alert("neu " + (neu/ 255.0 ) * range " Coord2: " + coord[2]);
+
+		
 				
+				if ((wwms.getx3((neu / 255.0)*range + min_,(0.0/ 255.0) *  range ,(max2 / 255.0) * range + min_) - 3 > cam.pos.wy + 0.35) &&  ((-x3_old + x3) < 0)) {  //+ 0.45
+                 
+
 				if(!drin2) drin = 0;
 				drin2 = true;
 				drin += -x3_old + x3;
-				
+				if(start)
+				cam.pos.wy = wwms.getx3((neu / 255.0)*range + min_,(0.0/ 255.0) *  range,(max2 / 255.0) * range + min_) - 3;
+			
 			
 				
 			}
 			
 			
-			else if (drin2 && (-x3_old + x3) > 0){
+			else if (drin2 && (-x3_old + x3) >= 0){
 				drin += -x3_old + x3;
 				if (drin >= 0){
 					
-					mcamera.translate(0,(-x3_old + x3),0);
+					//mcamera.translate(0,(-x3_old + x3),0);
 					drin2 = false;
 					
 				}
@@ -1115,8 +1304,10 @@ if(!ppol[0].ready_dop) return;
 				mcamera.translate(0,(-x3_old + x3),0);
 			
 			}
+		
+			start = false;
 			
-
+			
 			cam = mcamera.multiply_local_system(cam);
 			mcamera.clear();
 
@@ -1140,98 +1331,7 @@ if(!ppol[0].ready_dop) return;
 			}
 		}
 
-/*	
-		if ((coord[0] == coord2[0]) && (coord[1] == coord2[1])){
-			jetzt_nicht = true;
-			mcamera.clear();
-			mcamera.translate(-stange* cam.sight.x,-stange*cam.sight.y,-stange*cam.sight.z);
-			cam = mcamera.multiply_local_system(cam);
-			mcamera.clear();
-			
-			
-			if (!ist_in_drehung) n -= 1;
-			if (!ist_in_drehung) m_now += 1;
-			ist_in_drehung = true;  
 
-			v = new vector();
-			u = new vector();
-			xy = new vector();
-			uup = new vector();
-			uup.set(0,1,0);
-
-
-
-
-			mcamera.clear();
-			let t = u.winkel(cam.up,uup,cam.right);
-			console.log("Math.abs(t) :" + Math.abs(t));
-			mcamera.translate(-cam.pos.wx,-cam.pos.wy,-cam.pos.wz);
-			mcamera.rotate(t,cam.right);
-			mcamera.translate(cam.pos.wx,cam.pos.wy,cam.pos.wz);
-			cam = mcamera.multiply_local_system(cam);
-			mcamera.clear();
-			
-			let r = 0.0;
-			coord2 = wwms.getfrompointstring_all(n + 1);
-			if (coord2 === false){
-				m_now = 0;
-				m_old = -1;
-				x3_old = 0;
-				x2_old = 0;
-				x1_old = 0;
-				ist_in_drehung = false;
-				jetzt_nicht = false;
-				n = 0;
-				cam.set(mysight.pos,mysight.right,mysight.up,mysight.sight);
-				mcamera.clear();
-				spaziergang = false;
-				saved = false;
-				save_stange = 2.0;
-			return;
-			}
-			y1 = wwms.getx1(coord2[0]);
-			y2 = wwms.getx2(coord2[1]);
-			v.set((-2.0 + y1 - (-2.0 +  x1))/height2,0,((2.0 - y2) - (2.0 -  x2))/height2);
-			v.normalize();
-			w = u.winkel(cam.sight,v ,cam.up);
-			if( 174.1 >= Math.abs(w) ) r = -5.0;
-			else if (177.1 >= Math.abs(w)) r = -2.0;
-			//else r = -0.5;
-			else if ( 179.4 > Math.abs(w) )r = -0.5;
-			else r = 0;
-			s = Math.sign(w);
-			mcamera.clear();  
-			mcamera.translate(-cam.pos.wx,-cam.pos.wy,-cam.pos.wz);
-			console.log("1. Schritt FERTIG : " + w);
-			mcamera.rotate(s* r,cam.up);
-			mcamera.translate(cam.pos.wx,cam.pos.wy,cam.pos.wz);
-			cam = mcamera.multiply_local_system(cam);
-			mcamera.clear();
-			w = u.winkel(cam.sight,v,cam.up);
-			console.log("Math.abs(w) " + Math.abs(w));
-			if (Math.abs(w) > 179.0){
-				ist_in_drehung = false;
-				jetzt_nicht = false;
-				n += 1;
-				nummer_save  = n;
-			}
-
-			mcamera.clear();  
-			mcamera.translate(-cam.pos.wx,-cam.pos.wy,-cam.pos.wz);
-			mcamera.rotate(-t,cam.right);	
-			mcamera.translate(cam.pos.wx,cam.pos.wy,cam.pos.wz);
-			cam = mcamera.multiply_local_system(cam);
-			mcamera.clear();		
-
-			mcamera.clear();
-			mcamera.translate(stange* cam.sight.x,stange*cam.sight.y,stange*cam.sight.z);
-			cam = mcamera.multiply_local_system(cam);
-			mcamera.clear();
-				
-		}
-		
-	}
-*/
 		if ((coord[0] == coord2[0]) && (coord[1] == coord2[1])){
 
 			jetzt_nicht = true;
@@ -1339,10 +1439,11 @@ if(!ppol[0].ready_dop) return;
 		}
 	
 	
-	} 
-		return false;
-};
+	}; 
 
+	
+	return false;
+};
 
 
 superpoly.prototype.gm_fkt = function(k){

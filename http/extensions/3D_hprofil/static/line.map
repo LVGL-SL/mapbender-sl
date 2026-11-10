@@ -56,7 +56,7 @@ END
     CLASS
 	  NAME "GK3-Points"
       STYLE
-	    COLOR 255 0 0
+	    COLOR 255 255 0
         WIDTH 6
      
       END

@@ -33,7 +33,7 @@ if point_param:
     punkt.append((float(x), float(y)))
 # Mapfile laden
 mapObj = mapscript.mapObj("../static/line.map")
-
+"""
 layer2 = mapObj.getLayerByName("inline_points_gk2")
 shape2 = mapscript.shapeObj(mapscript.MS_SHAPE_POINT)
 for x, y in punkte:
@@ -42,7 +42,7 @@ for x, y in punkte:
     line2.add(mapscript.pointObj(x, y))
     shape2.add(line2)
 layer2.addFeature(shape2)
-
+"""
 
 layer3 = mapObj.getLayerByName("inline_point_gk2")
 shape3 = mapscript.shapeObj(mapscript.MS_SHAPE_POINT)
@@ -83,7 +83,7 @@ layer.addFeature(shape)
 if epsg_param:
     mapObj.setProjection(f"init=epsg:{epsg_param}")
     layer.setProjection(f"init=epsg:{epsg_param}")
-    layer2.setProjection(f"init=epsg:{epsg_param}")
+    #layer2.setProjection(f"init=epsg:{epsg_param}")
     layer3.setProjection(f"init=epsg:{epsg_param}")
     layer4.setProjection(f"init=epsg:{epsg_param}")
 
@@ -93,7 +93,7 @@ if bbox_param:
     minx, miny, maxx, maxy = map(float, bbox_param.split(","))
     mapObj.setExtent(minx, miny, maxx, maxy)
     layer.setExtent(minx, miny, maxx, maxy)
-    layer2.setExtent(minx, miny, maxx, maxy)
+    #layer2.setExtent(minx, miny, maxx, maxy)
     layer3.setExtent(minx, miny, maxx, maxy)
     layer4.setExtent(minx, miny, maxx, maxy)
 # Bildgröße setzen

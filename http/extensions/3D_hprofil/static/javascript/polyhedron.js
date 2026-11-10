@@ -137,7 +137,31 @@ var help2 = function(data,gl,url,tex_gl){
 	});
 	
 };	
-var help = function(gl,url,tex_gl){
+
+var help_me = function(gl,url,tex_gl,can,al=false){
+	
+	
+	return	getm(url).then(im => {
+		return new Promise((resolve, reject) => {
+			im.onload = () =>  {
+
+                const ctx = can.getContext('2d');
+				ctx.drawImage(im,0,0);
+				
+				resolve();
+				
+				
+			};//onload
+			im.onerror = reject;
+		});
+	});
+	
+}
+
+
+var help = function(gl,url,tex_gl,can,al=false){
+	
+	if(!al){
 	return	getm(url).then(im => {
 		return new Promise((resolve, reject) => {
 			im.onload = () =>  {
@@ -161,15 +185,55 @@ var help = function(gl,url,tex_gl){
 			im.onerror = reject;
 		});
 	});
-	
+}
+
+
+
+
+else{ 
+				gl.activeTexture(gl.TEXTURE0);		
+				gl.bindTexture(gl.TEXTURE_2D, null);
+				gl.bindTexture(gl.TEXTURE_2D, tex_gl);
+				gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+
+				
+				gl.texImage2D(   gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, can);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); 
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.generateMipmap(gl.TEXTURE_2D);
+				gl.bindTexture(gl.TEXTURE_2D, null);
+				
+return 0;
+
+}	
 };		
 
 
-var help3_b = function(gl,canvas2,tex_gl){
+var help3_b = function(gl,canvas2,tex_gl,url){
 	
+	getm(url).then(im => {
+		im.onload = function() {
+			gl.activeTexture(gl.TEXTURE2);		
+			gl.bindTexture(gl.TEXTURE_2D, null);
+			gl.bindTexture(gl.TEXTURE_2D, tex_gl);
+			gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+			
+			const ctx = canvas2.getContext('2d');
+			ctx.drawImage(im, 0, 0, canvas2.width, canvas2.height);
+			
+			gl.texImage2D(   gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, im);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); 
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+			gl.generateMipmap(gl.TEXTURE_2D);
+			gl.bindTexture(gl.TEXTURE_2D, null);
+		};
+	});
 
-
-
+/*
 			gl.activeTexture(gl.TEXTURE2);		
 			gl.bindTexture(gl.TEXTURE_2D, null);
 			gl.bindTexture(gl.TEXTURE_2D, tex_gl);
@@ -181,7 +245,7 @@ var help3_b = function(gl,canvas2,tex_gl){
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 			gl.generateMipmap(gl.TEXTURE_2D);
 			gl.bindTexture(gl.TEXTURE_2D, null);
-	
+*/	
 };	
 
 var help3 = function(gl,url,tex_gl){
@@ -218,7 +282,7 @@ polyhedron.prototype.set_len_eins = function(eins){
 
 
 
-polyhedron.prototype.settex_overlay = function(s,mat_name,umn=true)
+polyhedron.prototype.settex_overlay = function(s,mat_name,umn=true,url="")
 {   
 
 
@@ -231,7 +295,7 @@ polyhedron.prototype.settex_overlay = function(s,mat_name,umn=true)
 	if (umn)
 		help3(gl,s,tex_glint);
 	else
-		help3_b(gl,s,tex_glint);;
+		help3_b(gl,s,tex_glint,url);;
 	
 }
 polyhedron.prototype.get_data  = function(x,y)
@@ -272,7 +336,7 @@ polyhedron.prototype.settex_schon_da = async function(s,mat_name)
     document.getElementById("closeBtn").style.backgroundColor = "green";
 	return true;
 };
-polyhedron.prototype.settex = async function(s,mat_name){
+polyhedron.prototype.settex = async function(s,mat_name,canvas2=null){
 
 	if(this.first_0)
 		this.tex_glint[0] = this.gl.createTexture();
@@ -280,8 +344,44 @@ polyhedron.prototype.settex = async function(s,mat_name){
 	var tex_glint = this.tex_glint[0];	
 	var gl = this.gl;
 	this.material_char[0] = mat_name;
+	
+
+	if (canvas2){
+		
+				
+			
+		
+		
+
+var ctx = canvas2.getContext('2d');
+		for (var i = 0; i < s.length; i+= 1){
+			
+			 
+
+try{
+			let A =  await help_me(gl,s[i],tex_glint,canvas2,false);
+} catch(error){
+	alert(s[i]+"\n\n konnte nicht geladen werden!!");
+
+}	
+			
+			
+				
+				
+		}
+		help(gl,s,tex_glint,canvas2,true);
+
+	}
+	else {
 	let A = await help(gl,s,tex_glint);
+	
+	}
+	
 	this.ready_dop = true;
+	
+	
+	
+	
 		if(this.ready_dgm)
     document.getElementById("closeBtn").style.backgroundColor = "green";
 	return true

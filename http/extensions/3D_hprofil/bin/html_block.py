@@ -29,13 +29,14 @@ import os
 def main():
 	content_length = int(os.environ.get("CONTENT_LENGTH", 0))
 	post_data = sys.stdin.read(content_length)
-	gpx_array = []
+	#gpx_array = []
 	gpx = ""
 	try:
 		payload = json.loads(post_data)
-		points = payload.get("points", [])
-		points_gpx = payload.get("pointsgpx",[])
-		gpx_array = payload.get("gpx", [])
+		points = payload.get("points", []) #u.a. Stuetzpunkte + alle gezeichneten Punkte
+		points_gpx = payload.get("pointsgpx","")
+		#gpx_array = payload.get("gpx", []) # alle GPX - Punkte
+		mapUrl = payload.get("mapurl",[])
 		srs = "EPSG:" + payload.get("srs", "")
 		laenge = payload.get("laenge", "")
 		step = payload.get("step", "")
@@ -49,10 +50,12 @@ def main():
 	#print(strecke_gesamt)
 	#return
 	
+	"""
 	gpx_array_str = "["
 	for p in gpx_array:
 		gpx_array_str += "["+ str(p['x']) +";" +str(p['y'])+  "],"
 	gpx_array_str = gpx_array_str.strip(',') + "]"
+	"""
 	
 
 	
@@ -264,8 +267,39 @@ def main():
 	print("z-index: 10001;")
 	print("       right: 5px; top: 70px;   ")
 	print("}")
+    
+    
+	print("#sv2 { position: absolute;   ")
+	print("z-index: 10001;")
+	print("       right: 25px; top: 330px;   ")
+	print("}")
 
+	print(".arrow-line {")
 
+	print("      stroke: #fff;")
+	print("stroke-width: 3;")
+	#print("cursor: pointer;")
+	#print("transition: 0.2s;")
+	print("}")
+
+	print(".arrow {")
+	print("fill: #0001;")
+	print("      stroke: #aaa;")
+	print("stroke-width: 4;")
+	print("cursor: pointer;")
+	print("transition: 0.2s;")
+	print("}")
+
+	print(".arrow:hover {")
+	print("      fill: #fff2;")
+	print("      stroke: #fff;")
+	print("    }")
+
+	print("    .arrow:active {")
+	print("      filter: drop-shadow(0 0 14px #fff);")
+	print("    }")
+	print(".arrow.disabled { opacity: 0.1;  filter: none;}") #cursor: not-allowed;
+    
 	print(".outer.disabled { opacity: 0.1;  filter: none;}") #cursor: not-allowed;
 
 	print(".angle-marker {")
@@ -303,7 +337,8 @@ def main():
 	print("    }")
 	print("    ")
 	print("    .outer {")
-	print("      fill: #fff0;")
+	#print("      fill: #fff0;")
+	print("      fill: #0001;")
 	print("    }")
 	print("#reiter { position: fixed; bottom: 20px; right: 20px; background: #222; color: white; padding: 10px 15px; border-radius: 8px; cursor: pointer; opacity: 0.8; transition: opacity 0.2s;z-index: 10000; } ")
 	print("#reiter:hover { opacity: 1; }")
@@ -318,34 +353,37 @@ def main():
 	print("")
 	print("<body>")
 	print("<div id=\"overlay\">")
+	print("Die Kartendienste werden aus dem Geoportal Kartenklient übernommen,<br> Dienste mit Massstabsbeschränkung/Massstabsübergängen können bei Änderung der Auflösung eine andere Darstellung haben.<br> Massstabsbeschränkungen, die im Geoportal selbst und nicht im Dienst hinterlegt sind, werden nicht berücksichtigt")
 	print("<br>")
 	print("<br>")
 	print("<h2>[ESC]: Zurück zur Anfangsansicht</h2>")
+	#print("In der Anfangsansicht können Sie mit dem Bedienkreuz navigieren.<br>")
+
 	print("<br>")
-	print("<h2>[Leertaste]: Strecke abgehen;  [H]: Zurück zum Anfangspunkt</h2>")
+	print("<h2>[LEERTASTE gedrückt halten]: Strecke abgehen;  [H]: Zurück zum Anfangspunkt</h2>")
+	print("<br>")
+	print("<h2>[LINKER MAUSBUTTON]: im Diagramm drücken, um gewählten Punkt in Ebene zu markieren</h2>")
 	print("<br>")
 	print("<h2>[MITTLERER MAUSBUTTON; MAUSRAD]: im Diagramm drücken, um zu gewähltem Punkt in Ebene zu springen</h2>")
 	print("<br>")
-	print("<h2>[LINKER MAUSBUTTON]: im Diagramm drücken, um gewählten Punkt in Ebene zu markieren [nicht untersützt bei GPX Dateien]</h2>")
 	print("<br>")
 	print("<br>")
 	print("<br>")
 	print("<br>")
 	print("<br>")
-	print("<h3>ZOOMEN : [MAUSRAD] bzw. [+],[-] BEDIENELEMENT</h3>")
-	print("<h3>ROTIEREN : [LINKER MAUSBUTTON] und ziehen bzw. [<],[>],[^],[v] BEDIENELEMENT </h3>")
+	print("<h3>ZOOMEN :   BEDIENELEMENT: [+],[-] </h3>")
+	print("<h3>ROTIEREN : BEDIENELEMENT: [<],[>],[^],[v]  </h3>")
 	print("   <br>  ")
 	print("  <br>  ")
-	print("ZOOMEN und ROTIEREN mit der Maus in oberer Bildschirmhälfte,<br> ROTIEREN nicht in jeder Ansicht möglich")
 	print("<br>")
+	print("<p>Bitte wählen Sie eine Auflösung (Ladezeit hohe Auflösung > 30s)</p>")
 	print("<form>")
-	print("<p>Bitte wählen Sie eine Auflösung</p>")
 	print("<div class=\"button-radios\">")
-	print("<input type=\"radio\" id=\"opt1\" name=\"auswahl\" value=\"500\" checked=\"checked\">")
+	print("<input type=\"radio\" id=\"opt1\" name=\"auswahl\" checked=\"checked\">")
 	print("<label for=\"opt1\">Niedrig</label>")
-	print("<input type=\"radio\" id=\"opt2\" name=\"auswahl\" value=\"1000\">")
+	print("<input type=\"radio\" id=\"opt2\" name=\"auswahl\" >")
 	print("<label for=\"opt2\">Mittel</label>")
-	print("<input type=\"radio\" id=\"opt3\" name=\"auswahl\" value=\"5000\">")
+	print("<input type=\"radio\" id=\"opt3\" name=\"auswahl\" >")
 	print("<label for=\"opt3\">Hoch</label>")
 	print("</div>")
 	print("</form>")
@@ -363,6 +401,9 @@ def main():
 	print("")
 	print("<div id=\"reiter\">Overlay öffnen</div>")
 	print("    <div id=\"sv\">")
+
+
+
 
 
 	print("<svg width=\"260\" height=\"260\" viewBox=\"0 0 260 260\">")
@@ -419,6 +460,68 @@ def main():
 	print("</svg>")
 	print("    </div>")
 
+	print("    <div id=\"sv2\">")
+    
+
+	print("<svg width=\"100\" height=\"100\" viewBox=\"0 0 200 200\">")
+	print("<!-- Pfeil oben -->")
+	print("<line class=\"arrow-line\" x1=\"110\" y1=\"35\" x2=\"110\" y2=\"75\" />")
+	print("<polygon class=\"arrow\"")
+	print("points=\"90,20 130,20 120,90 100,90\"")
+	print("data-dir=\"up\" />")
+	
+
+	print("<!-- Pfeil unten -->")
+	print("<line class=\"arrow-line\" x1=\"110\" y1=\"185\" x2=\"110\" y2=\"145\" />")
+	print("<polygon class=\"arrow\"")
+	print("points=\"90,200 130,200 120,130 100,130\"")
+	print("data-dir=\"down\" />")
+
+
+	print("<!-- Pfeil rechts -->")
+	print("<line class=\"arrow-line\" x1=\"185\" y1=\"110\" x2=\"145\" y2=\"110\" />")
+	print("<polygon class=\"arrow\"")
+	print("points=\"200,90 200,130 130,120 130,100\"")
+	print("data-dir=\"right\" />")
+
+
+	print("<!-- Pfeil links -->")
+	print("<line class=\"arrow-line\" x1=\"35\" y1=\"110\" x2=\"75\" y2=\"110\" /> ")
+	print("<polygon class=\"arrow\"")
+	print("points=\"20,90 20,130 90,120 90,100\"")
+	print("data-dir=\"left\" />")
+	print("</svg>")
+	"""
+
+	print("<svg width=\"100\" height=\"100\" viewBox=\"0 0 200 200\">")
+	print("<!-- Pfeil oben -->")
+	print("<polygon class=\"arrow2\"")
+	print("points=\"92, 18 128,18 118,92 98,92\"")
+	print("data-dir=\"up\" />")
+
+	print("<!-- Pfeil unten -->")
+	print("<polygon class=\"arrow2\"")
+	print("points=\"90,200 130,200 120,130 100,130\"")
+	print("data-dir=\"down\" />")
+
+	print("<!-- Pfeil rechts -->")
+	print("<polygon class=\"arrow2\"")
+	print("points=\"200,90 200,130 130,120 130,100\"")
+	print("data-dir=\"right\" />")
+
+	print("<!-- Pfeil links -->")
+	print("<polygon class=\"arrow2\"")
+	print("points=\"20,90 20,130 90,120 90,100\"")
+	print("data-dir=\"left\" />")
+	print("</svg>")
+	"""
+
+
+
+
+
+	print("    </div>")
+
 
 
 
@@ -433,12 +536,17 @@ def main():
 	print("    <canvas id=\"webgl\" >")
 	print("    Please use a browser that supports \"canvas\"")
 	print("    </canvas>")
-	print("	<script>")
+	print("<script>")    
+	print("let feld = document.getElementById('opt1');")  
+	print("feld.value = image_size_small;")
+	print("let feld2 = document.getElementById('opt2');")  
+	print("feld2.value = image_size_medium;")
+	print("let feld3 = document.getElementById('opt3');")  
+	print("feld3.value = image_size_big;")
 	print("	const canvas = document.getElementById('webgl');")
 	print("  canvas.width = window.innerWidth;")
 	print("  canvas.height = window.innerHeight;")
-	#print("var wms = new wms("+k2+",'"+pointsstr+"','"+srs+"','"+pointsstr_all+"');")
-	print("var wms = new wms("+k2_gpx+",'"+pointsstr_gpx+"','"+srs+"','"+pointsstr_all_gpx+"','"+pointsstr+"');")
+	print("var wms = new wms("+k2_gpx+",'"+pointsstr_gpx+"','"+srs+"','"+pointsstr_all_gpx+"','"  + mapUrl + "','" +pointsstr+"');")
 	print("var shade = new shader();")
 	print("var ba = new basis(shade);")
 	print("var wv = new vertex();")
@@ -500,7 +608,7 @@ def main():
 	print("matt.addmat(mat3);")
 	print("")
 	print("var supoly = new superpoly(shade,ba.gl,ba.canvas,matt,wms);")
-	print("supoly.gpx_array('"+ gpx_array_str + "');")
+	#print("supoly.gpx_array('"+ gpx_array_str + "');")
 	print("supoly.gm_fkt(5);")
 	print("//supoly.texon();")
     
@@ -574,17 +682,20 @@ def main():
 	print("  mode: 'markers',")
 	print("  type: 'scatter',")
 	print("  marker: {")
-	print("    size:  points.map((p, i) => i === 0 ? 15 : (p.type === 'I' ? 3 : 12)),")
-	print("    color: points.map((p, i) => { return (p.x < bbox[2] && p.x > bbox[0]) ? (  i === 0 ? 'white' : (p.type === 'I' ? 'green' : 'blue')) : 'gray';})")
+	#print("    size:  points.map((p, i) => i === 0 ? 15 : (p.type === 'I' ? 3 : 12)),")
+	print("    size:  points.map((p, i) => i === 0 ? 25 : 3),")
+	print("    line: { color: 'lightyellow' },")
+	print("    color: points.map((p, i) => { return (p.x < bbox[2] && p.x > bbox[0]) ? (  i === 0 ? 'white' : (p.type === 'I' ? 'lightyellow' : 'lightyellow')) : 'lightyellow';})")
 	print("  },")
 	print("  text: points.map(p => `Höhe:${(p.z).toFixed(2)} m`),")
 	print("  customdata: points.map((p, i) => ({nr: i, type: p.type, x: p.x, y: p.y, z: p.z})),")
-	print("  hoverinfo: 'text'")
+	print("  hoverinfo: 'text',")
+	print(" hoverlabel: {font: { color: 'white' }}")
 	print("};")
 	print("")
 	print("Plotly.newPlot('plot', [trace], {")
-	print("  xaxis: {tickfont: { color: 'white' }, title: {text : 'Strecke in km' , font: { color: 'white' }}},")
-	print("  yaxis: {tickfont: { color: 'white' }, title: {text : 'Z-Wert (Höhe)', font: { color: 'white' } }},")
+	print("  xaxis: {tickfont: { color: 'white' }, title: {text : 'Strecke in km' , font: { color: 'white' }}, fixedrange: true},")
+	print("  yaxis: {tickfont: { color: 'white' }, title: {text : 'Z-Wert (Höhe)', font: { color: 'white' }} , fixedrange: true},")
 	print("  paper_bgcolor: 'rgba(0,0,0,0)', ")
 	print("  plot_bgcolor: 'rgba(0,0,0,0)'  ")
 	print("},config);")
@@ -602,11 +713,13 @@ def main():
 	print("if (supoly.get_jetzt_nicht()){ return;}")
 	print("if (button == 1){")
 	print("supoly.set_nr(nr);")
+	#print("reset_arrow();")
 	print("}")
 	print("if(button != 0) {")
 	print("reset_all();")
-	print("horizontal(); }")
-	print("supoly.set_refresh();")
+	print(" horizontal();}") # horizontal();
+	#print("supoly.set_refresh();")
+	print("renderPlot2(true,nr);")
 	print("});")
 	print("var rDown = false;")
 
@@ -617,11 +730,14 @@ def main():
 	print("reset_all();")
 	print("        rDown = true;")
 	print("renderPlot2(true);")
-	print("vertikal();}")
+	#print("vertikal();")
+	print("}")
+	#print("reset_arrow();")
 	print("        rDown = true;")
 	print("    }")
 	print("    if (e.keyCode === 27) {")
 	print("reset_all();")
+	#print("activate_arrow();")
 	print(" counter = 0;    ")
 	print(" i = 0;    ")
 	print("    }")
@@ -632,17 +748,19 @@ def main():
 	print(" counter = 0;    ")
 	print("        rDown = false;")
 	print(" i = 0;    ")
+	#print("reset_arrow();")
 	print("        renderPlot2(true);")
 	print("    }")
 	print("});")
 
 	print("document.addEventListener(\"keyup\", e => {")
 	print("    if (e.keyCode === 32) {")
+	print("vertikal();")
 	print("        rDown = false;")
 	print("        renderPlot2(true);")
 	print("    }")
 	print("});")
-
+	"""
 	print("document.getElementById(\"viewer\").addEventListener(\"wheel\", e => {")
 	print("    e.preventDefault();")
 	print("    const f = e.deltaY < 0 ? false : true;")
@@ -653,39 +771,43 @@ def main():
 	print("document.getElementById(\"viewer\").addEventListener(\"mouseleave\", e => {")
 	print("    supoly.set_left_state_false();")
 	print("});")
-
+	"""
 	print("function renderPlot() {")
 	print("    const bbox = supoly.wms.get_bbox();")
 	print("    const specialIndex = supoly.get_n();")
 
 	print("    const sizes = points.map((p, i) => {")
 	print("        if (rDown && i === specialIndex) return 25;")
-	print("        return i === 0 ? 15 : (p.type === \"I\" ? 3 : 12);")
+	print("        return i === 0 ? 25 : (p.type === \"I\" ? 3 : 12);")
 	print("    });")
-	print("    Plotly.update(\"plot\", { marker: { color: colors, size: sizes } }, [0]);")
+	print("    Plotly.update(\"plot\", { marker: { color: colors, size: sizes, line: { color: 'lightyellow' } } }, [0]);")
 	print("}")
 
-	print("function renderPlot2(f=false) {")
+	print("function renderPlot2(f=false,nr=-1) {")
 	print("let male = false;")
 	print("let sx = 0;")
 	print("let sy = 0;")
 	print("if(f) male = true;")
 	print("    const bbox = supoly.wms.get_bbox();")
-	print("    const specialIndex = supoly.get_n();")
-
+	print("var specialIndex = 0;")
+	print("if(nr == -1)")
+	print("     specialIndex = supoly.get_n();")
+	print("else")
+	print("    specialIndex = nr;");
+	#print("alert(specialIndex);")
 	print("    const sizes = points.map((p, i) => {")
-	#print("        if ((rDown && i === specialIndex) && (p.type !== \"I\")){ male = true; return 25;}")
 	print("        if (((!rDown) && i === specialIndex)){ sx = p.x;sy = p.y; male = true; return 25;}")
-	print("        return i === 0 ? 15 : (p.type === \"I\" ? 3 : 12);")
+	#print("        return i === 0 ? 15 : (p.type === \"I\" ? 3 : 12);")
+	print("        return i === 0 ? 25 : 3;")
 	print("    });")
-
+	print("    const symbols = points.map((p, i) => ((i === specialIndex) && (i > 0)) ? 'x' : 'circle');")
 	print("    const colors = points.map((p, i) => {")
-	print("        if ( (!rDown) && (i === specialIndex) && (i > 0)) return \"yellow\";")
+	print("        if ( (!rDown) && (i === specialIndex) && (i > 0)) return \"red\";")
 	print("        const inside =")
 	print("            p.x < bbox[2] && p.x > bbox[0] &&")
 	print("            p.y < bbox[3] && p.y > bbox[1];")
 	print("        return inside")
-	print("            ? (i === 0 ? \"white\" : (p.type === \"I\" ? \"green\" : \"blue\"))")
+	print("            ? (i === 0 ? \"white\" : (p.type === \"I\" ? \"lightyellow\" : \"lightyellow\"))")
 	print("            : \"gray\";")
 	print("    });")
 	print("if(male ){")
@@ -693,7 +815,7 @@ def main():
 	print("supoly.wms.set_point(sx+\",\"+sy);")
 	print("supoly.set_refresh();")
 	print("}")    
-	print("    Plotly.update(\"plot\", { marker: { color: colors, size: sizes } }, [0]);")
+	print("    Plotly.update(\"plot\", { marker: {symbol: symbols, color: colors, size: sizes,  line: { color: 'lightyellow' } } }, [0]);")
 	print("}}")
 	#print("const overlay = document.getElementById(\"overlay\"); ")
 	#print("overlay.addEventListener(\"click\", () => { overlay.classList.add(\"fade-out\"); // Nach der Animation komplett entfernen (optional)")
@@ -762,11 +884,26 @@ def main():
 	print("document.querySelectorAll('.angle-marker').forEach(strip => {  strip.classList.add(\"disabled\");})")
 	print("clearInterval(interval2);")
 	print("interval2 = null;")
-
 	print("}")
 
 	print("reset_all();")
 
+	print("function reset_arrow(){")
+	print("document.querySelectorAll('.arrow').forEach(strip => { strip.removeEventListener(\"mousedown\", handlePress5); })")
+	print("document.querySelectorAll('.arrow').forEach(strip => { strip.removeEventListener(\"mouseup\", handlePress4); })")
+	print("document.querySelectorAll('.arrow').forEach(strip => { strip.removeEventListener(\"mouseleave\", handlePress4); })")
+	print("document.querySelectorAll('.arrow').forEach(strip => {  strip.classList.add(\"disabled\");})")
+	print("clearInterval(interval2);")
+	print("interval2 = null;")
+	print("}")
+
+	print("function activate_arrow(){")
+	print("document.querySelectorAll('.arrow').forEach(strip => { strip.addEventListener(\"mousedown\", handlePress5); })")
+	print("document.querySelectorAll('.arrow').forEach(strip => { strip.addEventListener(\"mouseup\", handlePress4); })")
+	print("document.querySelectorAll('.arrow').forEach(strip => { strip.addEventListener(\"mouseleave\", handlePress4); })")
+	print("document.querySelectorAll('.arrow').forEach(strip => {  strip.classList.remove(\"disabled\");})")
+
+	print("}")
 
 
 	print("function enableStrip(strip) { strip.addEventListener(\"mousedown\", handlePress);strip.addEventListener(\"mouseup\", handlePress2); strip.addEventListener(\"mouseleave\", handlePress2); strip.classList.remove(\"disabled\"); }")
@@ -780,12 +917,35 @@ def main():
 
 
 	print("function horizontal(){")
-	print("enableStrip(document.querySelector('[data-dir=\"outer-strip-top-quarter\"]'));")
-	print("enableStrip(document.querySelector('[data-dir=\"outer-strip-bottom-quarter\"]'));")
+	#print("enableStrip(document.querySelector('[data-dir=\"outer-strip-top-quarter\"]'));")
+	#print("enableStrip(document.querySelector('[data-dir=\"outer-strip-bottom-quarter\"]'));")
 	print("enableStrip(document.querySelector('[data-dir=\"outer-strip-left-quarter\"]'));")
+	
+	
 	print("enableStrip(document.querySelector('[data-dir=\"outer-strip-right-quarter\"]'));")
-	print("document.querySelectorAll('.angle-marker').forEach(strip => {  strip.classList.remove(\"disabled\");})")
+	print("document.querySelectorAll('.angle-marker.horizontal').forEach(strip => {  strip.classList.remove(\"disabled\");})")
+	
+	#print("document.querySelectorAll('.angle-marker').forEach(strip => {  strip.classList.remove(\"disabled\");})")
 	print("}")
+    
+    
+    
+    
+
+	print("function handlePress5(e) { const dir = e.target.dataset.dir;")
+	print("if (interval2) return;")
+	print("switch (dir) {")
+	print("case \"up\": interval2 = setInterval(() => {supoly.nachvorne();}, 15); break; ")
+	print("case \"down\": interval2 = setInterval(() => {supoly.nachhinten();}, 15); break; ")
+	print("case \"left\": interval2 = setInterval(() => {supoly.nachlinks();}, 15); break; ")
+	print("case \"right\": interval2 = setInterval(() => {supoly.nachrechts();}, 15); break; }")
+	print("horizontal();")
+	print("vertikal();")
+	print(" }")
+
+	print("document.querySelectorAll('.arrow').forEach(arrow => { arrow.addEventListener('mousedown',handlePress5);});")
+	print("document.querySelectorAll('.arrow').forEach(arrow => { arrow.addEventListener('mouseup',handlePress4);});")
+	print("document.querySelectorAll('.arrow').forEach(arrow => { arrow.addEventListener('mouseleave',handlePress4);});")
 
 
 	print("</script>")

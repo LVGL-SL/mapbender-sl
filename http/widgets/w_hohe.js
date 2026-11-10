@@ -23,6 +23,7 @@ $.widget("mapbender.mb_hohe", {
 	_measurePoints: [],
 	_map: undefined,
 	_srs: undefined,
+	_mapUrlArray : [],
 	_currentDistance: 0,
 	_totalDistance: 0,
 	_totalDistance_: 0,
@@ -333,7 +334,10 @@ $.widget("mapbender.mb_hohe", {
 	Der letzte geklickte Punkt ist sehr nahe dem vorletzem Ende Zeichnen -> die Zwischenpunkte werden berechnet.
 	*/
 	_addLastPoint: function (b) {
-
+	//this.move_mapUrlArray();
+		
+		//this._trigger("movemapurlarray", null, this._mapUrlArray.join(";"));
+		
 		if(b == 1){
 			this._mache_punkte();
 			NUM_POINTS = 2000;
@@ -873,6 +877,9 @@ $.widget("mapbender.mb_hohe", {
 	_addPoint: function (e) {
 		//Abbruch, wenn Punkte vom Sever da sind.
 		
+		
+		
+		
 		if (paintPoints) return;
 		
 		var mousePos = this._map.getMousePosition(e);
@@ -995,7 +1002,32 @@ $.widget("mapbender.mb_hohe", {
 			
 			
 	},
-
+	_remove_bbox_width_height(url,mylayers) {
+		
+		var lr = "";
+		var uu = [];
+		let u = url.split("?");
+		if (u.length > 1){			
+			rl = u[0]+"?"+ u[1].split("&")[0] + "&";
+			
+			u = u[1].split("&");
+		}
+		else {
+			u = url.split("&");			
+			rl = u[0]+"&";
+		}
+		for (var i = 1;i<u.length;i += 1) {
+			
+			if (!(u[i].startsWith("BBOX") || u[i].startsWith("WIDTH") || u[i].startsWith("HEIGHT")|| u[i].startsWith("LAYERS")))
+				if(i==1)
+				rl += (u[i]);
+			else
+				rl += ("&"+ u[i]);
+		}
+		
+		return rl+"&LAYERS="+ mylayers;
+		
+	},
 	_create: function () {
 		
 		$('#hoheNewButton').button('enable');
@@ -1019,6 +1051,8 @@ $.widget("mapbender.mb_hohe", {
 		}
 
 		this._map = this.element.mapbender();
+		
+		
 		if (!create)
 			this._map.events.afterMapRequest.register($.proxy(this._redraw, this));
 		create = true;
@@ -1044,10 +1078,57 @@ $.widget("mapbender.mb_hohe", {
  		
 				
 
-
+//if (currentWms..gui_layer_status == '1' &&
+//						(currentWms.gui_layer_selectable == 1) {
 
 	},
+    move_mapUrlArray : function ()
+	{     
+			this._mapUrlArray = [];
+		  for (var ii = 0; ii < this._map.wms.length; ii++) {
+			var currentWms = this._map.wms[ii];
+            
+		visibleLayers = [];
+		styles = [];
+		for(var i=0; i< currentWms.objLayer.length; i++){
+	
+			
+			var isVisible = (currentWms.objLayer[i].gui_layer_visible == 1); //(currentWms[i].gui_layer_visible === 1) && 
+			var hasNoChildren = (!currentWms.objLayer[i].has_childs);
+			if (isVisible && hasNoChildren){
+				visibleLayers.push(currentWms.objLayer[i].layer_name);
+				var style = currentWms.getCurrentStyleByLayerName(currentWms.objLayer[i].layer_name);
+				if(!style){
+					style = '';
+				}
+				styles.push(style);
+				//my_styles.push(currentWms.objLayer[i].layer_name);
+			}	
+				
+				
+		
+		}
+		
+			
+			let s = visibleLayers.join(",");
+			
+			let aufruf = "VERSION=1.1.1&REQUEST=GetMap&SERVICE=WMS&SRS=EPSG:25832&FORMAT=image/png&BGCOLOR=0xffffff&TRANSPARENT=TRUE&EXCEPTIONS=application/vnd.ogc.se_xml&STYLES="+styles.join(",");
+            //let gm = this._map.getMapUrl(ii, this._map.extent);
+			//if (gm != false)
+           //this._mapUrlArray.push(this._remove_bbox_width_height(this._map.getMapUrl(ii, this._map.extent),s));
+		    if(currentWms.wms_getmap && (visibleLayers.length > 0))
+			this._mapUrlArray.push(this._remove_bbox_width_height(currentWms.wms_getmap+aufruf,s));
 
+        }
+	this._trigger("movemapurlarray", null, this._mapUrlArray.join(";"));
+		
+	},
+	
+	
+	        
+
+      
+		
 	// the measured geometry will be available, the events will be deleted
 	deactivate: function () {
 		
