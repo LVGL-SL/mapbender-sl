@@ -82,6 +82,7 @@ eventInit.register(function () {
 						
                 };
                 mb_button[ind].stop = function () {
+					$(this).removeClass("myOnClass");
                         mod_featureInfo_hoehe_disable();
                 };
 				
