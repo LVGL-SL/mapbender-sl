@@ -126,11 +126,10 @@ var getFlatGeoJsonLength = function (geojson) {
             },
             close: function() {
                 $('#altitudeProfile').removeClass("myOnClass");
-                button.stop();
-                
+                button.stop();                
                 Mapbender.enableFeatureInfo();
                 mb_enableButton('pan1');
-                Mapbender.bindPanEvents();
+                Mapbender.bindPanEvents(); 
             }
                         
         }).bind("dialogclose", function () {
