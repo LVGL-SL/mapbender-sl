@@ -295,8 +295,8 @@ polyhedron.prototype.settex_overlay = function(s,mat_name,umn=true,url="")
 	if (umn)
 		help3(gl,s,tex_glint);
 	else
-		help3_b(gl,s,tex_glint,url);;
-	
+		help3_b(gl,s,tex_glint,url);
+
 }
 polyhedron.prototype.get_data  = function(x,y)
 {
@@ -384,7 +384,7 @@ try{
 	
 		if(this.ready_dgm)
     document.getElementById("closeBtn").style.backgroundColor = "green";
-	return true
+	return true;
 };
 
 polyhedron.prototype.update_ls = function(m){
@@ -583,7 +583,7 @@ var displayI = function(min,max,len_eins,flipnormal,tex_on,gl,vertices,polygon_f
 		return;
 	}
 
-	var u_normalMat = program.u_normalMat
+	var u_normalMat = program.u_normalMat;
 	if (!u_normalMat) {
 		alert('Failed to get the storage location of u_normalMat');
 		return;
@@ -596,7 +596,7 @@ var displayI = function(min,max,len_eins,flipnormal,tex_on,gl,vertices,polygon_f
 
 	
 
-	var lightPos = program.lightPos
+	var lightPos = program.lightPos;
 	if (!lightPos) {
 		alert('Failed to get the storage location of lightPos');
 	return;
