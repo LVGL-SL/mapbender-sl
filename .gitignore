@@ -29,3 +29,8 @@ composer.lock
 # composer.lock
 # conf/gazetteerFlst.conf
 #
+
+#Mobilemap3
+conf/mobilemap3.conf
+http/extensions/mobilemap3/src/netgis/Theme.css
+http/extensions/mobilemap3/config.js

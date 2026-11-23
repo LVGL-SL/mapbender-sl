@@ -1,0 +1,12 @@
+var url_dgm = "https://geoportal.saarland.de/freewms/dgm?";
+var layer_dgm = "sl_dgm1_2016";
+var url_dop = "https://geoportal.saarland.de/freewms/truedop?";
+var layer_dop = "sl_dop20_rgb";
+var min_ = 0;
+var max_ = 695.24;;
+var range = max_ - min_;
+var ein_px_gleich_wieviel_meter = (max_ - min_) / 255.0;
+var pixel_to_add = 0;// min_ / ein_px_gleich_wieviel_meter;
+var image_size_big = 5000;
+var image_size_medium = 2500;
+var image_size_small = 1000;

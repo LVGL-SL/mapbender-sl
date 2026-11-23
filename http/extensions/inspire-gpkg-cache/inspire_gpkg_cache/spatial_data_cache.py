@@ -2,6 +2,7 @@ import json
 import logging as log
 import math
 import os
+import re
 import shutil
 import time
 import uuid
@@ -25,16 +26,37 @@ from slugify import slugify
 from inspire_gpkg_cache.gpkg import Gpkg
 import urllib3
 
-def get_env_variable_from_geoportal_sl(variable_name:str, default_value= None)->str:
-    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','..','..','..','GeoPortal.sl','Geoportal','.env')
-    with open(env_path, 'r') as env_file:
-        for line in env_file:
-            try:
-                key,value = line.strip().split('=')
-            except ValueError:
-                continue
-            os.environ[key.replace(" ","")] = value.replace(" ","").replace("\"","")
-    return os.getenv(variable_name, default_value)
+def get_env_variable(variable_name:str, default_value=None)->str:
+    config_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        '..', '..', '..', '..',
+        'conf', 'mapbender.conf'
+    )
+
+    if os.path.exists(config_path):
+        with open(config_path, 'r', encoding='utf-8') as config_file:
+            for raw_line in config_file:
+                line = raw_line.split('#', 1)[0].strip()
+                if not line:
+                    continue
+
+                match = re.match(
+                    r"define\s*\(\s*(['\"])([^'\"]+)\1\s*,\s*(.+?)\s*\)\s*;",
+                    line,
+                )
+                if not match:
+                    continue
+
+                constant_name = match.group(2)
+                constant_value = match.group(3).strip()
+                if constant_name != variable_name:
+                    continue
+
+                if constant_value.startswith(('"', "'")) and constant_value.endswith(('"', "'")):
+                    return constant_value[1:-1]
+                return constant_value
+
+    return default_value
 
 
 class SpatialDataCache():
@@ -57,10 +79,11 @@ class SpatialDataCache():
         # initially use first entry of catalogue list
         self.catalogue_uris = catalogue_uris
         self.catalogue_uri = self.catalogue_uris[0]
-        proxy_url = get_env_variable_from_geoportal_sl("PROXY_HTTP")
+        proxy_url = get_env_variable("PROXY_HTTP")
         #http = urllib3.HTTPConnectionPool('http://lprxdutm04.saarland.de',8080)
-        os.environ["HTTP_PROXY"] = proxy_url
-        os.environ["HTTPS_PROXY"] = proxy_url
+        if proxy_url:
+            os.environ["HTTP_PROXY"] = proxy_url
+            os.environ["HTTPS_PROXY"] = proxy_url
         self.csw = CatalogueServiceWeb(self.catalogue_uri)
         self.supported_formats = ["GeoTIFF", "GML", "Database", "shapefile", ]
         self.max_pixels = 3000

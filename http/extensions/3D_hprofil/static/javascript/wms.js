@@ -1,0 +1,177 @@
+
+var wms = function(koordinaten,pointsstring,epsg,pointsstring_all,mapUrl,pointstring_=""){
+
+	this.epsg = epsg;
+    this.mapurl = mapUrl;
+	this.width = image_size_small;
+	this.height = 1.0 * this.width;
+	this.bbox = [];
+	this.pointsstring = pointsstring;
+	this.pointsstring_all = pointsstring_all;
+	this.pointstring_ = pointstring_;
+	var k2 = [];
+	k2 = koordinaten;
+	this.point = "";
+	var koords = new koord(k2);
+	this.bbox = koords.bbox(300);
+	this.canvas_x = 0;
+	this.canvas_z = 0;
+	this.dpi = 100;
+    
+
+};
+
+wms.prototype.set_canvas = function(x){
+	
+	this.canvas_x = 4.0 * x;
+	this.canvas_z = 4.0 * x;
+	
+};
+wms.prototype.getz1 = function(o1){
+	return Math.floor(this.width *   o1  / this.canvas_x);   I
+};
+
+wms.prototype.getz2 = function(o2){
+	return  Math.floor(this.height *  o2  / this.canvas_z);   
+};
+
+wms.prototype.set_point = function(punkt){
+	this.point = punkt;
+}
+
+
+wms.prototype.get_bbox = function(){
+	return this.bbox;
+ }
+
+wms.prototype.set_aufloesung = function(a){
+    
+	this.width = a;
+	this.height = a;
+	if (a == image_size_small) this.dpi = 100;
+	else if (a == image_size_medium) this.dpi = 300;
+	else this.dpi = 300;
+
+return;
+};	
+
+
+
+wms.prototype.getlen = function(){
+	return this.bbox[2]-this.bbox[0];
+}
+wms.prototype.get_getmap_all = function(){
+	
+	var url_array = [];
+	for (var i = 0; i < this.mapurl.split(";").length ; i +=1 ){
+		
+		url_array.push(this.mapurl.split(";")[i] + "&bbox="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&width="+this.width+"&height="+this.height + "&MAP_RESOLUTION=" + this.dpi);
+		
+	}
+
+	return url_array;
+}
+wms.prototype.get_getmap = function(i){
+if(i == 0){
+	//alert(url_dgm+"VERSION=1.1.1&Request=GetMap&SERVICE=WMS&LAYERS="+layer_dgm+"&STYLES=&SRS="+this.epsg+"&BBOX="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&WIDTH="+this.width+"&HEIGHT="+this.height+"&FORMAT=image/png&BGCOLOR=0xffffff&TRANSPARENT=TRUE&EXCEPTIONS=application/vnd.ogc.se_xml");
+	return url_dgm+"VERSION=1.1.1&Request=GetMap&SERVICE=WMS&LAYERS="+layer_dgm+"&STYLES=&SRS="+this.epsg+"&BBOX="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&WIDTH="+this.width+"&HEIGHT="+this.height+"&FORMAT=image/png&BGCOLOR=0xffffff&TRANSPARENT=TRUE&EXCEPTIONS=application/vnd.ogc.se_xml"	;//+ "&MAP_RESOLUTION=" + this.dpi;
+}else if(i == 5){
+	//alert(url_dop+"REQUEST=GetMap&VERSION=1.1.1&SERVICE=WMS&LAYERS="+layer_dop+"&STYLES=&SRS="+this.epsg+"&BBOX="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&WIDTH="+this.width+"&HEIGHT="+this.height+"&FORMAT=image/png&BGCOLOR=0xffffff&TRANSPARENT=TRUE&EXCEPTIONS=application/vnd.ogc.se_xml");
+	return url_dop+"REQUEST=GetMap&VERSION=1.1.1&SERVICE=WMS&LAYERS="+layer_dop+"&STYLES=&SRS="+this.epsg+"&BBOX="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&WIDTH="+this.width+"&HEIGHT="+this.height+"&FORMAT=image/png&BGCOLOR=0xffffff&TRANSPARENT=TRUE&EXCEPTIONS=application/vnd.ogc.se_xml"+ "&MAP_RESOLUTION=" + this.dpi;
+}else if(i == 9){
+	//alert("/mapbender/extensions/3D_hprofil/bin/ms.py?points="+this.pointstring_ +"&point="+this.point+"&epsg="+ this.epsg.split(':')[1] +"&bbox="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&width="+this.width+"&height="+this.height);
+	return "/mapbender/extensions/3D_hprofil/bin/ms.py?points="+this.pointstring_+"&point="+this.point+"&epsg="+ this.epsg.split(':')[1] +"&bbox="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&width="+1000+"&height="+1000;
+	//return "../../bin/ms.py?points="+this.pointsstring+"&point="+this.point+"&epsg="+ this.epsg.split(':')[1] +"&bbox="+this.bbox[0]+","+this.bbox[1]+","+this.bbox[2]+","+this.bbox[3]+"&width="+this.width+"&height="+this.height;
+	}
+}
+
+
+wms.prototype.move = function(w,h){
+	var wieviel = 0.25;
+	var breite = this.bbox[2]-this.bbox[0];
+	var hoehe  = this.bbox[3]-this.bbox[1];
+	if(w == -1)	{
+		this.bbox[0] = this.bbox[0] - wieviel * breite;
+		this.bbox[2] = this.bbox[2] - wieviel * breite;
+	}else
+	if( w == 1)	{
+		this.bbox[0] = this.bbox[0] + wieviel * breite;
+		this.bbox[2] = this.bbox[2] + wieviel * breite;
+	}
+	if(h == -1)	{
+		
+		this.bbox[1] = this.bbox[1] + wieviel * hoehe;
+		this.bbox[3] = this.bbox[3] + wieviel * hoehe;
+	}else
+	if( h == 1)	{   
+		this.bbox[1] = this.bbox[1] - wieviel * hoehe;
+		this.bbox[3] = this.bbox[3] - wieviel * hoehe;
+	}
+	this.bbox[3]=this.bbox[1]+(this.bbox[2]-this.bbox[0]);///2.0;
+};
+
+wms.prototype.zoom = function(b)
+{
+	
+	var breite = this.bbox[2]-this.bbox[0];
+	var hoehe  = this.bbox[3]-this.bbox[1];
+	var wieviel = 0.3;
+	if(b)	{
+		this.bbox[0] = this.bbox[0] + 0.5*wieviel*breite;
+		this.bbox[2] = this.bbox[2] - 0.5*wieviel*breite;
+		this.bbox[1] = this.bbox[1] + 0.5*wieviel*hoehe;
+		this.bbox[3]=this.bbox[1]+(this.bbox[2]-this.bbox[0]);///2.0;
+	}
+	else{
+		this.bbox[0] = this.bbox[0] - wieviel*breite;
+		this.bbox[2] = this.bbox[2] + wieviel*breite;
+		this.bbox[1] = this.bbox[1] - wieviel*hoehe;
+		this.bbox[3]=this.bbox[1]+(this.bbox[2]-this.bbox[0]);///2.0;
+	}
+	
+
+};
+wms.prototype.getx1 = function(o1){
+	return 4.0 * ( o1 - this.bbox[0] ) / ( this.bbox[2] - this.bbox[0]);   
+};
+
+wms.prototype.getx2 = function(o2){
+	return  4.0 * ( o2 - this.bbox[1] ) / ( this.bbox[3] - this.bbox[1]);   
+};
+wms.prototype.get_koord_pixel_x = function(o1){
+		
+	
+	return this.width * ( o1 - this.bbox[0] ) / ( this.bbox[2] - this.bbox[0]);   
+};
+
+wms.prototype.get_koord_pixel_y = function(o2){
+		
+	
+	return  this.height * ( o2 - this.bbox[1] ) / ( this.bbox[3] - this.bbox[1]);   
+};
+wms.prototype.gety1 = function(o1){
+		
+	
+	return this.width * ( o1 - this.bbox[0] ) / ( this.bbox[2] - this.bbox[0]);   
+};
+
+wms.prototype.gety2 = function(o2){
+		
+	
+	return  this.height * ( o2 - this.bbox[1] ) / ( this.bbox[3] - this.bbox[1]);   
+};
+wms.prototype.getfrompointstring = function(n){
+	return  this.pointsstring.split(";")[n].split(","); 
+};
+wms.prototype.getfrompointstring_all = function(n){
+	let l = this.pointsstring_all.split(";");
+	if (n < l.length)
+		return  l[n].split(",");
+	else 
+		return false;
+};
+wms.prototype.getx3 = function(hoehe_in_meter,min,max){
+	return (hoehe_in_meter  - min)/ (max - min);
+	
+	
+};

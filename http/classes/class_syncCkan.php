@@ -1506,7 +1506,7 @@ SQL;
     	            $resourcesArray[$indexResourceArray]->name = "Onlinekarte";//: ".$row['layer_title'];
     	            $resourcesArray[$indexResourceArray]->id = $row['uuid']."_geoportalrlp_mobile";
     	            $resourcesArray[$indexResourceArray]->description = "Ebene: ".$row['layer_title']." - Vorschau im integrierten Kartenviewer";
-    	            $resourcesArray[$indexResourceArray]->url = $this->mapbenderUrl."/extensions/mobilemap/map.php?layerid=".$row['layer_id'];
+    	            $resourcesArray[$indexResourceArray]->url = $this->mapbenderUrl."/extensions/mobilemap3/map.php?layerid=".$row['layer_id'];
     	            $resourcesArray[$indexResourceArray]->format = "Karte";
     		    //$resourcesArray[$indexResourceArray]->res_transparency_document_change_classification = "unaltered";
     	            $indexResourceArray++;

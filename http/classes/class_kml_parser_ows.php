@@ -129,7 +129,7 @@ require_once(dirname(__FILE__)."/../classes/class_kml_placemark.php");
 									$innerRing = new KMLLinearRing($coordinateList, $epsg);
 									$currentGeometry->appendInnerBoundary($innerRing);
 								}
-							}							
+							}
 							break;
 					}
 
@@ -437,8 +437,7 @@ require_once(dirname(__FILE__)."/../classes/class_kml_placemark.php");
 			if (mb_strtoupper($this->sepNameSpace($child->nodeName)) == "LINEARRING") {
 				$coordinatesNode = $this->getCoordinatesNode($child);
 				$geomString = $coordinatesNode->nodeValue;
-				//Ticket #6438: Load of KML-files didn't work due to the missing epsg parameter (Not needed though -> null)
-				return new KMLLinearRing($geomString,null);
+				return new KMLLinearRing($geomString, 4326);
 			}
 		}
 		return null;

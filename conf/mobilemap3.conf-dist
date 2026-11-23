@@ -1,0 +1,6 @@
+<?php
+$backgroundWms = array(2071, 1879, 2706, 2598);
+// Höhenabfrage
+define("MOBILEMAP3_HEIGHT_REQUEST_EPSG", "25832");
+define("MOBILEMAP3_HEIGHT_REQUEST_INFO_URL", "http://height.saarland.de/dhm.map");
+define("MOBILEMAP3_HEIGHT_REQUEST_INFO_LAYER", "mydhm");

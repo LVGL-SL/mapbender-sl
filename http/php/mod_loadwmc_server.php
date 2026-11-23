@@ -43,7 +43,7 @@ switch ($ajaxResponse->getMethod()) {
 		//generate qr on the fly in tmp folder
 		//link to invoke wmc per get api if wrapper path isset
 		if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != "") {
-			$invokeLink = MAPBENDER_PATH."/extensions/mobilemap2/index.html?wmc_id=".$wmcid;
+			$invokeLink = MAPBENDER_PATH."/extensions/mobilemap3/index.html?wmc_id=".$wmcid;
 			QRcode::png($invokeLink,TMPDIR."/".$filename);
 			if ($newWindow) {
 				$html = "<a href = '".$invokeLink."' target='_blank'><img src='".TMPDIR."/".$filename."'></a>";

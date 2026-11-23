@@ -3,7 +3,7 @@ import sys
 import os
 import subprocess
 
-from inspire_gpkg_cache.spatial_data_cache import SpatialDataCache, get_env_variable_from_geoportal_sl
+from inspire_gpkg_cache.spatial_data_cache import SpatialDataCache, get_env_variable
 #from builtins import False
 
 print(sys.argv[1])
@@ -13,7 +13,7 @@ print(sys.argv[1])
 
 # https://stackoverflow.com/questions/50607908/how-to-send-mail-in-python-on-linux-server-via-mail
 def send_mail(subject: str, body: str, mail_address:str):
-    sender_mail_adress = get_env_variable_from_geoportal_sl("ROOT_EMAIL_ADDRESS","geoportal.saarland@lvgl.saarland.de")
+    sender_mail_adress = get_env_variable("ROOT_EMAIL_ADDRESS","geoportal.saarland@lvgl.saarland.de")
     body_str_encoded_to_byte = body.encode()
     return_stat = subprocess.run([f"mail", f"-s {subject}", f"-aFrom:{sender_mail_adress}", mail_address], input=body_str_encoded_to_byte)
     print(return_stat) 

@@ -266,16 +266,22 @@ switch ($mb_metadata['origin']) {
 			//load metadata, from url and send it to requesting client
 			$metadataUrlObject = new connector($mb_metadata['link']);
 			$metadataXml = $metadataUrlObject->file;
-			//TODO: exchange contact and licence information if metadata proxy is activated!
-			if ($mb_metadata['md_proxy'] == true || $mb_metadata['md_proxy'] == 't') {
-				$metadataXml = exchangeLicenceAndContact($metadataXml, $mb_metadata['metadata_id'], $mb_metadata['fkey_mb_group_id'], $mb_metadata['md_license_source_note']);
-			}
-			if ($_REQUEST['VALIDATE'] != "true") {
-				proxyFile($metadataXml, $outputFormat);
+			if($metadataUrlObject->httpCode != 200 && isset($mb_metadata['data']) && $mb_metadata['data'] != ''){
+				proxyFile($mb_metadata['data'], $outputFormat);
 				die();
-			} else {
-				validateInspire($metadataXml);
-				die();
+			}else{
+
+				//TODO: exchange contact and licence information if metadata proxy is activated!
+				if ($mb_metadata['md_proxy'] == true || $mb_metadata['md_proxy'] == 't') {
+					$metadataXml = exchangeLicenceAndContact($metadataXml, $mb_metadata['metadata_id'], $mb_metadata['fkey_mb_group_id'], $mb_metadata['md_license_source_note']);
+				}
+				if ($_REQUEST['VALIDATE'] != "true") {
+					proxyFile($metadataXml, $outputFormat);
+					die();
+				} else {
+					validateInspire($metadataXml);
+					die();
+				}
 			}
 		}
 		//if xml has been harvested - push this xml from database, if not just harvest it and push the result
